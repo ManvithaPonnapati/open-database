@@ -2,19 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="14d179b0-5829-4a73-b488-ff7406829717" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/av4_config.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/av4_conformation_sampler.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/av4_cost_functions.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/av4_gradient_descend_machine.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/affinity_freshman/Atomwise.pdf" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/affinity_freshman/QLearning.pdf" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/affinity_freshman/generativeNetworks.pdf" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/av4_eval.py" afterPath="$PROJECT_DIR$/av4_eval.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/av4_input.py" afterPath="$PROJECT_DIR$/av4_input.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/av4_main.py" afterPath="$PROJECT_DIR$/av4_main.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/av4_networks.py" afterPath="$PROJECT_DIR$/av4_networks.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/av4_utils.py" afterPath="$PROJECT_DIR$/av4_utils.py" />
     </list>
     <ignored path="tensorMe17_av4.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -59,11 +48,9 @@
       <file leaf-file-name="av4_gradient_descend_machine.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/av4_gradient_descend_machine.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="385">
-              <caret line="118" column="30" selection-start-line="118" selection-start-column="16" selection-end-line="118" selection-end-column="30" />
-              <folding>
-                <element signature="e#0#32#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="0">
+              <caret line="0" column="32" selection-start-line="0" selection-start-column="32" selection-end-line="0" selection-end-column="32" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -90,21 +77,21 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="av4_input.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="av4_input.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/av4_input.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4198">
-              <caret line="187" column="86" selection-start-line="187" selection-start-column="86" selection-end-line="187" selection-end-column="86" />
+            <state relative-caret-position="589">
+              <caret line="150" column="114" selection-start-line="150" selection-start-column="114" selection-end-line="150" selection-end-column="114" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="av4_eval.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="av4_eval.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/av4_eval.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1201">
-              <caret line="422" column="16" selection-start-line="422" selection-start-column="16" selection-end-line="422" selection-end-column="16" />
+            <state relative-caret-position="14472">
+              <caret line="402" column="56" selection-start-line="402" selection-start-column="56" selection-end-line="402" selection-end-column="56" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -115,8 +102,8 @@
       <file leaf-file-name="av4_networks.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/av4_networks.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1129">
-              <caret line="189" column="23" selection-start-line="189" selection-start-column="23" selection-end-line="189" selection-end-column="23" />
+            <state relative-caret-position="4932">
+              <caret line="138" column="60" selection-start-line="138" selection-start-column="60" selection-end-line="138" selection-end-column="60" />
               <folding />
             </state>
           </provider>
@@ -145,12 +132,12 @@
         <option value="$PROJECT_DIR$/av4_utils.py" />
         <option value="$PROJECT_DIR$/av4_input2.py" />
         <option value="$PROJECT_DIR$/av4_config.py" />
-        <option value="$PROJECT_DIR$/av4_input.py" />
         <option value="$PROJECT_DIR$/av4_main.py" />
-        <option value="$PROJECT_DIR$/av4_networks.py" />
         <option value="$PROJECT_DIR$/av4_gradient_descend_machine.py" />
         <option value="$PROJECT_DIR$/av4_conformation_sampler.py" />
         <option value="$PROJECT_DIR$/av4_eval.py" />
+        <option value="$PROJECT_DIR$/av4_networks.py" />
+        <option value="$PROJECT_DIR$/av4_input.py" />
       </list>
     </option>
   </component>
@@ -475,9 +462,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="252">
           <caret line="7" column="0" selection-start-line="7" selection-start-column="0" selection-end-line="7" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -591,24 +576,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/av4_input.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4198">
-          <caret line="187" column="86" selection-start-line="187" selection-start-column="86" selection-end-line="187" selection-end-column="86" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/av4_gradient_descend_machine.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="385">
-          <caret line="118" column="30" selection-start-line="118" selection-start-column="16" selection-end-line="118" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/av4_conformation_sampler.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="385">
@@ -629,21 +596,37 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/av4_gradient_descend_machine.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="32" selection-start-line="0" selection-start-column="32" selection-end-line="0" selection-end-column="32" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/av4_networks.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1129">
-          <caret line="189" column="23" selection-start-line="189" selection-start-column="23" selection-end-line="189" selection-end-column="23" />
+        <state relative-caret-position="4932">
+          <caret line="138" column="60" selection-start-line="138" selection-start-column="60" selection-end-line="138" selection-end-column="60" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/av4_eval.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1201">
-          <caret line="422" column="16" selection-start-line="422" selection-start-column="16" selection-end-line="422" selection-end-column="16" />
+        <state relative-caret-position="14472">
+          <caret line="402" column="56" selection-start-line="402" selection-start-column="56" selection-end-line="402" selection-end-column="56" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/av4_input.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="589">
+          <caret line="150" column="114" selection-start-line="150" selection-start-column="114" selection-end-line="150" selection-end-column="114" />
+          <folding />
         </state>
       </provider>
     </entry>
