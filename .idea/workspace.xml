@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="14d179b0-5829-4a73-b488-ff7406829717" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/av4_input.py" afterPath="$PROJECT_DIR$/av4_input.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/av4_networks.py" afterPath="$PROJECT_DIR$/av4_networks.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="tensorMe17_av4.iws" />
     <ignored path=".idea/workspace.xml" />
