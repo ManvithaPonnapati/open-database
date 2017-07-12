@@ -1,0 +1,1 @@
+# drug-shapematch123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFRun as `python main.py --angle 360` (or replace 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF`360` by the max. rotation angle you would like)
