@@ -2,22 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="15767d59-f329-44b2-9faf-dca64182b853" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/affinity/models/summaries/1_max_net_main_logs/events.out.tfevents.1500341124.N7110" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/tensorMe17_av4.iml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/affinity/models/concat_net/classes.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/affinity/models/concat_net/classes2.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/affinity/models/concat_net/input_pipe.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/affinity/models/concat_net/test_count.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/affinity/geom/geom_ops.py" afterPath="$PROJECT_DIR$/affinity/geom/geom_ops.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/tensorMe17_av4.iml" afterPath="$PROJECT_DIR$/.idea/tensorMe17_av4.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/affinity/input/__init__.py" afterPath="$PROJECT_DIR$/affinity/input/__init__.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/affinity/input/input_ops.py" afterPath="$PROJECT_DIR$/affinity/input/input_ops.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/affinity/models/concat_net/concat_net.py" afterPath="$PROJECT_DIR$/affinity/models/concat_net/concat_net.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/affinity/models/concat_net/config.py" afterPath="$PROJECT_DIR$/affinity/models/concat_net/config.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/affinity/networks/networks_ops.py" afterPath="$PROJECT_DIR$/affinity/networks/networks_ops.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/affinity/models/concat_net/classes.py" afterPath="$PROJECT_DIR$/affinity/models/concat_net/classes.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/affinity/models/concat_net/input_pipe.py" afterPath="$PROJECT_DIR$/affinity/models/concat_net/input_pipe.py" />
     </list>
     <ignored path="tensorMe17_av4.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -40,7 +31,7 @@
       <file leaf-file-name="geom_ops.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/affinity/geom/geom_ops.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="11260">
+            <state relative-caret-position="23083">
               <caret line="572" column="12" lean-forward="false" selection-start-line="572" selection-start-column="12" selection-end-line="572" selection-end-column="12" />
               <folding />
             </state>
@@ -51,7 +42,7 @@
         <entry file="file://$PROJECT_DIR$/affinity/input/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
-              <caret line="0" column="64" lean-forward="false" selection-start-line="0" selection-start-column="64" selection-end-line="0" selection-end-column="64" />
+              <caret line="0" column="84" lean-forward="false" selection-start-line="0" selection-start-column="84" selection-end-line="0" selection-end-column="84" />
               <folding />
             </state>
           </provider>
@@ -60,7 +51,7 @@
       <file leaf-file-name="config.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/config.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="780">
+            <state relative-caret-position="1599">
               <caret line="40" column="62" lean-forward="false" selection-start-line="40" selection-start-column="62" selection-end-line="40" selection-end-column="62" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
@@ -72,8 +63,8 @@
       <file leaf-file-name="networks_ops.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/affinity/networks/networks_ops.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="9700">
-              <caret line="489" column="58" lean-forward="true" selection-start-line="489" selection-start-column="58" selection-end-line="489" selection-end-column="58" />
+            <state relative-caret-position="19885">
+              <caret line="489" column="58" lean-forward="false" selection-start-line="489" selection-start-column="58" selection-end-line="489" selection-end-column="58" />
               <folding>
                 <element signature="e#0#16#0" expanded="true" />
               </folding>
@@ -84,8 +75,8 @@
       <file leaf-file-name="test_count.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/test_count.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="320">
-              <caret line="16" column="26" lean-forward="true" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
+            <state relative-caret-position="362">
+              <caret line="16" column="26" lean-forward="false" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -93,11 +84,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="input_ops.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="input_ops.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/affinity/input/input_ops.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="241">
-              <caret line="436" column="0" lean-forward="false" selection-start-line="436" selection-start-column="0" selection-end-line="442" selection-end-column="38" />
+            <state relative-caret-position="697">
+              <caret line="422" column="51" lean-forward="true" selection-start-line="422" selection-start-column="51" selection-end-line="422" selection-end-column="51" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -105,11 +96,23 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="input_pipe.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="input_pipe.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/input_pipe.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="240">
-              <caret line="12" column="19" lean-forward="true" selection-start-line="12" selection-start-column="19" selection-end-line="12" selection-end-column="19" />
+            <state relative-caret-position="1141">
+              <caret line="33" column="10" lean-forward="true" selection-start-line="33" selection-start-column="10" selection-end-line="33" selection-end-column="10" />
+              <folding>
+                <element signature="e#0#23#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="test_pipe.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/test_pipe.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="362">
+              <caret line="21" column="0" lean-forward="true" selection-start-line="21" selection-start-column="0" selection-end-line="21" selection-end-column="0" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -120,8 +123,8 @@
       <file leaf-file-name="classes.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/classes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-280">
-              <caret line="50" column="17" lean-forward="true" selection-start-line="50" selection-start-column="17" selection-end-line="50" selection-end-column="17" />
+            <state relative-caret-position="246">
+              <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -132,18 +135,8 @@
       <file leaf-file-name="classes2.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/classes2.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
+            <state relative-caret-position="649">
               <caret line="31" column="0" lean-forward="false" selection-start-line="31" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="data_flow_ops.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../conda/lib/python2.7/site-packages/tensorflow/python/ops/data_flow_ops.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="860">
-              <caret line="64" column="50" lean-forward="true" selection-start-line="41" selection-start-column="0" selection-end-line="64" selection-end-column="50" />
               <folding />
             </state>
           </provider>
@@ -162,6 +155,8 @@
       <find>pairlis</find>
       <find>read_rec_and</find>
       <find>crop</find>
+      <find>was</find>
+      <find>input_pipe</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -178,22 +173,23 @@
         <option value="$PROJECT_DIR$/try.py" />
         <option value="$PROJECT_DIR$/affinity/models/concat_net/concat_net.py" />
         <option value="$PROJECT_DIR$/affinity/geom/geom_ops.py" />
-        <option value="$PROJECT_DIR$/affinity/input/__init__.py" />
         <option value="$PROJECT_DIR$/affinity/models/concat_net/config.py" />
         <option value="$PROJECT_DIR$/affinity/models/concat_net/test_count.py" />
         <option value="$PROJECT_DIR$/affinity/networks/networks_ops.py" />
-        <option value="$PROJECT_DIR$/affinity/models/concat_net/input_pipe.py" />
         <option value="$PROJECT_DIR$/affinity/models/concat_net/classes2.py" />
-        <option value="$PROJECT_DIR$/affinity/input/input_ops.py" />
         <option value="$PROJECT_DIR$/affinity/models/concat_net/classes.py" />
+        <option value="$PROJECT_DIR$/affinity/input/__init__.py" />
+        <option value="$PROJECT_DIR$/affinity/models/concat_net/test_pipe.py" />
+        <option value="$PROJECT_DIR$/affinity/input/input_ops.py" />
+        <option value="$PROJECT_DIR$/affinity/models/concat_net/input_pipe.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="60" />
-    <option name="y" value="-911" />
-    <option name="width" value="1381" />
-    <option name="height" value="912" />
+    <option name="x" value="129" />
+    <option name="y" value="-2147" />
+    <option name="width" value="3712" />
+    <option name="height" value="2148" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -211,25 +207,26 @@
     </navigator>
     <panes>
       <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
+              <option name="myItemId" value="17_av4" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
+              <option name="myItemId" value="17_av4" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
+              <option name="myItemId" value="17_av4" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
+              <option name="myItemId" value="17_av4" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -239,11 +236,11 @@
           </PATH>
           <PATH>
             <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
+              <option name="myItemId" value="17_av4" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
+              <option name="myItemId" value="17_av4" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
@@ -251,93 +248,16 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="utils" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="affinity" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="networks" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="affinity" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="models" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="affinity" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="models" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="concat_net" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="tensorMe17_av4" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="affinity" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="geom" />
+              <option name="myItemId" value="input" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../conda/bin/python2.7" />
+    <property name="last_opened_file_path" value="$USER_HOME$/conda/bin/python2.7" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
@@ -353,24 +273,6 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.input_pipe">
-    <configuration default="false" name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/affinity/models/dense_nilai_net" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="tensorMe17_av4" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/affinity/models/dense_nilai_net/main.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <method />
-    </configuration>
     <configuration default="false" name="input_pipe" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -438,6 +340,24 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="tensorMe17_av4" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/affinity/models/concat_net/classes2.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <method />
+    </configuration>
+    <configuration default="false" name="test_pipe" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/affinity/models/concat_net" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="tensorMe17_av4" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/affinity/models/concat_net/test_pipe.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -540,19 +460,19 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.main" />
-      <item index="1" class="java.lang.String" itemvalue="Python.input_pipe" />
-      <item index="2" class="java.lang.String" itemvalue="Python.test_count" />
-      <item index="3" class="java.lang.String" itemvalue="Python.classes" />
-      <item index="4" class="java.lang.String" itemvalue="Python.classes2" />
+      <item index="0" class="java.lang.String" itemvalue="Python.input_pipe" />
+      <item index="1" class="java.lang.String" itemvalue="Python.test_count" />
+      <item index="2" class="java.lang.String" itemvalue="Python.classes" />
+      <item index="3" class="java.lang.String" itemvalue="Python.classes2" />
+      <item index="4" class="java.lang.String" itemvalue="Python.test_pipe" />
     </list>
     <recent_temporary>
       <list size="5">
         <item index="0" class="java.lang.String" itemvalue="Python.input_pipe" />
-        <item index="1" class="java.lang.String" itemvalue="Python.classes" />
-        <item index="2" class="java.lang.String" itemvalue="Python.classes2" />
-        <item index="3" class="java.lang.String" itemvalue="Python.test_count" />
-        <item index="4" class="java.lang.String" itemvalue="Python.main" />
+        <item index="1" class="java.lang.String" itemvalue="Python.test_pipe" />
+        <item index="2" class="java.lang.String" itemvalue="Python.classes" />
+        <item index="3" class="java.lang.String" itemvalue="Python.classes2" />
+        <item index="4" class="java.lang.String" itemvalue="Python.test_count" />
       </list>
     </recent_temporary>
     <configuration default="true" type="tests" factoryName="Attests">
@@ -592,13 +512,13 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="60" y="-911" width="1381" height="912" extended-state="6" />
+    <frame x="129" y="-2147" width="3712" height="2148" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.14068165" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14043127" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32958803" sideWeight="0.12255257" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32958803" sideWeight="0.8774474" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3292683" sideWeight="0.8774474" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -651,13 +571,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/concat_net.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="140">
-          <caret line="9" column="17" lean-forward="false" selection-start-line="9" selection-start-column="17" selection-end-line="9" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/affinity/networks/networks_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="8920">
@@ -888,13 +801,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../conda/lib/python2.7/site-packages/tensorflow/python/client/session.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-89">
-          <caret line="1120" column="0" lean-forward="false" selection-start-line="1120" selection-start-column="0" selection-end-line="1120" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/conda/lib/python2.7/site-packages/tensorflow/python/client/session.py" />
     <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/example_test.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -909,13 +816,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../conda/lib/python2.7/logging/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="1638" column="4" lean-forward="false" selection-start-line="1638" selection-start-column="4" selection-end-line="1638" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/conda/lib/python2.7/logging/__init__.py" />
     <entry file="file://$PROJECT_DIR$/affinity/utils/utils_ops.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-600">
@@ -925,23 +826,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/affinity/geom/geom_ops.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="11260">
+        <state relative-caret-position="23083">
           <caret line="572" column="12" lean-forward="false" selection-start-line="572" selection-start-column="12" selection-end-line="572" selection-end-column="12" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/affinity/input/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="64" lean-forward="false" selection-start-line="0" selection-start-column="64" selection-end-line="0" selection-end-column="64" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/config.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="780">
+        <state relative-caret-position="1599">
           <caret line="40" column="62" lean-forward="false" selection-start-line="40" selection-start-column="62" selection-end-line="40" selection-end-column="62" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
@@ -951,62 +844,56 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/affinity/networks/networks_ops.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9700">
-          <caret line="489" column="58" lean-forward="true" selection-start-line="489" selection-start-column="58" selection-end-line="489" selection-end-column="58" />
+        <state relative-caret-position="19885">
+          <caret line="489" column="58" lean-forward="false" selection-start-line="489" selection-start-column="58" selection-end-line="489" selection-end-column="58" />
           <folding>
             <element signature="e#0#16#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharmCE2017.1/system/python_stubs/936173998/numpy/core/multiarray.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="2628" column="0" lean-forward="false" selection-start-line="2628" selection-start-column="0" selection-end-line="2628" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../conda/lib/python2.7/site-packages/tensorflow/python/ops/data_flow_ops.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="860">
-          <caret line="64" column="50" lean-forward="true" selection-start-line="41" selection-start-column="0" selection-end-line="64" selection-end-column="50" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/classes2.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="31" column="0" lean-forward="false" selection-start-line="31" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/.PyCharmCE2017.1/system/python_stubs/936173998/numpy/core/multiarray.py" />
+    <entry file="file://$USER_HOME$/conda/lib/python2.7/site-packages/tensorflow/python/ops/data_flow_ops.py" />
     <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/test_count.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="320">
-          <caret line="16" column="26" lean-forward="true" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
+        <state relative-caret-position="362">
+          <caret line="16" column="26" lean-forward="false" selection-start-line="16" selection-start-column="26" selection-end-line="16" selection-end-column="26" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/affinity/input/input_ops.py">
+    <entry file="file://$PROJECT_DIR$/affinity/input/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="241">
-          <caret line="436" column="0" lean-forward="false" selection-start-line="436" selection-start-column="0" selection-end-line="442" selection-end-column="38" />
-          <folding>
-            <element signature="e#0#23#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="0">
+          <caret line="0" column="84" lean-forward="false" selection-start-line="0" selection-start-column="84" selection-end-line="0" selection-end-column="84" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/classes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-280">
-          <caret line="50" column="17" lean-forward="true" selection-start-line="50" selection-start-column="17" selection-end-line="50" selection-end-column="17" />
+        <state relative-caret-position="246">
+          <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/classes2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="649">
+          <caret line="31" column="0" lean-forward="false" selection-start-line="31" selection-start-column="0" selection-end-line="31" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/test_pipe.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="362">
+          <caret line="21" column="0" lean-forward="true" selection-start-line="21" selection-start-column="0" selection-end-line="21" selection-end-column="0" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
@@ -1015,8 +902,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/affinity/models/concat_net/input_pipe.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="12" column="19" lean-forward="true" selection-start-line="12" selection-start-column="19" selection-end-line="12" selection-end-column="19" />
+        <state relative-caret-position="1141">
+          <caret line="33" column="10" lean-forward="true" selection-start-line="33" selection-start-column="10" selection-end-line="33" selection-end-column="10" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/affinity/input/input_ops.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="697">
+          <caret line="422" column="51" lean-forward="true" selection-start-line="422" selection-start-column="51" selection-end-line="422" selection-end-column="51" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
