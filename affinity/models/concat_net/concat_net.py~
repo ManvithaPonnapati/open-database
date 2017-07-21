@@ -1,0 +1,69 @@
+import tensorflow as tf
+import numpy as np
+import time,sys,os
+
+#sys.path.append("../")
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
+
+import affinity as af
+#import av4_networks
+#import av4_input
+from config import FLAGS
+
+
+
+
+test_srcpnt_coords = tf.Variable(tf.random_uniform([15000,3],minval=1,maxval=40,dtype=tf.float32))
+test_destpnt_coords = tf.Variable(tf.random_uniform([50,3],minval=1,maxval=40,dtype=tf.float32))
+test_srcpnt_features = tf.Variable(tf.random_uniform([15000],minval=1,maxval=100,dtype=tf.float32))
+test_destpnt_features = tf.Variable(tf.random_uniform([50],minval=1,maxval=100,dtype=tf.float32))
+
+sess = tf.Session()
+
+
+filename_queue, examples_in_database = af.input.index_database_into_q(FLAGS.database_path, shuffle=True)
+
+with tf.variable_scope("epoch_counter"):
+    batch_counter = tf.Variable(0)
+    batch_counter_increment = tf.assign(batch_counter, tf.Variable(0).count_up_to(
+        np.round((examples_in_database * FLAGS.train_epochs) / FLAGS.batch_size)))
+    epoch_counter = tf.div(batch_counter * FLAGS.batch_size, examples_in_database)
+
+ligand_file,epoch_counter,label,lig_elem,lig_coord,rec_elem,rec_coord = af.input.read_rec_and_lig(
+    filename_queue,epoch_counter,lig_frame='OVERSAMPLING')
+
+
+with tf.variable_scope("network"):
+    net = af.networks.ConcatNet()
+logit = net.compute_output(lig_elem=lig_elem,lig_coord=lig_coord,rec_elem=rec_elem,rec_coord=rec_coord)
+
+#logits = tf.expand_dims(logit,0)
+#labels = tf.expand_dims(label,0)
+#label_batch,logit_batch = tf.train.batch([label,logit],batch_size=100,capacity=1000,num_threads=20)
+cost = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label,logits=logit)
+#cost_mean = tf.reduce_mean(cost)
+train_step = tf.train.AdamOptimizer().minimize(cost)
+
+
+
+sess.run(tf.global_variables_initializer())
+coord = tf.train.Coordinator()
+threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
+
+tf.get_default_graph().finalize()
+
+# print lig_coord.get_shape()
+# print rec_coord.get_shape()
+# print lig_elem.get_shape()
+# print rec_elem.get_shape()
+# print sess.run(tf.shape(s_feat))
+# print sess.run(tf.shape(d_feat))
+
+
+
+while True:
+    start = time.time()
+    # print sess.run(tf.shape(answer[1]))
+    print sess.run([cost])
+    print "exps:", "%.3f" % (1 / (time.time() - start))
