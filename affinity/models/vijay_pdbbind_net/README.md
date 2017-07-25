@@ -1,1 +1,0 @@
-This model uses the various PDBBind datasets downloaded from DeepChem's AWS server. See /DB/pdbbind_deepchem for more data on how to obtain these datasets. It provides an implementation for Atomic Convolutions.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
