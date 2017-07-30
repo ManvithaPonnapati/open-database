@@ -1,1 +1,29 @@
-# Try Chembl API123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport os,sys123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom chembl_webresource_client.new_client import new_client123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport prody123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef run():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # get the title of a pdb structure123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    head = prody.parsePDBHeader("3EML")123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF     123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    assay = new_client.assay123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    asy = assay.search(head['title'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    target = new_client.target123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    tar = target.search(head['A'].name)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # get the componds123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    res = molecule.search(head['chemicals'][0].name)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # searching the similar componds123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    similarity = new_client.similarity123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    similar_res = similarity.filter(smiles=res[0]['molecule_structures']['canonical_smiles'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print similar_res123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFif __name__ == '__main__':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    run()
+# Try Chembl API
+
+import os,sys
+from chembl_webresource_client.new_client import new_client
+import prody
+
+
+def run():
+    # get the title of a pdb structure
+    head = prody.parsePDBHeader("3EML")
+
+     
+    assay = new_client.assay
+    asy = assay.search(head['title'])
+
+    target = new_client.target
+    tar = target.search(head['A'].name)
+
+    # get the componds
+    res = molecule.search(head['chemicals'][0].name)
+
+    # searching the similar componds
+    similarity = new_client.similarity
+    similar_res = similarity.filter(smiles=res[0]['molecule_structures']['canonical_smiles'])
+
+    print similar_res
+
+if __name__ == '__main__':
+    run()

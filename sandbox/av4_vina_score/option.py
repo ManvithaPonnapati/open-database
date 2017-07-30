@@ -1,1 +1,72 @@
-import os, sys123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport numpy as np123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport prody123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport argparse123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef get_parser():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    parser = argparse.ArgumentParser()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    parser.add_argument(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '-r',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        dest='receptor',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        type=str,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        default='t_1.pdb',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        help='Path of receptor pdb file.')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    parser.add_argument(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '-l',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        dest='ligand',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        type=str,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        default='tt_1.pdb',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        help='Path of ligand pdb file.')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    parser.add_argument(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '-d',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        dest='debug',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        type=str,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        default='print',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        help='debug information option [print,log,off]')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    parser.add_argument(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '--log',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        dest='log',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        type=str,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        default='eval.log',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        help='Paht of the log file')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return parser123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef visualize_parser():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    parser = argparse.ArgumentParser()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    parser.add_argument(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '-i',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        dest='input_file',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        type=str,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        help='path of npy file for visualize'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    )123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    parser.add_argument(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '-d',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        dest='dest_folder',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        type=str,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        default='images',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        help='path of folder to store result'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    )123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    parser.add_argument(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '-a',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        dest='fixed_axis',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        type=str,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        default='X',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        help='Slice by which axis [X,Y,Z]'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    )123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    parser.add_argument(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '-n',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        dest='images_num',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        type=int,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        default=10,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        help='Draw how many images as result'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    )123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return parser123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+import os, sys
+import numpy as np
+import prody
+import argparse
+
+def get_parser():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '-r',
+        dest='receptor',
+        type=str,
+        default='t_1.pdb',
+        help='Path of receptor pdb file.')
+    parser.add_argument(
+        '-l',
+        dest='ligand',
+        type=str,
+        default='tt_1.pdb',
+        help='Path of ligand pdb file.')
+
+    parser.add_argument(
+        '-d',
+        dest='debug',
+        type=str,
+        default='print',
+        help='debug information option [print,log,off]')
+
+    parser.add_argument(
+        '--log',
+        dest='log',
+        type=str,
+        default='eval.log',
+        help='Paht of the log file')
+
+    return parser
+
+def visualize_parser():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '-i',
+        dest='input_file',
+        type=str,
+        help='path of npy file for visualize'
+    )
+
+    parser.add_argument(
+        '-d',
+        dest='dest_folder',
+        type=str,
+        default='images',
+        help='path of folder to store result'
+    )
+
+    parser.add_argument(
+        '-a',
+        dest='fixed_axis',
+        type=str,
+        default='X',
+        help='Slice by which axis [X,Y,Z]'
+    )
+
+    parser.add_argument(
+        '-n',
+        dest='images_num',
+        type=int,
+        default=10,
+        help='Draw how many images as result'
+    )
+
+    return parser

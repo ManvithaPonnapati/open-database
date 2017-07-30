@@ -1,1 +1,819 @@
-__author__= 'wy'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#TODO Add comments to make people understand123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#TODO This shall be refractored with autodock part so that logic will not be too nasty123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport collections123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport logging123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport numpy as np123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport prody as pd123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom data_process.preprocess.Config import result_PREFIX,temp_pdb_PREFIX123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom data_process.preprocess.utility.autodock_utility import *123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom data_process.preprocess.native_contact import native_contact123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFCore part for generating vectors and split source pdb files with123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFWith the help of prody library.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFNeed installation first123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFUsing:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF  sudo pip install -r requirements.txt123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFFor local installation, see: http://prody.csb.pitt.edu/downloads/123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# Tag for hetero atoms123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFHETERO_PART = 'L'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# Tag for protein atoms123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFPROTEIN_PART = 'P'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# 8 type of map123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFelectype= ['A','C','d','e','HD','N','NA','OA']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# score endurance with confidence123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFCONFIDENCE = 0.85123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef list_formatter(table):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    I don't know if there is a better solution to format a list into string123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param table:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        output='['+str(table[0])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for i in range(len(table)-1):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            output+=(','+str(table[i+1]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        output+=']'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        raise TypeError('This object is not iterable!')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return output123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFclass pdb_container:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    For real pdb-ligand data123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    It will separate each ligand (except ions)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def get_pdb_type(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Nucleic Protein or Complex123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if self.pure_protein is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if self.pure_nucleic is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                return 'Protein'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                return 'Protein_Nucleic_Complex'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if self.pure_protein is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                return 'Nucleic'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                return 'Unknown or empty'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def get_residue_onfly(self,resid):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param resid:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for pick_one in pd.HierView(self.hetero).iterResidues():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # less than 3 atoms may be not ok123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if str(pick_one.getResindex())==resid:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                print 'here'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                self.bundle_ligand_data(pick_one,fake_ligand=False,OUT=True)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def __init__(self,PDB,filepos=None,OUT=True,**kwargs):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param PDB: name of PDB123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param filepos: directory of where PDB file stores123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param OUT: if true, splitted files will be output in './data' folder123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param kwargs: for further extension123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.PDBname= PDB123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.heterodict = {}123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.ct=0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.sequence = {}123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.pure_protein= None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.pure_nucleic= None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.pdb_filename = filepos.split('/')[-1]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if 'BOX' in kwargs:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.BOX_range = kwargs['BOX']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.BOX_range = 20123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if 'Size' in kwargs:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.BOX_size = kwargs['Size']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.BOX_size = 1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if filepos is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            pdb_store_dir = os.path.join(temp_pdb_PREFIX,PDB)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            pdb_store_dir = os.path.join(temp_pdb_PREFIX,PDB+''.join(map(lambda xx:(hex(ord(xx))[2:]),os.urandom(16))))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.store_dir =pdb_store_dir123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not os.path.exists(pdb_store_dir):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            os.mkdir(pdb_store_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # filepos is to determine whether we download pdb files from wwPDB123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # or use what we have123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Using downloaded is better123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # parse header for first time123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if filepos is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                parse,header = pd.parsePDB(filepos,header=True)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                parse,header = pd.parsePDB(PDB,header=True)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                filepos=PDB+'.pdb.gz'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #raise IOError123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            print filepos123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            logging.warning('PDB {} is ignored due to file-not-found error'.format(PDB))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #Save resolution123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.resolution = header['resolution']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.resolution = 'NA'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #Copy the file123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.pure_protein = parse.select('protein')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.pure_nucleic = parse.select('nucleic')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # dirty way to throw away nucleic one123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if self.pure_nucleic is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        copy_pdbfile(filepos, pdb_store_dir+'/{0}.pdb'.format(PDB), zipped=filepos.split('.')[-1] == 'gz')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #repair by guess, i think123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        repair_pdbfile(pdb_store_dir+'/{0}.pdb'.format(PDB), PDB)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #Generating sequence here123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #storage = []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #split files by chain123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            parse = pd.parsePDB(pdb_store_dir+'/{0}.pdb'.format(PDB))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            raise IOError('Cannot parse added H')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.chain_list= []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for chain in parse.getHierView():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #print chain123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #for seq in storage:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #    if chain.getSequence()==seq:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #        continue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.chain_list.append(chain.getChid())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.sequence[chain.getChid()] = chain.getSequence()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #storage.append(chain.getSequence())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #now try to fix the pdb from autodock tools123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        hetero = parse.select('(hetero and not water) or resname ATP or resname ADP')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        other = parse.select('protein or nucleic')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.hetero = hetero123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.receptor= other123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # print parse.numAtoms(), hetero.numAtoms(), other.numAtoms()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # if OUT:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if other is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            pd.writePDB(pdb_store_dir+'/{0}_receptor.pdb'.format(PDB), other)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #repair_pdbfile('data/{0}/{0}_receptor.pdb'.format(PDB),PDB)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Make vectors for every single hetero parts123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Their values will be stored in a dict123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #self.register_all_ligand_onsite(hetero,OUT=OUT)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def register_all_ligand_onsite(self,hetero_part,OUT=True):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for pick_one in pd.HierView(hetero_part).iterResidues():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF           # less than 3 atoms may be not ok123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if pick_one.numAtoms() <= 3:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                continue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.bundle_ligand_data(pick_one,fake_ligand=False,OUT=OUT)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def bundle_ligand_data(self,pick_one,fake_ligand=True,OUT=True,compare_ResId_native='default',Id_suffix='default',filename=None,benchmark=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param pick_one:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param fake_ligand:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param OUT:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param compare_ResId_native:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param Id_suffix:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param filename:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param benchmark:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        PDB = self.PDBname123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if fake_ligand==False:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            ResId = str(pick_one.getResindex())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            ResId = compare_ResId_native + '_' + str(Id_suffix)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        pdb_store_dir = self.store_dir123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        other = self.receptor123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Extract this ligand from protein (as input for openbabel)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if filename is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            filename = pdb_store_dir + '/{1}/{0}_{1}_ligand.pdb'.format(PDB, ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if not os.path.isfile(filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if not os.path.exists(pdb_store_dir + '/' + ResId):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    os.mkdir(pdb_store_dir + '/' + ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if OUT:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    pd.writePDB(filename, pick_one)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    tar_filename = ''.join(filename.split('.')[:-1])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    tar_filename+='.mol'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    pdb_to_mol2(filename, tar_filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    print 'Unexpected Error!'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    logging.error('Cannot convert {} to mol2 format!'.format(filename.split('/')[-1]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not os.path.isfile(filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if not os.path.exists(pdb_store_dir + '/' + ResId):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                os.mkdir(pdb_store_dir + '/' + ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        naming = '{}_{}'.format(PDB, ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Get coordinate of center123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        xyz = pick_one.getCoords()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        middle = pd.calcCenter(pick_one)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # in pi degree , the rotation of the box (if needed)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        rotation = [0, 0, 0]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        scale = max(max(xyz[:, 0]) - middle[0], middle[0] - min(xyz[:, 0]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    max(xyz[:, 1]) - middle[1], middle[1] - min(xyz[:, 1]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    max(xyz[:, 2]) - middle[2], middle[2] - min(xyz[:, 2]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # assert scale <= 10123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if scale > self.BOX_range / 2:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            logging.warning(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                'Warning! {} has a ligand out of box scale with {} atom distance to center'.format(PDB, scale))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # Now shifting the boxes:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            max_scale = max(max(xyz[:, 0]) - min(xyz[:, 0]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            max(xyz[:, 1]) - min(xyz[:, 1]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            max(xyz[:, 2]) - min(xyz[:, 2]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if max_scale > self.BOX_range:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                logging.error(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    'Assertion failed, {} has a ligand out of box completely with scale'.format(PDB, scale))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # Try to move to the new center123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            temp_mid = [(max(xyz[:, 0]) + min(xyz[:, 0])) / 2, (max(xyz[:, 1]) + min(xyz[:, 1])) / 2,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        (max(xyz[:, 2]) + min(xyz[:, 2])) / 2]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            temp_mid[0] = round(temp_mid[0], 6)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            temp_mid[1] = round(temp_mid[1], 6)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            temp_mid[2] = round(temp_mid[2], 6)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            middle = np.array(temp_mid)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            print middle123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # print middle123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        scale_extension = (self.BOX_range - self.BOX_size) / 2123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        box_num = int(np.ceil(self.BOX_range / self.BOX_size))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        xx, yy, zz = np.meshgrid(np.linspace(middle[0] - scale_extension, middle[0] + scale_extension, box_num),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                 np.linspace(middle[1] - scale_extension, middle[1] + scale_extension, box_num),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                 np.linspace(middle[2] - scale_extension, middle[2] + scale_extension, box_num))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # print xx123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        vector = np.c_[xx.ravel(), yy.ravel(), zz.ravel()]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        num_vector = [0] * len(vector)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #print len(vector), box_num123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for atom in pick_one.iterAtoms():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            x, y, z = atom.getCoords()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            x_pos = int(round(x - vector[0][0]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # assert 0 <= x_pos <= 19123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            y_pos = int(round(y - vector[0][1]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # assert 0 <= y_pos <= 19123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            z_pos = int(round(z - vector[0][2]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # assert 0 <= z_pos <= 19123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if 0 <= x_pos < box_num and 0 <= y_pos < box_num and 0 <= z_pos < box_num:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # Simply change here to fulfill the mark as 'H_1'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # note (z(y(x))) follows from atuogrid map file format , otherwise the coordinate system is not correspond coorectly123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                num_vector[z_pos * box_num * box_num + y_pos * box_num + x_pos] = atom.getName() + '_' + str(HETERO_PART)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # quick,dirty way to find atoms of protein in cubic boxes123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        pd.defSelectionMacro('inbox',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                          'abs(x-{1}) <= {0} and abs(y-{2}) <= {0} and abs(z-{3}) <= {0}'.format(self.BOX_size / 2,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                                                                 middle[0], middle[1],123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                                                                 middle[2]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        residues = other.select('protein and same residue as within 18 of center', center=middle)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if residues is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            logging.warning('{} in {} has no atoms nearby'.format(ResId, PDB))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # This place might have some potential problem123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # for ADP or ATP , they might either be part of nucleic and the ligand123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # This will cause a severe bug when calculating autovina score123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # TODO fix this issue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        nearby = residues.select('inbox')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if nearby is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            for atom in nearby.iterAtoms():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                x, y, z = atom.getCoords()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                x_pos = int(round(x - vector[0][0]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # assert 0 <= x_pos <= 19123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                y_pos = int(round(y - vector[0][1]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # assert 0 <= y_pos <= 19123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                z_pos = int(round(z - vector[0][2]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # assert 0 <= z_pos <= 19123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                temp = z_pos * box_num * box_num + y_pos * box_num + x_pos123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if 0 <= x_pos < box_num and 0 <= y_pos < box_num and 0 <= z_pos < box_num and num_vector[123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    temp] == 0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    # Simply change here to fulfill the mark as 'C_2'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    num_vector[temp] = atom.getName() + '_' + str(PROTEIN_PART)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    # num_vector[temp] += '|'+atom.getName() + '_' + str(PROTEIN_PART)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    print atom.getName()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    logging.warning('Coorinate {} {} {} found at {}'.format(x_pos, y_pos, z_pos, self.PDBname))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Save into the dict for future locating123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # naming = '{}_{}'.format(PDB, ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Do autogrid mapgeneration:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # ligand_filename = os.path.join(temp_pdb_PREFIX, PDB + '/' + naming + '_ligand.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # receptor_filename = os.path.join(temp_pdb_PREFIX, PDB + '/' + naming + '_receptor.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # complex_filename = os.path.join(temp_pdb_PREFIX, PDB + '/' + naming + '_complex.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # fake_ligand_filename = os.path.join(temp_pdb_PREFIX, 'fake-ligand.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.heterodict[ResId] = {123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'raw_vector': num_vector,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'center': middle,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'rotation': rotation,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'naming': '{}_{}'.format(PDB, ResId),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'chain': 'NA',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'filename': filename,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'id': ResId,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'Resname': 'NA',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'ligand': pick_one,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'protein': residues,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'vina_score': 'NA',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'original_one': True,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'file_generated': False,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'fake_ligand' : True,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'RMSF': 0,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'Contact Similarity': 1,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'gridmap_protein': 'NA',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'gridmap_ligand': 'NA',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'gridmap_complex': 'NA'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        }123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if fake_ligand== True:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                dist =self._calcRMSD(self.heterodict[compare_ResId_native]['ligand'],pick_one,benchmark=benchmark)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                print dist123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                self.heterodict[ResId]['RMSF'] = dist123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                print 'oops'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                raise IOError123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.heterodict[ResId]['Contact Similarity']= self._calcQ(self.heterodict[compare_ResId_native]['ligand'],123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                                      pick_one,benchmark=benchmark)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.heterodict[ResId]['Resname']= pick_one.getResname()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.heterodict[ResId]['chain'] = pick_one.getChid()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def _calcRMSD(self,src,tar,benchmark=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param src:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param tar:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param benchmark: very important, to mark tar's order with src with the exactly same coordinate in benchmark123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        but in different order.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #TODO finish this stuff123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        src_heavy = src.select('not element H')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        tar_heavy = tar.select('not element H')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print src_heavy.numAtoms()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print tar_heavy.numAtoms()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if src_heavy.numAtoms()!=tar_heavy.numAtoms():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            print 'Can\'t tell RMSD because number of Atoms are not same here!'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return -1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        src_coord = src_heavy.getCoords()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        tar_coord = tar_heavy.getCoords()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if benchmark is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                return np.sqrt(((src_coord - tar_coord) ** 2).mean())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # align coordinates here123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                src_coord = benchmark123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                return np.sqrt(((src_coord - tar_coord) ** 2).mean())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def _calcRMSF(self,src,frames):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def _calcQ(self, src,tar,benchmark=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Compute the fraction of native contacts according the definition from123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Best, Hummer and Eaton123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param src:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param tar:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param benchmark:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        src_heavy = src.select('not element H')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        tar_heavy = tar.select('not element H')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        receptor_heavy = self.receptor.select('not element H')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if src_heavy.numAtoms()!=tar_heavy.numAtoms():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            print 'Can\'t tell RMSD because number of Atoms are not same here!'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return -1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        src_coord = src_heavy.getCoords()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        tar_coord = tar_heavy.getCoords()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        receptor_coord = receptor_heavy.getCoords()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if benchmark is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            src_coord= benchmark123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return native_contact(receptor_coord, src_coord, [tar_coord])[0]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def bundle_autodock_file(self,ResId,score_only=False,src_ResId=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #if self.heterodict[ResId]['file_generated']==True:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #    return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            PDB= self.PDBname123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            naming = '{}_{}'.format(PDB, ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            middle= self.heterodict[ResId]['center']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.heterodict[ResId]['file_generated'] = True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            pdb_store_dir = self.store_dir123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #prepare files:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if src_ResId is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                filename2 = pdb_store_dir+'/{}/{}_{}_receptor.pdb'.format(src_ResId, PDB, ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                filename2 = pdb_store_dir+'/{1}/{0}_{1}_receptor.pdb'.format(PDB, ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            print filename2123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            pd.writePDB(filename2, self.heterodict[ResId]['protein'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # pdb_to_mol2(filename2, ''.join(filename2.split('.')[:-2]) + '.mol')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if src_ResId is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                filename2 = pdb_store_dir+'/{}/{}_{}_complex.pdb'.format(src_ResId, PDB, ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                filename2 = pdb_store_dir+'/{1}/{0}_{1}_complex.pdb'.format(PDB, ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if score_only==False:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                pd.saveAtoms(self.heterodict[ResId]['protein'], filename=os.path.join(pdb_store_dir,'temp.ag.npz'))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                atomgroup = pd.loadAtoms(os.path.join(pdb_store_dir,'temp.ag.npz'))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                pd.writePDB(filename2, self.heterodict[ResId]['ligand'] + atomgroup)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #print filename2123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # Do autogrid mapgeneration:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if src_ResId is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ligand_filename = os.path.join(pdb_store_dir, ResId +'/' + naming + '_ligand.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                receptor_filename = os.path.join(pdb_store_dir, ResId +'/' + naming + '_receptor.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                complex_filename = os.path.join(pdb_store_dir, ResId +'/' + naming + '_complex.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ligand_filename = self.heterodict[ResId]['filename']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                receptor_filename = os.path.join(pdb_store_dir, src_ResId + '/' + naming + '_receptor.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                complex_filename = os.path.join(pdb_store_dir, src_ResId + '/' + naming + '_complex.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            fake_ligand_filename = os.path.join(temp_pdb_PREFIX, 'fake-ligand.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.heterodict[ResId]['vina_score'] = do_auto_vina_score(os.path.join(pdb_store_dir, src_ResId),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                                      receptor_filename, ligand_filename, middle)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.heterodict[ResId]['vina_score'] = 'NA'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        box_num = int(np.ceil(self.BOX_range / self.BOX_size))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print box_num123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if score_only==False:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                print 'here'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                self.heterodict[ResId]['gridmap_protein'] = do_auto_grid(os.path.join(pdb_store_dir, src_ResId),receptor_filename, fake_ligand_filename,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                                     center=middle, BOX_size=self.BOX_size,BOX_num=box_num)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                self.heterodict[ResId]['gridmap_ligand'] = do_auto_grid(os.path.join(pdb_store_dir, src_ResId),ligand_filename, fake_ligand_filename,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                                    center=middle, BOX_size=self.BOX_size,BOX_num=box_num)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                self.heterodict[ResId]['gridmap_complex'] = do_auto_grid(os.path.join(pdb_store_dir, src_ResId),complex_filename, fake_ligand_filename,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                                     center=middle, BOX_size=self.BOX_size,BOX_num=box_num)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def find_similar_target(self,sdf_filedir,**kwargs):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Find the ligands that is highly possible to be the same compounds123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        the default confidence is 0.85123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        the score was based on tanimoto scoring method123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param sdf_filedir: where the source sdf file is. In theory, if we are using openbabel123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            it is ok even if the file is not sdf, but it should only contain single123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            molecules, other wise this function cannot get right result123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param kwargs:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        assert isinstance(sdf_filedir,str)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not os.path.exists(sdf_filedir) or sdf_filedir.split('.')[-1]!='sdf':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            raise IOError('Please use a right location, {} is not a legal file name of sdf file'.format(sdf_filedir))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        possible_ones=[]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for k,v in self.heterodict.items():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                command = os.popen('babel -d {} {} -ofpt -xfFP4'.format(sdf_filedir,v['filename']))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ls= command.read()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                #print ls123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cp = re.split('=|\n', ls)[2]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                print 'Similarity: {}'.format(cp)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                #raise TypeError123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                with open('error.txt','a') as f:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    f.write(self.PDBname+'\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                logging.warning('Babel encountered a problem at pdb {} ligand {}'.format(self.PDBname, v['filename']))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cp = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #print cp123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if float(cp) >= 0.85:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                possible_ones.append({'cp':cp,'id':k})123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return possible_ones123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def pick_one(self, ResId, **kwargs):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return self.heterodict[ResId] or None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def list_ResId(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return self.heterodict.keys()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def clean_temp_data(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        delete all files except '.pdb' '.mol', '.map' and name.pdbqt123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''exclude = ['pdb','mol','map']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        list_dirs = os.walk('data/'+self.PDBname)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for root, dirs, files in list_dirs:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            for f in files:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if f.split('.')[-1] not in exclude:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        os.remove(os.path.join(root,f))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if f.split('.')[-1] == 'map':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    if f.split('.')[-2] not in electype:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        os.remove(os.path.join(root, f))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        os.system('rm -r '+ os.path.join(temp_pdb_PREFIX, self.PDBname))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def create_patch_file(self,ResId,dir='PDB'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Create the bundled result files in a nicer way.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param ResId:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param dir:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        def copyFiles(src, tar):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if not os.path.exists(tar) or \123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    (os.path.exists(tar) and (os.path.getsize(tar) != os.path.getsize(tar))):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                open(tar, "wb").write(open(src, "rb").read())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        real_loc = os.path.join(dir,self.PDBname)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not os.path.exists(real_loc):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            os.mkdir(real_loc)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Step 0: get original pdb file123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        filename = self.PDBname+'.pdb'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        copyFiles('data/'+self.PDBname+'/'+filename,os.path.join(real_loc,filename))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Setp 1: first get receptor's file123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        ligand_loc = os.path.join(real_loc,str(ResId))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        pass123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def bundle_result_dict(self,ResId,src_ResId=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Render results into one_line string which contains docking score and some other infomation from pdb-ligand pair123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param ResId:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:p123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        dict = self.heterodict[ResId]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Remark_dict = collections.OrderedDict()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.bundle_autodock_file(ResId, score_only=True, src_ResId=src_ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Remark_dict['PDBname'] = self.PDBname123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Remark_dict['PDBResId'] = dict['id']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Remark_dict['center'] = list_formatter(dict['center'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Remark_dict['rotation'] = list_formatter(dict['rotation'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Remark_dict['Resolution(A)'] = self.resolution123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Remark_dict['RMSF'] = dict['RMSF']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Remark_dict['Contact Similarity'] = dict['Contact Similarity']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            Remark_dict['Autovina_Affinity(kcal/mol)'] = dict['vina_score']['Affinity']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            Remark_dict['Autovina_gauss1'] = dict['vina_score']['gauss 1']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            Remark_dict['Autovina_gauss2'] = dict['vina_score']['gauss 2']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            Remark_dict['Autovina_repulsion'] = dict['vina_score']['repulsion']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            Remark_dict['Autovina_hydrophobic'] = dict['vina_score']['hydrophobic']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            Remark_dict['Autovina_Hydrogen'] = dict['vina_score']['Hydrogen']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return Remark_dict123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return Remark_dict123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def bundle_result(self,ResId,score_only=False,src_ResId=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Render results into full vectors which contains info from pdbs123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        With the order:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        PDBname PDBtype PDB_ligand_name PDB_ligand_resIndex center rotation resolution autodock_vina_para(*6) PDBsequence atom_vector123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param ResId:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line=[]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.pdb_type = self.get_pdb_type()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.bundle_autodock_file(ResId,score_only,src_ResId=src_ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #self.create_patch_file(ResId,dir='PDB')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        naming = '%s_%s' %(self.PDBname,ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        dict = self.heterodict[ResId]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(self.PDBname)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(self.pdb_type)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(dict['Resname'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(dict['id'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(list_formatter(dict['center']))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(list_formatter(dict['rotation']))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(dict['vina_score']['Affinity'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(dict['vina_score']['gauss 1'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(dict['vina_score']['gauss 2'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(dict['vina_score']['repulsion'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(dict['vina_score']['hydrophobic'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(dict['vina_score']['Hydrogen'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(self.resolution)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append('1')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append('0')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(self.sequence)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        info_line.append(list_formatter(dict['raw_vector']))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if src_ResId is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            store_dir = os.path.join(self.store_dir,src_ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            store_dir = os.path.join(self.store_dir,ResId)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if dict['gridmap_protein']!='NA':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #for index in range(8):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #    info_line.append(self.PDBname+'_'+dict['id']+'_receptor.'+electype[index]+'.map')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            info_line += map(list_formatter,fetch_gridmaps(store_dir,naming+'_receptor'))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            info_line+= ['NA']*8123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if dict['gridmap_ligand']!='NA':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #for index in range(8):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #    info_line.append(self.PDBname+'_'+dict['id']+'_ligand.'+electype[index]+'.map')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            print dict['filename'][:-3]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            info_line += map(list_formatter,fetch_gridmaps(store_dir,dict['filename'][:-4]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            info_line+= ['NA']*8123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if dict['gridmap_complex']!='NA':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #for index in range(8):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #    info_line.append(self.PDBname+'_'+dict['id']+'_complex.'+electype[index]+'.map')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            info_line += map(list_formatter,fetch_gridmaps(store_dir,naming+'_complex'))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            info_line+= ['NA']*8123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return info_line123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def add_ligand(self,ligand_pdb_file,ResIndex, count_index,OUT=True,benchmark=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Add ligands on to pdb. The result should be generated by docking, otherwise it will get some strange result.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param ligand_pdb_file:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            parse = pd.parsePDB(ligand_pdb_file)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #raise IOError123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            logging.warning('cannot add ligang file on PDB {}'.format(self.PDBname))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.bundle_ligand_data(parse,fake_ligand=True,OUT=OUT,compare_ResId_native=ResIndex,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                Id_suffix=str(count_index),filename=ligand_pdb_file,benchmark=benchmark)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def add_ligands(self,ligand_file,suffix=None,benchmark_file=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Specialized only to generate data from Xiao's docking result and then convert them back123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :param ligand_file:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        SYMBOL ='@<TRIPOS>MOLECULE'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print ligand_file,suffix,benchmark_file123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if benchmark_file is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    parse = pd.parsePDB(benchmark_file).select('not element H')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    bench_coord= parse.getCoords()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    bench_coord= None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            fixfilename = ligand_file.split('/')[-1]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            residue_index = fixfilename.split('_')[1]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.get_residue_onfly(residue_index)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            pdbname = fixfilename.split('_')[0]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            count = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            with open(ligand_file,'rb') as f:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                for line in f.readlines():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    if SYMBOL in line:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        count+=1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            print count123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if suffix is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                filename = "".join(fixfilename.split('.')[:-1])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                filename = filename + "_" + suffix + "_"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                filename = "".join(fixfilename.split('.')[:-1])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                filename = filename + "_"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            filedir = os.path.join(self.store_dir,residue_index+'/'+filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            print 'babel {} -opdb {}.pdb -m'.format(ligand_file,filedir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            os.system('babel {} -opdb {}.pdb -m'.format(ligand_file,filedir))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            time.sleep(5)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            os.system('babel {} -omol2 {}.mol -m'.format(ligand_file, filedir))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if suffix is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                result_filename= os.path.join(result_PREFIX,filename[:-1]+'.mol')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                result_filename = os.path.join(result_PREFIX, suffix+'/'+ filename[:-1] + '.mol')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #if os.path.exists(result_filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #    if os.path.getsize(result_filename) > 12000:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #        print '%s_%s already done!' % (pdbname,residue_index)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #        return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            with open(result_filename,'wb') as w:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                for i in range(count):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    self.add_ligand(filedir+str(i+1)+'.pdb',ResIndex=residue_index,count_index=i+1,benchmark=bench_coord)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    pdbdict = self.bundle_result_dict(residue_index+'_'+str(i+1),src_ResId= residue_index)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    #print pdbdict123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    comment = 'Remark:'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    if pdbdict is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        for k, v in pdbdict.items():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            # print k,v123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            # print comment123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            comment = comment + '_{' + k + ':' + str(v)+ '}'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    comment +='}'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    w.write('# '+comment+'\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    #print comment123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    with open(filedir+str(i+1)+'.mol','rb') as f:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        tag= False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        content =''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        for line in f.readlines():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            if tag:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                tag= False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                continue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            if SYMBOL in line:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                tag= True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            content+=line123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        w.write(content)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def __repr__(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print self.PDBname+'({} hetero parts found)'.format(len(self.heterodict.keys()))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def __del__(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        files = self.store_dir123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if os.path.exists(files):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            os.system('rm -r ' + files)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+__author__= 'wy'
+
+#TODO Add comments to make people understand
+#TODO This shall be refractored with autodock part so that logic will not be too nasty
+
+import collections
+import logging
+
+import numpy as np
+import prody as pd
+
+from data_process.preprocess.Config import result_PREFIX,temp_pdb_PREFIX
+from data_process.preprocess.utility.autodock_utility import *
+from data_process.preprocess.native_contact import native_contact
+
+'''
+Core part for generating vectors and split source pdb files with
+With the help of prody library.
+Need installation first
+Using:
+  sudo pip install -r requirements.txt
+
+For local installation, see: http://prody.csb.pitt.edu/downloads/
+
+'''
+
+# Tag for hetero atoms
+HETERO_PART = 'L'
+# Tag for protein atoms
+PROTEIN_PART = 'P'
+
+# 8 type of map
+electype= ['A','C','d','e','HD','N','NA','OA']
+
+
+# score endurance with confidence
+CONFIDENCE = 0.85
+
+def list_formatter(table):
+    '''
+    I don't know if there is a better solution to format a list into string
+    :param table:
+    :return:
+    '''
+    try:
+        output='['+str(table[0])
+        for i in range(len(table)-1):
+            output+=(','+str(table[i+1]))
+        output+=']'
+    except:
+        raise TypeError('This object is not iterable!')
+    return output
+
+
+class pdb_container:
+    '''
+    For real pdb-ligand data
+    It will separate each ligand (except ions)
+    '''
+    def get_pdb_type(self):
+        '''
+        Nucleic Protein or Complex
+        :return:
+        '''
+        if self.pure_protein is not None:
+            if self.pure_nucleic is None:
+                return 'Protein'
+            else:
+                return 'Protein_Nucleic_Complex'
+        else:
+            if self.pure_protein is None:
+                return 'Nucleic'
+            else:
+                return 'Unknown or empty'
+
+    def get_residue_onfly(self,resid):
+        '''
+
+        :param resid:
+        :return:
+        '''
+        for pick_one in pd.HierView(self.hetero).iterResidues():
+            # less than 3 atoms may be not ok
+            if str(pick_one.getResindex())==resid:
+                print 'here'
+                self.bundle_ligand_data(pick_one,fake_ligand=False,OUT=True)
+
+
+
+    def __init__(self,PDB,filepos=None,OUT=True,**kwargs):
+        '''
+
+        :param PDB: name of PDB
+        :param filepos: directory of where PDB file stores
+        :param OUT: if true, splitted files will be output in './data' folder
+        :param kwargs: for further extension
+        '''
+        self.PDBname= PDB
+        self.heterodict = {}
+        self.ct=0
+        self.sequence = {}
+        self.pure_protein= None
+        self.pure_nucleic= None
+        self.pdb_filename = filepos.split('/')[-1]
+
+        if 'BOX' in kwargs:
+            self.BOX_range = kwargs['BOX']
+        else:
+            self.BOX_range = 20
+        if 'Size' in kwargs:
+            self.BOX_size = kwargs['Size']
+        else:
+            self.BOX_size = 1
+
+        if filepos is None:
+            pdb_store_dir = os.path.join(temp_pdb_PREFIX,PDB)
+        else:
+            pdb_store_dir = os.path.join(temp_pdb_PREFIX,PDB+''.join(map(lambda xx:(hex(ord(xx))[2:]),os.urandom(16))))
+        self.store_dir =pdb_store_dir
+
+        if not os.path.exists(pdb_store_dir):
+            os.mkdir(pdb_store_dir)
+
+
+
+
+        # filepos is to determine whether we download pdb files from wwPDB
+        # or use what we have
+        # Using downloaded is better
+        # parse header for first time
+
+
+        try:
+            if filepos is not None:
+                parse,header = pd.parsePDB(filepos,header=True)
+            else:
+                parse,header = pd.parsePDB(PDB,header=True)
+                filepos=PDB+'.pdb.gz'
+        except:
+            #raise IOError
+            print filepos
+            logging.warning('PDB {} is ignored due to file-not-found error'.format(PDB))
+            return
+        #Save resolution
+        try:
+            self.resolution = header['resolution']
+        except:
+            self.resolution = 'NA'
+
+        #Copy the file
+
+
+        self.pure_protein = parse.select('protein')
+        self.pure_nucleic = parse.select('nucleic')
+
+        # dirty way to throw away nucleic one
+        if self.pure_nucleic is not None:
+            return
+        copy_pdbfile(filepos, pdb_store_dir+'/{0}.pdb'.format(PDB), zipped=filepos.split('.')[-1] == 'gz')
+
+        #repair by guess, i think
+        repair_pdbfile(pdb_store_dir+'/{0}.pdb'.format(PDB), PDB)
+        #Generating sequence here
+        #storage = []
+        #split files by chain
+        try:
+            parse = pd.parsePDB(pdb_store_dir+'/{0}.pdb'.format(PDB))
+        except:
+            raise IOError('Cannot parse added H')
+
+        self.chain_list= []
+        for chain in parse.getHierView():
+            #print chain
+            #for seq in storage:
+            #    if chain.getSequence()==seq:
+            #        continue
+            self.chain_list.append(chain.getChid())
+            self.sequence[chain.getChid()] = chain.getSequence()
+            #storage.append(chain.getSequence())
+
+        #now try to fix the pdb from autodock tools
+
+        hetero = parse.select('(hetero and not water) or resname ATP or resname ADP')
+
+        other = parse.select('protein or nucleic')
+        self.hetero = hetero
+        self.receptor= other
+
+        # print parse.numAtoms(), hetero.numAtoms(), other.numAtoms()
+
+        # if OUT:
+        if other is not None:
+            pd.writePDB(pdb_store_dir+'/{0}_receptor.pdb'.format(PDB), other)
+            #repair_pdbfile('data/{0}/{0}_receptor.pdb'.format(PDB),PDB)
+        else:
+            return
+        # Make vectors for every single hetero parts
+        # Their values will be stored in a dict
+        #self.register_all_ligand_onsite(hetero,OUT=OUT)
+
+    def register_all_ligand_onsite(self,hetero_part,OUT=True):
+        for pick_one in pd.HierView(hetero_part).iterResidues():
+           # less than 3 atoms may be not ok
+            if pick_one.numAtoms() <= 3:
+                continue
+
+            self.bundle_ligand_data(pick_one,fake_ligand=False,OUT=OUT)
+
+
+
+    def bundle_ligand_data(self,pick_one,fake_ligand=True,OUT=True,compare_ResId_native='default',Id_suffix='default',filename=None,benchmark=None):
+        '''
+
+        :param pick_one:
+        :param fake_ligand:
+        :param OUT:
+        :param compare_ResId_native:
+        :param Id_suffix:
+        :param filename:
+        :param benchmark:
+        :return:
+        '''
+        PDB = self.PDBname
+        if fake_ligand==False:
+            ResId = str(pick_one.getResindex())
+        else:
+            ResId = compare_ResId_native + '_' + str(Id_suffix)
+
+        pdb_store_dir = self.store_dir
+        other = self.receptor
+        # Extract this ligand from protein (as input for openbabel)
+
+
+
+        if filename is None:
+            filename = pdb_store_dir + '/{1}/{0}_{1}_ligand.pdb'.format(PDB, ResId)
+            if not os.path.isfile(filename):
+                if not os.path.exists(pdb_store_dir + '/' + ResId):
+                    os.mkdir(pdb_store_dir + '/' + ResId)
+            if OUT:
+                try:
+                    pd.writePDB(filename, pick_one)
+                    tar_filename = ''.join(filename.split('.')[:-1])
+                    tar_filename+='.mol'
+                    pdb_to_mol2(filename, tar_filename)
+                except:
+                    print 'Unexpected Error!'
+                    logging.error('Cannot convert {} to mol2 format!'.format(filename.split('/')[-1]))
+                    return
+
+        if not os.path.isfile(filename):
+            if not os.path.exists(pdb_store_dir + '/' + ResId):
+                os.mkdir(pdb_store_dir + '/' + ResId)
+
+        naming = '{}_{}'.format(PDB, ResId)
+
+
+        # Get coordinate of center
+        xyz = pick_one.getCoords()
+        middle = pd.calcCenter(pick_one)
+        # in pi degree , the rotation of the box (if needed)
+        rotation = [0, 0, 0]
+
+        scale = max(max(xyz[:, 0]) - middle[0], middle[0] - min(xyz[:, 0]),
+                    max(xyz[:, 1]) - middle[1], middle[1] - min(xyz[:, 1]),
+                    max(xyz[:, 2]) - middle[2], middle[2] - min(xyz[:, 2]))
+
+
+
+        # assert scale <= 10
+        if scale > self.BOX_range / 2:
+            logging.warning(
+                'Warning! {} has a ligand out of box scale with {} atom distance to center'.format(PDB, scale))
+            # Now shifting the boxes:
+            max_scale = max(max(xyz[:, 0]) - min(xyz[:, 0]),
+                            max(xyz[:, 1]) - min(xyz[:, 1]),
+                            max(xyz[:, 2]) - min(xyz[:, 2]))
+            if max_scale > self.BOX_range:
+                logging.error(
+                    'Assertion failed, {} has a ligand out of box completely with scale'.format(PDB, scale))
+                return
+            # Try to move to the new center
+            temp_mid = [(max(xyz[:, 0]) + min(xyz[:, 0])) / 2, (max(xyz[:, 1]) + min(xyz[:, 1])) / 2,
+                        (max(xyz[:, 2]) + min(xyz[:, 2])) / 2]
+
+            temp_mid[0] = round(temp_mid[0], 6)
+            temp_mid[1] = round(temp_mid[1], 6)
+            temp_mid[2] = round(temp_mid[2], 6)
+            middle = np.array(temp_mid)
+            print middle
+
+        # print middle
+        scale_extension = (self.BOX_range - self.BOX_size) / 2
+        box_num = int(np.ceil(self.BOX_range / self.BOX_size))
+        xx, yy, zz = np.meshgrid(np.linspace(middle[0] - scale_extension, middle[0] + scale_extension, box_num),
+                                 np.linspace(middle[1] - scale_extension, middle[1] + scale_extension, box_num),
+                                 np.linspace(middle[2] - scale_extension, middle[2] + scale_extension, box_num))
+
+        # print xx
+        vector = np.c_[xx.ravel(), yy.ravel(), zz.ravel()]
+        num_vector = [0] * len(vector)
+
+        #print len(vector), box_num
+        for atom in pick_one.iterAtoms():
+            x, y, z = atom.getCoords()
+            x_pos = int(round(x - vector[0][0]))
+            # assert 0 <= x_pos <= 19
+            y_pos = int(round(y - vector[0][1]))
+            # assert 0 <= y_pos <= 19
+            z_pos = int(round(z - vector[0][2]))
+            # assert 0 <= z_pos <= 19
+            if 0 <= x_pos < box_num and 0 <= y_pos < box_num and 0 <= z_pos < box_num:
+                # Simply change here to fulfill the mark as 'H_1'
+                # note (z(y(x))) follows from atuogrid map file format , otherwise the coordinate system is not correspond coorectly
+                num_vector[z_pos * box_num * box_num + y_pos * box_num + x_pos] = atom.getName() + '_' + str(HETERO_PART)
+
+        # quick,dirty way to find atoms of protein in cubic boxes
+        pd.defSelectionMacro('inbox',
+                          'abs(x-{1}) <= {0} and abs(y-{2}) <= {0} and abs(z-{3}) <= {0}'.format(self.BOX_size / 2,
+                                                                                                 middle[0], middle[1],
+                                                                                                 middle[2]))
+        residues = other.select('protein and same residue as within 18 of center', center=middle)
+
+
+
+        if residues is None:
+            logging.warning('{} in {} has no atoms nearby'.format(ResId, PDB))
+            return
+
+
+        # This place might have some potential problem
+        # for ADP or ATP , they might either be part of nucleic and the ligand
+        # This will cause a severe bug when calculating autovina score
+        # TODO fix this issue
+        nearby = residues.select('inbox')
+
+        if nearby is not None:
+            for atom in nearby.iterAtoms():
+                x, y, z = atom.getCoords()
+                x_pos = int(round(x - vector[0][0]))
+                # assert 0 <= x_pos <= 19
+                y_pos = int(round(y - vector[0][1]))
+                # assert 0 <= y_pos <= 19
+                z_pos = int(round(z - vector[0][2]))
+                # assert 0 <= z_pos <= 19
+                temp = z_pos * box_num * box_num + y_pos * box_num + x_pos
+                if 0 <= x_pos < box_num and 0 <= y_pos < box_num and 0 <= z_pos < box_num and num_vector[
+                    temp] == 0:
+                    # Simply change here to fulfill the mark as 'C_2'
+                    num_vector[temp] = atom.getName() + '_' + str(PROTEIN_PART)
+                else:
+                    # num_vector[temp] += '|'+atom.getName() + '_' + str(PROTEIN_PART)
+                    print atom.getName()
+                    logging.warning('Coorinate {} {} {} found at {}'.format(x_pos, y_pos, z_pos, self.PDBname))
+
+        # Save into the dict for future locating
+        # naming = '{}_{}'.format(PDB, ResId)
+
+        # Do autogrid mapgeneration:
+        # ligand_filename = os.path.join(temp_pdb_PREFIX, PDB + '/' + naming + '_ligand.pdb')
+        # receptor_filename = os.path.join(temp_pdb_PREFIX, PDB + '/' + naming + '_receptor.pdb')
+        # complex_filename = os.path.join(temp_pdb_PREFIX, PDB + '/' + naming + '_complex.pdb')
+        # fake_ligand_filename = os.path.join(temp_pdb_PREFIX, 'fake-ligand.pdb')
+
+        self.heterodict[ResId] = {
+            'raw_vector': num_vector,
+            'center': middle,
+            'rotation': rotation,
+            'naming': '{}_{}'.format(PDB, ResId),
+            'chain': 'NA',
+            'filename': filename,
+            'id': ResId,
+            'Resname': 'NA',
+            'ligand': pick_one,
+            'protein': residues,
+            'vina_score': 'NA',
+            'original_one': True,
+            'file_generated': False,
+            'fake_ligand' : True,
+            'RMSF': 0,
+            'Contact Similarity': 1,
+            'gridmap_protein': 'NA',
+            'gridmap_ligand': 'NA',
+            'gridmap_complex': 'NA'
+        }
+
+        if fake_ligand== True:
+            try:
+                dist =self._calcRMSD(self.heterodict[compare_ResId_native]['ligand'],pick_one,benchmark=benchmark)
+                print dist
+                self.heterodict[ResId]['RMSF'] = dist
+            except:
+                print 'oops'
+                raise IOError
+            self.heterodict[ResId]['Contact Similarity']= self._calcQ(self.heterodict[compare_ResId_native]['ligand'],
+                                                                      pick_one,benchmark=benchmark)
+        else:
+            self.heterodict[ResId]['Resname']= pick_one.getResname()
+            self.heterodict[ResId]['chain'] = pick_one.getChid()
+
+    def _calcRMSD(self,src,tar,benchmark=None):
+        '''
+
+        :param src:
+        :param tar:
+        :param benchmark: very important, to mark tar's order with src with the exactly same coordinate in benchmark
+                        but in different order.
+        :return:
+        '''
+        #TODO finish this stuff
+        src_heavy = src.select('not element H')
+        tar_heavy = tar.select('not element H')
+        print src_heavy.numAtoms()
+        print tar_heavy.numAtoms()
+
+
+        if src_heavy.numAtoms()!=tar_heavy.numAtoms():
+            print 'Can\'t tell RMSD because number of Atoms are not same here!'
+            return -1
+        src_coord = src_heavy.getCoords()
+        tar_coord = tar_heavy.getCoords()
+
+        try:
+            if benchmark is None:
+                return np.sqrt(((src_coord - tar_coord) ** 2).mean())
+            else:
+                # align coordinates here
+                src_coord = benchmark
+                return np.sqrt(((src_coord - tar_coord) ** 2).mean())
+        except:
+            return 0
+
+    def _calcRMSF(self,src,frames):
+        return 0
+
+    def _calcQ(self, src,tar,benchmark=None):
+        '''
+
+        Compute the fraction of native contacts according the definition from
+        Best, Hummer and Eaton
+        :param src:
+        :param tar:
+        :param benchmark:
+        :return:
+        '''
+        src_heavy = src.select('not element H')
+        tar_heavy = tar.select('not element H')
+        receptor_heavy = self.receptor.select('not element H')
+
+        if src_heavy.numAtoms()!=tar_heavy.numAtoms():
+            print 'Can\'t tell RMSD because number of Atoms are not same here!'
+            return -1
+        src_coord = src_heavy.getCoords()
+        tar_coord = tar_heavy.getCoords()
+        receptor_coord = receptor_heavy.getCoords()
+
+        if benchmark is None:
+            src_coord= benchmark
+        return native_contact(receptor_coord, src_coord, [tar_coord])[0]
+
+
+    def bundle_autodock_file(self,ResId,score_only=False,src_ResId=None):
+
+        #if self.heterodict[ResId]['file_generated']==True:
+        #    return
+        try:
+            PDB= self.PDBname
+            naming = '{}_{}'.format(PDB, ResId)
+            middle= self.heterodict[ResId]['center']
+            self.heterodict[ResId]['file_generated'] = True
+            pdb_store_dir = self.store_dir
+            #prepare files:
+            if src_ResId is not None:
+                filename2 = pdb_store_dir+'/{}/{}_{}_receptor.pdb'.format(src_ResId, PDB, ResId)
+            else:
+                filename2 = pdb_store_dir+'/{1}/{0}_{1}_receptor.pdb'.format(PDB, ResId)
+            print filename2
+            pd.writePDB(filename2, self.heterodict[ResId]['protein'])
+            # pdb_to_mol2(filename2, ''.join(filename2.split('.')[:-2]) + '.mol')
+            if src_ResId is not None:
+                filename2 = pdb_store_dir+'/{}/{}_{}_complex.pdb'.format(src_ResId, PDB, ResId)
+            else:
+                filename2 = pdb_store_dir+'/{1}/{0}_{1}_complex.pdb'.format(PDB, ResId)
+            if score_only==False:
+                pd.saveAtoms(self.heterodict[ResId]['protein'], filename=os.path.join(pdb_store_dir,'temp.ag.npz'))
+                atomgroup = pd.loadAtoms(os.path.join(pdb_store_dir,'temp.ag.npz'))
+                pd.writePDB(filename2, self.heterodict[ResId]['ligand'] + atomgroup)
+            #print filename2
+            # Do autogrid mapgeneration:
+            if src_ResId is None:
+                ligand_filename = os.path.join(pdb_store_dir, ResId +'/' + naming + '_ligand.pdb')
+                receptor_filename = os.path.join(pdb_store_dir, ResId +'/' + naming + '_receptor.pdb')
+                complex_filename = os.path.join(pdb_store_dir, ResId +'/' + naming + '_complex.pdb')
+            else:
+                ligand_filename = self.heterodict[ResId]['filename']
+                receptor_filename = os.path.join(pdb_store_dir, src_ResId + '/' + naming + '_receptor.pdb')
+                complex_filename = os.path.join(pdb_store_dir, src_ResId + '/' + naming + '_complex.pdb')
+
+            fake_ligand_filename = os.path.join(temp_pdb_PREFIX, 'fake-ligand.pdb')
+            self.heterodict[ResId]['vina_score'] = do_auto_vina_score(os.path.join(pdb_store_dir, src_ResId),
+                                                                      receptor_filename, ligand_filename, middle)
+
+
+        except:
+            self.heterodict[ResId]['vina_score'] = 'NA'
+            return
+
+        box_num = int(np.ceil(self.BOX_range / self.BOX_size))
+        print box_num
+
+        try:
+            if score_only==False:
+                print 'here'
+                self.heterodict[ResId]['gridmap_protein'] = do_auto_grid(os.path.join(pdb_store_dir, src_ResId),receptor_filename, fake_ligand_filename,
+                                                                     center=middle, BOX_size=self.BOX_size,BOX_num=box_num)
+                self.heterodict[ResId]['gridmap_ligand'] = do_auto_grid(os.path.join(pdb_store_dir, src_ResId),ligand_filename, fake_ligand_filename,
+                                                                    center=middle, BOX_size=self.BOX_size,BOX_num=box_num)
+                self.heterodict[ResId]['gridmap_complex'] = do_auto_grid(os.path.join(pdb_store_dir, src_ResId),complex_filename, fake_ligand_filename,
+                                                                     center=middle, BOX_size=self.BOX_size,BOX_num=box_num)
+        except:
+            return
+
+
+
+
+    def find_similar_target(self,sdf_filedir,**kwargs):
+        '''
+        Find the ligands that is highly possible to be the same compounds
+        the default confidence is 0.85
+        the score was based on tanimoto scoring method
+        :param sdf_filedir: where the source sdf file is. In theory, if we are using openbabel
+                            it is ok even if the file is not sdf, but it should only contain single
+                            molecules, other wise this function cannot get right result
+        :param kwargs:
+        :return:
+        '''
+
+        assert isinstance(sdf_filedir,str)
+        if not os.path.exists(sdf_filedir) or sdf_filedir.split('.')[-1]!='sdf':
+            raise IOError('Please use a right location, {} is not a legal file name of sdf file'.format(sdf_filedir))
+
+        possible_ones=[]
+
+        for k,v in self.heterodict.items():
+            try:
+                command = os.popen('babel -d {} {} -ofpt -xfFP4'.format(sdf_filedir,v['filename']))
+                ls= command.read()
+                #print ls
+                cp = re.split('=|\n', ls)[2]
+                print 'Similarity: {}'.format(cp)
+            except:
+                #raise TypeError
+                with open('error.txt','a') as f:
+                    f.write(self.PDBname+'\n')
+                logging.warning('Babel encountered a problem at pdb {} ligand {}'.format(self.PDBname, v['filename']))
+                cp = 0
+
+
+            #print cp
+            if float(cp) >= 0.85:
+                possible_ones.append({'cp':cp,'id':k})
+
+        return possible_ones
+
+
+    def pick_one(self, ResId, **kwargs):
+        return self.heterodict[ResId] or None
+
+    def list_ResId(self):
+        return self.heterodict.keys()
+
+    def clean_temp_data(self):
+        '''
+        delete all files except '.pdb' '.mol', '.map' and name.pdbqt
+        :return:
+        '''
+        '''exclude = ['pdb','mol','map']
+        list_dirs = os.walk('data/'+self.PDBname)
+        for root, dirs, files in list_dirs:
+            for f in files:
+                if f.split('.')[-1] not in exclude:
+                        os.remove(os.path.join(root,f))
+                if f.split('.')[-1] == 'map':
+                    if f.split('.')[-2] not in electype:
+                        os.remove(os.path.join(root, f))
+        '''
+        os.system('rm -r '+ os.path.join(temp_pdb_PREFIX, self.PDBname))
+
+    def create_patch_file(self,ResId,dir='PDB'):
+        '''
+        Create the bundled result files in a nicer way.
+        :param ResId:
+        :param dir:
+        :return:
+        '''
+
+        def copyFiles(src, tar):
+            if not os.path.exists(tar) or \
+                    (os.path.exists(tar) and (os.path.getsize(tar) != os.path.getsize(tar))):
+                open(tar, "wb").write(open(src, "rb").read())
+
+        real_loc = os.path.join(dir,self.PDBname)
+
+        if not os.path.exists(real_loc):
+            os.mkdir(real_loc)
+
+        # Step 0: get original pdb file
+        filename = self.PDBname+'.pdb'
+        copyFiles('data/'+self.PDBname+'/'+filename,os.path.join(real_loc,filename))
+
+        # Setp 1: first get receptor's file
+        ligand_loc = os.path.join(real_loc,str(ResId))
+
+
+
+        pass
+
+    def bundle_result_dict(self,ResId,src_ResId=None):
+        '''
+        Render results into one_line string which contains docking score and some other infomation from pdb-ligand pair
+        :param ResId:
+        :return:p
+        '''
+        dict = self.heterodict[ResId]
+        Remark_dict = collections.OrderedDict()
+        self.bundle_autodock_file(ResId, score_only=True, src_ResId=src_ResId)
+
+        Remark_dict['PDBname'] = self.PDBname
+        Remark_dict['PDBResId'] = dict['id']
+        Remark_dict['center'] = list_formatter(dict['center'])
+        Remark_dict['rotation'] = list_formatter(dict['rotation'])
+        Remark_dict['Resolution(A)'] = self.resolution
+        Remark_dict['RMSF'] = dict['RMSF']
+        Remark_dict['Contact Similarity'] = dict['Contact Similarity']
+
+        try:
+            Remark_dict['Autovina_Affinity(kcal/mol)'] = dict['vina_score']['Affinity']
+            Remark_dict['Autovina_gauss1'] = dict['vina_score']['gauss 1']
+            Remark_dict['Autovina_gauss2'] = dict['vina_score']['gauss 2']
+            Remark_dict['Autovina_repulsion'] = dict['vina_score']['repulsion']
+            Remark_dict['Autovina_hydrophobic'] = dict['vina_score']['hydrophobic']
+            Remark_dict['Autovina_Hydrogen'] = dict['vina_score']['Hydrogen']
+        except:
+            return Remark_dict
+
+        return Remark_dict
+
+
+    def bundle_result(self,ResId,score_only=False,src_ResId=None):
+        '''
+        Render results into full vectors which contains info from pdbs
+        With the order:
+        PDBname PDBtype PDB_ligand_name PDB_ligand_resIndex center rotation resolution autodock_vina_para(*6) PDBsequence atom_vector
+        :param ResId:
+        :return:
+        '''
+
+        info_line=[]
+        self.pdb_type = self.get_pdb_type()
+
+        self.bundle_autodock_file(ResId,score_only,src_ResId=src_ResId)
+        #self.create_patch_file(ResId,dir='PDB')
+        naming = '%s_%s' %(self.PDBname,ResId)
+
+        dict = self.heterodict[ResId]
+        info_line.append(self.PDBname)
+        info_line.append(self.pdb_type)
+        info_line.append(dict['Resname'])
+        info_line.append(dict['id'])
+        info_line.append(list_formatter(dict['center']))
+        info_line.append(list_formatter(dict['rotation']))
+        info_line.append(dict['vina_score']['Affinity'])
+        info_line.append(dict['vina_score']['gauss 1'])
+        info_line.append(dict['vina_score']['gauss 2'])
+        info_line.append(dict['vina_score']['repulsion'])
+        info_line.append(dict['vina_score']['hydrophobic'])
+        info_line.append(dict['vina_score']['Hydrogen'])
+        info_line.append(self.resolution)
+        info_line.append('1')
+        info_line.append('0')
+        info_line.append(self.sequence)
+        info_line.append(list_formatter(dict['raw_vector']))
+
+        if src_ResId is not None:
+            store_dir = os.path.join(self.store_dir,src_ResId)
+        else:
+            store_dir = os.path.join(self.store_dir,ResId)
+
+        if dict['gridmap_protein']!='NA':
+            #for index in range(8):
+            #    info_line.append(self.PDBname+'_'+dict['id']+'_receptor.'+electype[index]+'.map')
+            info_line += map(list_formatter,fetch_gridmaps(store_dir,naming+'_receptor'))
+        else:
+            info_line+= ['NA']*8
+
+        if dict['gridmap_ligand']!='NA':
+            #for index in range(8):
+            #    info_line.append(self.PDBname+'_'+dict['id']+'_ligand.'+electype[index]+'.map')
+            print dict['filename'][:-3]
+            info_line += map(list_formatter,fetch_gridmaps(store_dir,dict['filename'][:-4]))
+        else:
+            info_line+= ['NA']*8
+
+        if dict['gridmap_complex']!='NA':
+            #for index in range(8):
+            #    info_line.append(self.PDBname+'_'+dict['id']+'_complex.'+electype[index]+'.map')
+            info_line += map(list_formatter,fetch_gridmaps(store_dir,naming+'_complex'))
+        else:
+            info_line+= ['NA']*8
+
+        return info_line
+
+
+    def add_ligand(self,ligand_pdb_file,ResIndex, count_index,OUT=True,benchmark=None):
+        '''
+        Add ligands on to pdb. The result should be generated by docking, otherwise it will get some strange result.
+        :param ligand_pdb_file:
+        :return:
+        '''
+        try:
+            parse = pd.parsePDB(ligand_pdb_file)
+
+        except:
+            #raise IOError
+            logging.warning('cannot add ligang file on PDB {}'.format(self.PDBname))
+            return
+        self.bundle_ligand_data(parse,fake_ligand=True,OUT=OUT,compare_ResId_native=ResIndex,
+                                Id_suffix=str(count_index),filename=ligand_pdb_file,benchmark=benchmark)
+
+
+
+    def add_ligands(self,ligand_file,suffix=None,benchmark_file=None):
+        '''
+        Specialized only to generate data from Xiao's docking result and then convert them back
+        :param ligand_file:
+        :return:
+        '''
+        SYMBOL ='@<TRIPOS>MOLECULE'
+        print ligand_file,suffix,benchmark_file
+        try:
+            if benchmark_file is not None:
+                try:
+                    parse = pd.parsePDB(benchmark_file).select('not element H')
+                    bench_coord= parse.getCoords()
+                except:
+                    bench_coord= None
+
+            fixfilename = ligand_file.split('/')[-1]
+            residue_index = fixfilename.split('_')[1]
+
+            self.get_residue_onfly(residue_index)
+
+            pdbname = fixfilename.split('_')[0]
+            count = 0
+            with open(ligand_file,'rb') as f:
+                for line in f.readlines():
+                    if SYMBOL in line:
+                        count+=1
+            print count
+            if suffix is not None:
+                filename = "".join(fixfilename.split('.')[:-1])
+                filename = filename + "_" + suffix + "_"
+            else:
+                filename = "".join(fixfilename.split('.')[:-1])
+                filename = filename + "_"
+            filedir = os.path.join(self.store_dir,residue_index+'/'+filename)
+            print 'babel {} -opdb {}.pdb -m'.format(ligand_file,filedir)
+            os.system('babel {} -opdb {}.pdb -m'.format(ligand_file,filedir))
+            time.sleep(5)
+            os.system('babel {} -omol2 {}.mol -m'.format(ligand_file, filedir))
+
+            if suffix is None:
+                result_filename= os.path.join(result_PREFIX,filename[:-1]+'.mol')
+            else:
+                result_filename = os.path.join(result_PREFIX, suffix+'/'+ filename[:-1] + '.mol')
+            #if os.path.exists(result_filename):
+            #    if os.path.getsize(result_filename) > 12000:
+            #        print '%s_%s already done!' % (pdbname,residue_index)
+            #        return
+
+            with open(result_filename,'wb') as w:
+                for i in range(count):
+                    self.add_ligand(filedir+str(i+1)+'.pdb',ResIndex=residue_index,count_index=i+1,benchmark=bench_coord)
+                    pdbdict = self.bundle_result_dict(residue_index+'_'+str(i+1),src_ResId= residue_index)
+                    #print pdbdict
+                    comment = 'Remark:'
+                    if pdbdict is not None:
+                        for k, v in pdbdict.items():
+                            # print k,v
+                            # print comment
+                            comment = comment + '_{' + k + ':' + str(v)+ '}'
+                    comment +='}'
+                    w.write('# '+comment+'\n')
+                    #print comment
+                    with open(filedir+str(i+1)+'.mol','rb') as f:
+                        tag= False
+                        content =''
+                        for line in f.readlines():
+
+                            if tag:
+                                tag= False
+                                continue
+                            if SYMBOL in line:
+                                tag= True
+                            content+=line
+                        w.write(content)
+
+
+        except:
+            return False
+
+    def __repr__(self):
+        print self.PDBname+'({} hetero parts found)'.format(len(self.heterodict.keys()))
+
+    def __del__(self):
+        files = self.store_dir
+        if os.path.exists(files):
+            os.system('rm -r ' + files)
+

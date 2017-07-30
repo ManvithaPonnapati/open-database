@@ -1,1 +1,54 @@
-# Try Chembl API123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport os,sys123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom chembl_webresource_client.new_client import new_client123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport prody123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef get_similar_compound(mol_name, threshold=90):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Given the name of a compound, search the similar structure on chembl123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    args:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        mol_name ::str123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            name of the compound123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            e.g. STEARIC ACID123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        similar_smiles ::list of string123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            smiles string for the similar compunds123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    molecule = new_client.molecule123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    res = molecule.search(mol_name)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    smiles=res[0]['molecule_structures']['canonical_smiles']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    similarity = new_client.similarity123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    similar_res = similarity.filter(smiles=smiles, similarity=threshold)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    similar_smiles = map(lambda x:x['molecule_structures']['canonical_smiles'], similar_res)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return list(similar_smiles)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef run():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # get the title of a pdb structure123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    head = prody.parsePDBHeader("3EML")123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF     123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    assay = new_client.assay123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    asy = assay.search(head['title'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    target = new_client.target123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    tar = target.search(head['A'].name)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # get the componds123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    molecule = new_client.molecule123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    res = molecule.search(head['chemicals'][0].name)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print(head['chemicals'][0].name)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # searching the similar componds123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    similarity = new_client.similarity123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    similar_res = similarity.filter(smiles=res[0]['molecule_structures']['canonical_smiles'],similarity=90)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return similar_res123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFif __name__ == '__main__':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    sr = run()
+# Try Chembl API
+
+import os,sys
+from chembl_webresource_client.new_client import new_client
+import prody
+
+def get_similar_compound(mol_name, threshold=90):
+    """
+    Given the name of a compound, search the similar structure on chembl
+
+    args:
+        mol_name ::str
+            name of the compound
+            e.g. STEARIC ACID
+
+    return:
+        similar_smiles ::list of string
+            smiles string for the similar compunds
+    """
+    molecule = new_client.molecule
+    res = molecule.search(mol_name)
+
+    smiles=res[0]['molecule_structures']['canonical_smiles']
+
+    similarity = new_client.similarity
+    similar_res = similarity.filter(smiles=smiles, similarity=threshold)
+
+    similar_smiles = map(lambda x:x['molecule_structures']['canonical_smiles'], similar_res)
+    return list(similar_smiles)
+
+def run():
+    # get the title of a pdb structure
+    head = prody.parsePDBHeader("3EML")
+
+     
+    assay = new_client.assay
+    asy = assay.search(head['title'])
+
+    target = new_client.target
+    tar = target.search(head['A'].name)
+
+    # get the componds
+    molecule = new_client.molecule
+    res = molecule.search(head['chemicals'][0].name)
+    print(head['chemicals'][0].name)
+
+    # searching the similar componds
+    similarity = new_client.similarity
+    similar_res = similarity.filter(smiles=res[0]['molecule_structures']['canonical_smiles'],similarity=90)
+
+    return similar_res
+
+if __name__ == '__main__':
+    sr = run()

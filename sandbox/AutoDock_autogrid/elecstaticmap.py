@@ -1,1 +1,109 @@
-'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFGenerate autovina score and elecgrid files. The record will be sotred in specific file.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport csv123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom Config import *123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom data_process.preprocess.utility.autodock_utility import *123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom data_process.preprocess.utility.Receptor_container import pdb_container123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#Which content does the result includes123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFSUMMARY_COLUMN = ['PDB name','PDB type', 'ligand NAME', 'ligand index in PDB', 'vina score(kcal/mol)', 'box_scale', 'pure_protein_gridmap_filename',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                  'pure_ligand_gridmap_filename', 'ligand_receptor_complex_gridmap_filename']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#file name of the result. All results will be recorded in './result/' folder automatically123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#TODO add options to save to another place (maybe)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#PAIR_SUMMARY = 'lignad-receptor_pair.csv'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFPAIR_SUMMARY =  'report.csv'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#We don't want to delete these files in './data'.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#This is a very awful way to make this one, but quite useful.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFRESERVE_NAME = ['fake-ligand.pdb']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef generate_one_map(PDBname, PDBpos, BOX=20):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # autodock_utility files will be generated in this folder (for each pdb file)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    set_new_folder(PDBname,result_PREFIX)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    PDBIndex = pdb_container(PDBname,filepos=PDBpos)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # PDBIndex.set_all_vina_benchmark(Box=BOX)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    PDBtype = PDBIndex.get_pdb_type()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    fake_ligand_filename = os.path.join(temp_pdb_PREFIX,'fake-ligand.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer = file('result/{}'.format(PAIR_SUMMARY), 'a')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w = csv.writer(writer)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for k,v in PDBIndex.heterodict.items():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #Detect source file position123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        ligand_filename = os.path.join(temp_pdb_PREFIX,v['naming']+'_ligand.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        receptor_filename = os.path.join(temp_pdb_PREFIX,v['naming']+'_receptor.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #receptor_filename = os.path.join(temp_pdb_PREFIX, PDBname + '_receptor.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        complex_filename = os.path.join(temp_pdb_PREFIX, v['naming']+'_complex.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #complex_filename =  os.path.join(temp_pdb_PREFIX, PDBname + '_complex.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #prepare auto grid map files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        flag1=do_auto_grid(receptor_filename, fake_ligand_filename, center=v['center'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        flag2=do_auto_grid(ligand_filename, fake_ligand_filename, center=v['center'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        flag3=do_auto_grid(complex_filename, fake_ligand_filename, center=v['center'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        score=do_auto_vina_score(receptor_filename,ligand_filename,v['center'],Box=20)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #Generate one data123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        one_line=[PDBname,PDBtype, v['ligand'].getResname(), k, score, BOX, v['naming']+'_receptor', v['naming']+'_ligand', v['naming']+'_complex']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not flag1:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            one_line[-3]='NA'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not flag2:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            one_line[-2]='NA'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not flag3:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            one_line[-1]='NA'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        w.writerow(one_line)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer.flush()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #Do this with the risk123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #clean_temp_data()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef initialize_summary_file(filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    csv_name = filename123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer = file('result/'+csv_name, 'wb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w = csv.writer(writer)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w.writerow(SUMMARY_COLUMN)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef clean_temp_data():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Warning! This will wipe out all file in ./data except reserved names if not locked by root123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    files = os.listdir('data/')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for filename in files:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        loc = os.path.join('data/') + filename123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if os.path.exists(loc) and filename not in RESERVE_NAME:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            os.remove(loc)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef repair_one_pdb(PDBname):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    real_dir = os.path.join(pdb_PREFIX, PDBname+'.pdb.gz')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return repair_pdbfile(real_dir, PDBname, OVERWRITE=True)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF@fn_timer123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef for_fun():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    test = ['2xqt']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #test = PDB_tar[0::200]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print test123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    initialize_summary_file(PAIR_SUMMARY)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for each in test:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        each= each.lower()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #position = repair_one_pdb(each)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #print position123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #if position=='NA':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #    print 'Error'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #    continue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        generate_one_map(each,os.path.join(pdb_PREFIX,each+'.pdb.gz'))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFif __name__=='__main__':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for_fun()
+'''
+Generate autovina score and elecgrid files. The record will be sotred in specific file.
+'''
+import csv
+
+from Config import *
+from data_process.preprocess.utility.autodock_utility import *
+from data_process.preprocess.utility.Receptor_container import pdb_container
+
+#Which content does the result includes
+SUMMARY_COLUMN = ['PDB name','PDB type', 'ligand NAME', 'ligand index in PDB', 'vina score(kcal/mol)', 'box_scale', 'pure_protein_gridmap_filename',
+                  'pure_ligand_gridmap_filename', 'ligand_receptor_complex_gridmap_filename']
+
+#file name of the result. All results will be recorded in './result/' folder automatically
+#TODO add options to save to another place (maybe)
+#PAIR_SUMMARY = 'lignad-receptor_pair.csv'
+PAIR_SUMMARY =  'report.csv'
+
+#We don't want to delete these files in './data'.
+#This is a very awful way to make this one, but quite useful.
+RESERVE_NAME = ['fake-ligand.pdb']
+
+
+def generate_one_map(PDBname, PDBpos, BOX=20):
+    # autodock_utility files will be generated in this folder (for each pdb file)
+    set_new_folder(PDBname,result_PREFIX)
+
+    PDBIndex = pdb_container(PDBname,filepos=PDBpos)
+    # PDBIndex.set_all_vina_benchmark(Box=BOX)
+    PDBtype = PDBIndex.get_pdb_type()
+
+    fake_ligand_filename = os.path.join(temp_pdb_PREFIX,'fake-ligand.pdb')
+
+    writer = file('result/{}'.format(PAIR_SUMMARY), 'a')
+    w = csv.writer(writer)
+
+    for k,v in PDBIndex.heterodict.items():
+
+        #Detect source file position
+        ligand_filename = os.path.join(temp_pdb_PREFIX,v['naming']+'_ligand.pdb')
+        receptor_filename = os.path.join(temp_pdb_PREFIX,v['naming']+'_receptor.pdb')
+        #receptor_filename = os.path.join(temp_pdb_PREFIX, PDBname + '_receptor.pdb')
+        complex_filename = os.path.join(temp_pdb_PREFIX, v['naming']+'_complex.pdb')
+        #complex_filename =  os.path.join(temp_pdb_PREFIX, PDBname + '_complex.pdb')
+        #prepare auto grid map files
+        flag1=do_auto_grid(receptor_filename, fake_ligand_filename, center=v['center'])
+        flag2=do_auto_grid(ligand_filename, fake_ligand_filename, center=v['center'])
+        flag3=do_auto_grid(complex_filename, fake_ligand_filename, center=v['center'])
+        score=do_auto_vina_score(receptor_filename,ligand_filename,v['center'],Box=20)
+
+        #Generate one data
+        one_line=[PDBname,PDBtype, v['ligand'].getResname(), k, score, BOX, v['naming']+'_receptor', v['naming']+'_ligand', v['naming']+'_complex']
+        if not flag1:
+            one_line[-3]='NA'
+        if not flag2:
+            one_line[-2]='NA'
+        if not flag3:
+            one_line[-1]='NA'
+        w.writerow(one_line)
+    writer.flush()
+    writer.close()
+
+    #Do this with the risk
+    #clean_temp_data()
+
+
+
+
+def initialize_summary_file(filename):
+    csv_name = filename
+    writer = file('result/'+csv_name, 'wb')
+    w = csv.writer(writer)
+    w.writerow(SUMMARY_COLUMN)
+    writer.close()
+
+def clean_temp_data():
+    '''
+    Warning! This will wipe out all file in ./data except reserved names if not locked by root
+    :return:
+    '''
+    files = os.listdir('data/')
+    for filename in files:
+        loc = os.path.join('data/') + filename
+        if os.path.exists(loc) and filename not in RESERVE_NAME:
+            os.remove(loc)
+
+def repair_one_pdb(PDBname):
+    real_dir = os.path.join(pdb_PREFIX, PDBname+'.pdb.gz')
+    return repair_pdbfile(real_dir, PDBname, OVERWRITE=True)
+
+@fn_timer
+def for_fun():
+    test = ['2xqt']
+    #test = PDB_tar[0::200]
+    print test
+
+    initialize_summary_file(PAIR_SUMMARY)
+
+    for each in test:
+        each= each.lower()
+        #position = repair_one_pdb(each)
+        #print position
+        #if position=='NA':
+        #    print 'Error'
+        #    continue
+        generate_one_map(each,os.path.join(pdb_PREFIX,each+'.pdb.gz'))
+
+if __name__=='__main__':
+    for_fun()

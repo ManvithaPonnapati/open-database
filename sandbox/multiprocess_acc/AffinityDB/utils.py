@@ -1,1 +1,254 @@
-import os123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport sys123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport config123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport sqlite3123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom config import lock123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom functools import wraps123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport time123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport subprocess123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport json 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFmkdir = lambda path: os.system('mkdir -p {}'.format(path))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef count_lines(file_path):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cmd = 'wc -l %s ' % file_path123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cl = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cl.wait()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cont = cl.communicate()[0].strip().split(' ')[0]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        value = int(cont)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    except Exception as e:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print e123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        value = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return value123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef lockit(func):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    lock before running functiong123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    @wraps(func)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def function_in_lock(*args, **kwargs):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        lock.acquire()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        result = func(*args, **kwargs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        lock.release()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return result123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return function_in_lock123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef timeit(record):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def _timeit(func):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        counter the time to run a function123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        @wraps(func)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        def function_in_timer(*args, **kwargs):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            start = time.time()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            result = func(*args, **kwargs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            duration = time.time() - start123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            data = [func.__name__, str(duration)]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if record:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                head = ['func','time']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                log('func_timer.csv',','.join(data), head = ','.join(head))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                print '\t'.join(['timer']+data)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return  function_in_timer123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return _timeit123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef create(tabel, kw, primarykey, lock):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    create tabel123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef get(tabel, cond, value, lock):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    get value from tabel123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    lock.acquire()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cmd = "SELECT "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cmd += ','.join(value)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cmd += "from " + tabel123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cmd += "where "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cmd += ' AND '.join()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cursor = conn.execute()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef insert(tabel, content, head, lock):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    inseert centent into tabel123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    lock.acquire()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    values = ["(" + ','.join([]) ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cmd = "INSERT INTO " + tabel123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cmd += "(" + ",".join(head) + ")"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    lock.release()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef param_equal(param1, param2):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if type(param1).__name__ == 'dict' and type(param2).__name__ == 'dict':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not sorted(param1.keys()) == sorted(param2.keys()):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return False 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            for key in param1.keys():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if not param_equal(param1[key], param2[key]):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    return False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    elif type(param1).__name__ in ['list','tuple'] and type(param2).__name__ in ['list','tuple']:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not sorted(list(param1)) == sorted(list(param2)):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    elif type(param1).__name__ in ['unicode','str','int','float'] and type(param2).__name__ in ['unicode','str','int','float']:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not str(param1) == str(param2):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return False 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return True 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        raise TypeError("Unknown data type %s in parameter" % type(param1).__name__)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF         123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF@lockit123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef log(log_file, log_content, head=None, lock=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    write down log information123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param log_file: name of log file123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param log_content: string or list of string, log content123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param head: head for csv or tsv output file123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if isinstance(log_content, str):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        log_content = [log_content]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    mkdir(config.log_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    log_file_path = os.path.join(config.log_dir, log_file)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if not os.path.exists(log_file_path) and not head is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        with open(log_file_path, 'w') as fout:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            fout.write(head+'\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    with open(log_file_path, 'a') as fout:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for cont in log_content:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if type(cont).__name__ == 'list':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                print cont123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            fout.write(cont+'\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFclass smina_param:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    kw_options = [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'receptor',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'ligand',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'out',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'flex',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'flexres',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'flexdist_ligand',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'flexdist',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'center_x',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'center_y',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'center_z',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'size_x',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'size_y',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'size_z',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'autobox_ligand',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'autobox_add',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'scoring',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'custom_scoring',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'minimize_iters',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'approximation',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'factor',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'force_cap',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'user_grid',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'user_grid_lambda',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'out_flex',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'log',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'atom_terms',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'cpu',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'seed',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'exhaustiveness',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'num_modes',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'energy_range',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'min_rmsd_filter',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'addH',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'config'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    arg_options = [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'no_lig',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'score_only',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'local_only',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'minimize',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'randomize_only',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'accurate_line',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'print_terms',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'print_atom_types',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'atom_term_data',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'quiet',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'flex_hydrogen',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'help',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'help_hidden',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'version'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def __init__(self, name=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.smina = config.smina123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not name is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.name = name123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def set_smina(self, smina):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.smina = smina123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def set_name(self, name):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.name = name123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def load_param(self, *arg, **kw):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.args = arg123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.kwargs = kw123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def param_dump(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        param = {123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'args':self.args,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            'kwargs':self.kwargs123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        }123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return param123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def param_load(self, param):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if type(param).__name__ in ['unicode','str']:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            param = json.loads(param)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.args = param['args']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.kwargs = param['kwargs']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def make_command(self, *arg, **kw):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        cmd = self.smina123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for a in self.arg_options:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if arg and a in arg:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += ' --'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            elif a in self.args:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += ' --'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for key in self.kw_options:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if kw and key in kw.keys():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += ' --'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += key123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += ' '123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += str(kw[key])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            elif key in self.kwargs.keys():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += ' --'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += key123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += ' '123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                cmd += str(self.kwargs[key])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return cmd123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    
+import os
+import sys
+import config
+import sqlite3
+from config import lock
+from functools import wraps
+import time
+import subprocess
+import json 
+
+mkdir = lambda path: os.system('mkdir -p {}'.format(path))
+
+def count_lines(file_path):
+    
+    cmd = 'wc -l %s ' % file_path
+    cl = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    cl.wait()
+    cont = cl.communicate()[0].strip().split(' ')[0]
+    try:
+        value = int(cont)
+    except Exception as e:
+        print e
+        value = None
+    
+    return value
+
+def lockit(func):
+    """
+    lock before running functiong
+    """
+    @wraps(func)
+    def function_in_lock(*args, **kwargs):
+        lock.acquire()
+        result = func(*args, **kwargs)
+        lock.release()
+        return result
+    return function_in_lock
+
+def timeit(record):
+    def _timeit(func):
+        """
+        counter the time to run a function
+        """
+        @wraps(func)
+        def function_in_timer(*args, **kwargs):
+            start = time.time()
+            result = func(*args, **kwargs)
+            duration = time.time() - start
+            data = [func.__name__, str(duration)]
+            if record:
+                head = ['func','time']
+                log('func_timer.csv',','.join(data), head = ','.join(head))
+            else:
+                print '\t'.join(['timer']+data)
+        return  function_in_timer
+    return _timeit
+
+def create(tabel, kw, primarykey, lock):
+    """
+    create tabel
+    """
+
+def get(tabel, cond, value, lock):
+    """
+    get value from tabel
+    """
+    lock.acquire()
+    cmd = "SELECT "
+    cmd += ','.join(value)
+    cmd += "from " + tabel
+    cmd += "where "
+    cmd += ' AND '.join()
+    cursor = conn.execute()
+
+
+def insert(tabel, content, head, lock):
+    """
+    inseert centent into tabel
+    """
+    lock.acquire()
+    
+    values = ["(" + ','.join([]) ]
+
+    cmd = "INSERT INTO " + tabel
+    cmd += "(" + ",".join(head) + ")"
+        
+    lock.release()
+
+
+def param_equal(param1, param2):
+    if type(param1).__name__ == 'dict' and type(param2).__name__ == 'dict':
+
+        if not sorted(param1.keys()) == sorted(param2.keys()):
+            return False 
+        else:
+            for key in param1.keys():
+                if not param_equal(param1[key], param2[key]):
+                    return False
+            return True
+    elif type(param1).__name__ in ['list','tuple'] and type(param2).__name__ in ['list','tuple']:
+        if not sorted(list(param1)) == sorted(list(param2)):
+            return False
+        else:
+            return True
+    elif type(param1).__name__ in ['unicode','str','int','float'] and type(param2).__name__ in ['unicode','str','int','float']:
+        if not str(param1) == str(param2):
+            return False 
+        else:
+            return True 
+    else:
+        raise TypeError("Unknown data type %s in parameter" % type(param1).__name__)
+    
+         
+
+@lockit
+def log(log_file, log_content, head=None, lock=None):
+    """
+    write down log information
+    :param log_file: name of log file
+    :param log_content: string or list of string, log content
+    :param head: head for csv or tsv output file
+    :return:
+    """
+
+    if isinstance(log_content, str):
+        log_content = [log_content]
+
+    mkdir(config.log_dir)
+
+    log_file_path = os.path.join(config.log_dir, log_file)
+    if not os.path.exists(log_file_path) and not head is None:
+        with open(log_file_path, 'w') as fout:
+            fout.write(head+'\n')
+    with open(log_file_path, 'a') as fout:
+        for cont in log_content:
+            if type(cont).__name__ == 'list':
+                print cont
+            fout.write(cont+'\n')
+
+    
+
+class smina_param:
+
+    kw_options = [
+        'receptor',
+        'ligand',
+        'out',
+        'flex',
+        'flexres',
+        'flexdist_ligand',
+        'flexdist',
+        'center_x',
+        'center_y',
+        'center_z',
+        'size_x',
+        'size_y',
+        'size_z',
+        'autobox_ligand',
+        'autobox_add',
+        'scoring',
+        'custom_scoring',
+        'minimize_iters',
+        'approximation',
+        'factor',
+        'force_cap',
+        'user_grid',
+        'user_grid_lambda',
+        'out_flex',
+        'log',
+        'atom_terms',
+        'cpu',
+        'seed',
+        'exhaustiveness',
+        'num_modes',
+        'energy_range',
+        'min_rmsd_filter',
+        'addH',
+        'config'
+    ]
+
+    arg_options = [
+        'no_lig',
+        'score_only',
+        'local_only',
+        'minimize',
+        'randomize_only',
+        'accurate_line',
+        'print_terms',
+        'print_atom_types',
+        'atom_term_data',
+        'quiet',
+        'flex_hydrogen',
+        'help',
+        'help_hidden',
+        'version'
+    ]
+
+    def __init__(self, name=None):
+        self.smina = config.smina
+
+        if not name is None:
+            self.name = name
+        
+    def set_smina(self, smina):
+        self.smina = smina
+
+    def set_name(self, name):
+        self.name = name
+
+    def load_param(self, *arg, **kw):
+        self.args = arg
+        self.kwargs = kw
+
+    def param_dump(self):
+        param = {
+            'args':self.args,
+            'kwargs':self.kwargs
+        }
+        
+        return param
+        
+    def param_load(self, param):
+        if type(param).__name__ in ['unicode','str']:
+            param = json.loads(param)
+        
+        self.args = param['args']
+        self.kwargs = param['kwargs']
+        
+
+    def make_command(self, *arg, **kw):
+        cmd = self.smina
+        for a in self.arg_options:
+            if arg and a in arg:
+                cmd += ' --'
+                cmd += a
+            elif a in self.args:
+                cmd += ' --'
+                cmd += a
+
+        for key in self.kw_options:
+            if kw and key in kw.keys():
+                cmd += ' --'
+                cmd += key
+                cmd += ' '
+                cmd += str(kw[key])
+            elif key in self.kwargs.keys():
+                cmd += ' --'
+                cmd += key
+                cmd += ' '
+                cmd += str(self.kwargs[key])
+
+        return cmd
+    
+    

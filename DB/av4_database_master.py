@@ -1,1 +1,125 @@
-import tensorflow as tf123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport numpy as np123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport time,os,re,prody123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom av4_atomdict import atom_dictionary123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFclass stats:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    start = time.time()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    ligands_parsed = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    ligands_failed = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# TODO: explanations123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# TODO: this script should be integrated into upside data pipeline123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# TODO: this script should also work for other folder structures 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# TODO: make folder structure descriptions explicit123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# crawls the database with crystal ligands and converts in into av4 format 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef convert_database_to_av4(database_path,positives_folder,decoys_folder,receptors_folder):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """Crawls the folder with crystal and docked ligands and converts everything into av4 - no processing is done """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # make a directory where the av4 form of the output will be written123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    output_path = str(database_path+'_av4')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if not os.path.exists(output_path):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        os.makedirs(output_path)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def save_av4(filepath,labels,elements,multiframe_coords):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        labels = np.asarray(labels,dtype=np.int32)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        elements = np.asarray(elements,dtype=np.int32)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        multiframe_coords = np.asarray(multiframe_coords,dtype=np.float32)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not (int(len(multiframe_coords[:,0]) == int(len(elements)))):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            raise Exception('Number of atom elements is not equal to the number of coordinates')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if multiframe_coords.ndim==2:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if not int(len(labels))==1:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                raise Exception ('Number labels is not equal to the number of coordinate frames')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if not (int(len(multiframe_coords[0, 0, :]) == int(len(labels)))):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                raise Exception('Number labels is not equal to the number of coordinate frames')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        number_of_examples = np.array([len(labels)], dtype=np.int32)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        av4_record = number_of_examples.tobytes()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        av4_record += labels.tobytes()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        av4_record += elements.tobytes()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        av4_record += multiframe_coords.tobytes()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        f = open(filepath + ".av4", 'w')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        f.write(av4_record)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        f.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for dirpath,dirnames,filenames in os.walk(database_path +"/"+ positives_folder):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for filename in filenames:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if re.search('.pdb$', filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                path_to_positive = str(os.path.abspath(dirpath) + "/" + filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # if output file already generated, skip the conversion123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                path_to_pdb_subfolder = output_path + "/" + str(os.path.abspath(dirpath)).split("/")[-1]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ligand_output_file = path_to_pdb_subfolder + "/" + path_to_positive.split("/")[-1].split(".")[0]+'.av4'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if os.path.exists(ligand_output_file):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    continue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # find path to folder with decoys123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                path_to_decoys = re.sub(positives_folder,decoys_folder,str(os.path.abspath(dirpath)))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # find path to the file with receptor123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                path_to_receptor = re.sub(positives_folder,receptors_folder,str(os.path.abspath(dirpath))+'.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    prody_receptor = prody.parsePDB(path_to_receptor)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    prody_positive = prody.parsePDB(path_to_positive)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    # ligand_cords will store multiple frames123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    multiframe_ligand_coords = prody_positive.getCoords()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    labels = np.array([1])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    # find all decoys123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    if os.path.exists(path_to_decoys):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        for decoyname in os.listdir(path_to_decoys):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            if re.match(re.sub('.pdb', '', path_to_positive.split("/")[-1]),re.sub('.pdb', '', decoyname)):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                prody_decoy = prody.parsePDB(path_to_decoys + "/" + decoyname)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                # see if decoy is same as the initial ligand123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                if not all(np.asarray(prody_decoy.getElements()) == np.asarray(prody_positive.getElements())):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                    raise Exception('attempting to add ligand with different order of atoms')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                multiframe_ligand_coords = np.dstack((multiframe_ligand_coords,prody_decoy.getCoords()))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                labels = np.concatenate((labels,[0]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    if multiframe_ligand_coords.ndim==2:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        raise Exception('no decoy molecules found')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                except Exception as e:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    print e123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    stats.ligands_failed+=1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    print "ligands parsed:", stats.ligands_parsed, "ligands failed:", stats.ligands_failed123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    continue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                stats.ligands_parsed += 1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                print "ligands parsed:", stats.ligands_parsed, "ligands failed:", stats.ligands_failed123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # create an output path to write binaries for protein and ligands123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                path_to_pdb_subfolder = output_path + "/" + str(os.path.abspath(dirpath)).split("/")[-1]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if not os.path.exists(path_to_pdb_subfolder):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    os.makedirs(path_to_pdb_subfolder)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # convert atomnames to tags and write the data to disk123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                def atom_to_number(atomname):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    atomic_tag_number = atom_dictionary.ATM[atomname.lower()]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    return atomic_tag_number123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                receptor_elements = map(atom_to_number,prody_receptor.getElements())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ligand_elements = map(atom_to_number,prody_positive.getElements())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                receptor_output_path = path_to_pdb_subfolder + "/" +str(os.path.abspath(dirpath)).split("/")[-1]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                save_av4(receptor_output_path,[0],receptor_elements,prody_receptor.getCoords())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ligand_output_path = path_to_pdb_subfolder + "/" + path_to_positive.split("/")[-1].split(".")[0]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                save_av4(ligand_output_path,labels,ligand_elements,multiframe_ligand_coords)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFconvert_database_to_av4(database_path="../datasets/holdout_pdb",positives_folder="crystal_ligands",decoys_folder="docked_ligands",receptors_folder='receptors')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+import tensorflow as tf
+import numpy as np
+import time,os,re,prody
+from av4_atomdict import atom_dictionary
+
+class stats:
+    start = time.time()
+    ligands_parsed = 0
+    ligands_failed = 0
+
+# TODO: explanations
+# TODO: this script should be integrated into upside data pipeline
+# TODO: this script should also work for other folder structures 
+# TODO: make folder structure descriptions explicit
+
+# crawls the database with crystal ligands and converts in into av4 format 
+
+def convert_database_to_av4(database_path,positives_folder,decoys_folder,receptors_folder):
+    """Crawls the folder with crystal and docked ligands and converts everything into av4 - no processing is done """
+
+    # make a directory where the av4 form of the output will be written
+    output_path = str(database_path+'_av4')
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+
+    def save_av4(filepath,labels,elements,multiframe_coords):
+        labels = np.asarray(labels,dtype=np.int32)
+        elements = np.asarray(elements,dtype=np.int32)
+        multiframe_coords = np.asarray(multiframe_coords,dtype=np.float32)
+
+        if not (int(len(multiframe_coords[:,0]) == int(len(elements)))):
+            raise Exception('Number of atom elements is not equal to the number of coordinates')
+
+        if multiframe_coords.ndim==2:
+            if not int(len(labels))==1:
+                raise Exception ('Number labels is not equal to the number of coordinate frames')
+        else:
+            if not (int(len(multiframe_coords[0, 0, :]) == int(len(labels)))):
+                raise Exception('Number labels is not equal to the number of coordinate frames')
+
+        number_of_examples = np.array([len(labels)], dtype=np.int32)
+        av4_record = number_of_examples.tobytes()
+        av4_record += labels.tobytes()
+        av4_record += elements.tobytes()
+        av4_record += multiframe_coords.tobytes()
+        f = open(filepath + ".av4", 'w')
+        f.write(av4_record)
+        f.close()
+
+
+    for dirpath,dirnames,filenames in os.walk(database_path +"/"+ positives_folder):
+        for filename in filenames:
+            if re.search('.pdb$', filename):
+                path_to_positive = str(os.path.abspath(dirpath) + "/" + filename)
+                
+                # if output file already generated, skip the conversion
+                path_to_pdb_subfolder = output_path + "/" + str(os.path.abspath(dirpath)).split("/")[-1]
+                ligand_output_file = path_to_pdb_subfolder + "/" + path_to_positive.split("/")[-1].split(".")[0]+'.av4'
+                if os.path.exists(ligand_output_file):
+                    continue
+
+                # find path to folder with decoys
+                path_to_decoys = re.sub(positives_folder,decoys_folder,str(os.path.abspath(dirpath)))
+                # find path to the file with receptor
+                path_to_receptor = re.sub(positives_folder,receptors_folder,str(os.path.abspath(dirpath))+'.pdb')
+
+                try:
+                    prody_receptor = prody.parsePDB(path_to_receptor)
+                    prody_positive = prody.parsePDB(path_to_positive)
+
+                    # ligand_cords will store multiple frames
+                    multiframe_ligand_coords = prody_positive.getCoords()
+                    labels = np.array([1])
+
+                    # find all decoys
+                    if os.path.exists(path_to_decoys):
+                        for decoyname in os.listdir(path_to_decoys):
+                            if re.match(re.sub('.pdb', '', path_to_positive.split("/")[-1]),re.sub('.pdb', '', decoyname)):
+                                prody_decoy = prody.parsePDB(path_to_decoys + "/" + decoyname)
+
+                                # see if decoy is same as the initial ligand
+                                if not all(np.asarray(prody_decoy.getElements()) == np.asarray(prody_positive.getElements())):
+                                    raise Exception('attempting to add ligand with different order of atoms')
+
+                                multiframe_ligand_coords = np.dstack((multiframe_ligand_coords,prody_decoy.getCoords()))
+
+
+                                labels = np.concatenate((labels,[0]))
+
+
+                    if multiframe_ligand_coords.ndim==2:
+                        raise Exception('no decoy molecules found')
+
+                except Exception as e:
+                    print e
+                    stats.ligands_failed+=1
+                    print "ligands parsed:", stats.ligands_parsed, "ligands failed:", stats.ligands_failed
+                    continue
+
+                stats.ligands_parsed += 1
+                print "ligands parsed:", stats.ligands_parsed, "ligands failed:", stats.ligands_failed
+
+                # create an output path to write binaries for protein and ligands
+                path_to_pdb_subfolder = output_path + "/" + str(os.path.abspath(dirpath)).split("/")[-1]
+
+                if not os.path.exists(path_to_pdb_subfolder):
+                    os.makedirs(path_to_pdb_subfolder)
+
+                # convert atomnames to tags and write the data to disk
+                def atom_to_number(atomname):
+                    atomic_tag_number = atom_dictionary.ATM[atomname.lower()]
+                    return atomic_tag_number
+
+                receptor_elements = map(atom_to_number,prody_receptor.getElements())
+                ligand_elements = map(atom_to_number,prody_positive.getElements())
+
+                receptor_output_path = path_to_pdb_subfolder + "/" +str(os.path.abspath(dirpath)).split("/")[-1]
+                save_av4(receptor_output_path,[0],receptor_elements,prody_receptor.getCoords())
+                ligand_output_path = path_to_pdb_subfolder + "/" + path_to_positive.split("/")[-1].split(".")[0]
+                save_av4(ligand_output_path,labels,ligand_elements,multiframe_ligand_coords)
+
+
+
+
+convert_database_to_av4(database_path="../datasets/holdout_pdb",positives_folder="crystal_ligands",decoys_folder="docked_ligands",receptors_folder='receptors')

@@ -1,1 +1,184 @@
-from collections import namedtuple, OrderedDict123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFtable = namedtuple('Table',['type','columns','primary_key'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF"""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFtables store the information about the table to be created in the database ( except scoring_terms )123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFtable:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    name: name of the tabel in database, name of the csv file when export the table123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    columns: the name and value type for each columns in the table123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    primary_key: the name of the primary key for this table123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFscoring_terms table:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    This table store the different scoring terms' value caculated by smina, 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    the scoring terms are defined in `config.scoring_terms`.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFWhen initialize the database, it first parse config.scoring_terms and add it in tables  123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFand then create all table defined in tables123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF"""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFbasic_tables = {123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'dependence':table(*['dependence',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('source','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('dest','integer')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ['source','dest']]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'db_info':table(*['db_info',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('name','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('type','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('table_idx','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('create_time','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('parameter','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ['table_idx']]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF}123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFtables = {123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'download':table(*['download',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                         [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                             ('receptor','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                             ('experiment','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                             ('resolution','real'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                             ('state','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                             ('comment','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                         ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     ['receptor']]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'split_ligand':table(*['splited_ligand',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('receptor','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('chain','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resnum','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resname','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resid','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('heavy_atom','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('max_size_on_axis', 'real'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('state','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('comment','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     ['receptor','chain','resnum','resname']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'split_receptor':table(*['splited_receptor',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('receptor','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('chain','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('resnum','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('resname','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('heavy_atom','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('experiment','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('resolution','real'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('state','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('comment','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ['receptor','chain','resnum','resname']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'reorder_ligand':table(*['reorder_ligand',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('receptor','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('chain','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resnum','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resname','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('state','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('comment','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     ['receptor','chain','resnum','resname']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'docked_ligand':table(*['docked_ligand',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('receptor','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('chain','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resnum','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resname','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('state','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('comment','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                     ['receptor','chain','resnum','resname']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'overlap':table(*['overlap',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('receptor','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('chain','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('resnum','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('resname','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('position','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('overlap_ratio','real'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('state','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                ('comment','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ['receptor','chain','resnum','resname','position']]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'rmsd':table(*['rmsd',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('receptor','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('chain','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resnum','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resname','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('position','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('rmsd','real'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('state','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('comment','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ['receptor','chain','resnum','resname','position']]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'native_contact':table(*['native_contact',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('receptor','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('chain','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resnum','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resname','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('position','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('native_contact','real'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('state','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('comment','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                   ['receptor','chain','resnum','resname','position']]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'binding_affinity':table(*['binding_affinity',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('receptor','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resname','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('log_affinity','real'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('norm_affinity','real'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('state','ingeter'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('comment','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ['receptor','resname']]),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    'exclusion':table(*['exclusion',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    OrderedDict(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        [123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('resname','text'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('state','integer'),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            ('comment','text')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        ]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ),123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    ['resname']])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF}123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+from collections import namedtuple, OrderedDict
+
+table = namedtuple('Table',['type','columns','primary_key'])
+
+"""
+tables store the information about the table to be created in the database ( except scoring_terms )
+
+table:
+    name: name of the tabel in database, name of the csv file when export the table
+    columns: the name and value type for each columns in the table
+    primary_key: the name of the primary key for this table
+    
+    
+scoring_terms table:
+    This table store the different scoring terms' value caculated by smina, 
+    the scoring terms are defined in `config.scoring_terms`.
+    
+    
+When initialize the database, it first parse config.scoring_terms and add it in tables  
+and then create all table defined in tables
+"""
+
+basic_tables = {
+    'dependence':table(*['dependence',
+                    OrderedDict(
+                        [
+                            ('source','integer'),
+                            ('dest','integer')
+                        ]
+                    ),
+                    ['source','dest']]),
+    'db_info':table(*['db_info',
+                    OrderedDict(
+                        [
+                            ('name','text'),
+                            ('type','text'),
+                            ('table_idx','integer'),
+                            ('create_time','text'),
+                            ('parameter','text')
+                        ]
+                    ),
+                    ['table_idx']]),
+}
+
+
+tables = {
+    'download':table(*['download',
+                     OrderedDict(
+                         [
+                             ('receptor','text'),
+                             ('experiment','text'),
+                             ('resolution','real'),
+                             ('state','integer'),
+                             ('comment','text')
+                         ]
+                     ),
+                     ['receptor']]),
+    'split_ligand':table(*['splited_ligand',
+                     OrderedDict(
+                        [
+                            ('receptor','text'),
+                            ('chain','text'),
+                            ('resnum','text'),
+                            ('resname','text'),
+                            ('resid','text'),
+                            ('heavy_atom','integer'),
+                            ('max_size_on_axis', 'real'),
+                            ('state','integer'),
+                            ('comment','text')
+                        ]
+                     ),
+                     ['receptor','chain','resnum','resname']
+                ]),
+    'split_receptor':table(*['splited_receptor',
+                        OrderedDict(
+                            [
+                                ('receptor','text'),
+                                ('chain','text'),
+                                ('resnum','text'),
+                                ('resname','text'),
+                                ('heavy_atom','integer'),
+                                ('experiment','text'),
+                                ('resolution','real'),
+                                ('state','integer'),
+                                ('comment','text')
+                            ]
+                        ),
+                        ['receptor','chain','resnum','resname']
+                ]),
+    'reorder_ligand':table(*['reorder_ligand',
+                     OrderedDict(
+                        [
+                            ('receptor','text'),
+                            ('chain','text'),
+                            ('resnum','text'),
+                            ('resname','text'),
+                            ('state','integer'),
+                            ('comment','text')
+                        ]
+                     ),
+                     ['receptor','chain','resnum','resname']
+                ]),
+    'docked_ligand':table(*['docked_ligand',
+                     OrderedDict(
+                        [
+                            ('receptor','text'),
+                            ('chain','text'),
+                            ('resnum','text'),
+                            ('resname','text'),
+                            ('state','integer'),
+                            ('comment','text')
+                        ]
+                     ),
+                     ['receptor','chain','resnum','resname']
+                ]),
+
+    'overlap':table(*['overlap',
+                        OrderedDict(
+                            [
+                                ('receptor','text'),
+                                ('chain','text'),
+                                ('resnum','text'),
+                                ('resname','text'),
+                                ('position','integer'),
+                                ('overlap_ratio','real'),
+                                ('state','integer'),
+                                ('comment','text')
+                            ]
+                        ),
+                        ['receptor','chain','resnum','resname','position']]),
+    'rmsd':table(*['rmsd',
+                    OrderedDict(
+                        [
+                            ('receptor','text'),
+                            ('chain','text'),
+                            ('resnum','text'),
+                            ('resname','text'),
+                            ('position','integer'),
+                            ('rmsd','real'),
+                            ('state','integer'),
+                            ('comment','text')
+                        ]
+                    ),
+                    ['receptor','chain','resnum','resname','position']]),
+    'native_contact':table(*['native_contact',
+                    OrderedDict(
+                        [
+                            ('receptor','text'),
+                            ('chain','text'),
+                            ('resnum','text'),
+                            ('resname','text'),
+                            ('position','integer'),
+                            ('native_contact','real'),
+                            ('state','integer'),
+                            ('comment','text')
+                        ]
+                    ),
+                   ['receptor','chain','resnum','resname','position']]),
+    'binding_affinity':table(*['binding_affinity',
+                    OrderedDict(
+                        [
+                            ('receptor','text'),
+                            ('resname','text'),
+                            ('log_affinity','real'),
+                            ('norm_affinity','real'),
+                            ('state','ingeter'),
+                            ('comment','text')
+                        ]
+                    ),
+                    ['receptor','resname']]),
+    'exclusion':table(*['exclusion',
+                    OrderedDict(
+                        [
+                            ('resname','text'),
+                            ('state','integer'),
+                            ('comment','text')
+                        ]
+                    ),
+                    ['resname']])
+    
+
+}
+
+

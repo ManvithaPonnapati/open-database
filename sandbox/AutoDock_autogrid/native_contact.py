@@ -1,1 +1,47 @@
-import numpy as np123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef make_pair(x, y):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    xx, yy = np.meshgrid(range(len(x)), range(len(y)))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return np.c_[xx.ravel(), yy.ravel()]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef compute_distance(x, y, pairs):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return np.array([np.sqrt(np.sum(np.power(x[i] - y[j], 2))) for (i, j) in pairs])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef compute_native_contact(x, y, pairs, maximum, minimum):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    distance = compute_distance(x, y, pairs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    distance[distance > maximum] = minimum123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Numerator = np.sum(distance > minimum)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return Numerator * 1.0 / len(pairs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef native_contact(receptor, native, ligands):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        input:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        receptor :123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    numpy array in shape of  (n_r,3) , n_r is the number of atoms123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        native :123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    numpy array in shape of  (n_n,3) , n_n is the number of atoms123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        ligands:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    numpy array in shape of  (m,n_l,3) , m is the number of ligands , n_l is the number of atoms123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        output:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        native_contact_value :123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    numpy array in shape of (m)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    maximum_distance = 4.5123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    minimum_distance = 3123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pairs = make_pair(receptor, native)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pairs_distance = compute_distance(receptor, native, pairs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pairs_distance[pairs_distance > maximum_distance] = minimum_distance123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    native_contact_pair = pairs[pairs_distance > minimum_distance]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    native_contacts = np.array(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        [compute_native_contact(receptor, ligand, native_contact_pair, maximum_distance, minimum_distance) for ligand in ligands])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print native_contacts123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return native_contacts
+import numpy as np
+
+def make_pair(x, y):
+    xx, yy = np.meshgrid(range(len(x)), range(len(y)))
+    return np.c_[xx.ravel(), yy.ravel()]
+
+
+def compute_distance(x, y, pairs):
+    return np.array([np.sqrt(np.sum(np.power(x[i] - y[j], 2))) for (i, j) in pairs])
+
+
+def compute_native_contact(x, y, pairs, maximum, minimum):
+    distance = compute_distance(x, y, pairs)
+
+    distance[distance > maximum] = minimum
+
+    Numerator = np.sum(distance > minimum)
+
+    return Numerator * 1.0 / len(pairs)
+
+
+def native_contact(receptor, native, ligands):
+    '''
+        input:
+        receptor :
+                    numpy array in shape of  (n_r,3) , n_r is the number of atoms
+        native :
+                    numpy array in shape of  (n_n,3) , n_n is the number of atoms
+        ligands:
+                    numpy array in shape of  (m,n_l,3) , m is the number of ligands , n_l is the number of atoms
+
+        output:
+        native_contact_value :
+                    numpy array in shape of (m)
+    '''
+
+    maximum_distance = 4.5
+    minimum_distance = 3
+
+    pairs = make_pair(receptor, native)
+    pairs_distance = compute_distance(receptor, native, pairs)
+    pairs_distance[pairs_distance > maximum_distance] = minimum_distance
+    native_contact_pair = pairs[pairs_distance > minimum_distance]
+    native_contacts = np.array(
+        [compute_native_contact(receptor, ligand, native_contact_pair, maximum_distance, minimum_distance) for ligand in ligands])
+    print native_contacts
+    return native_contacts

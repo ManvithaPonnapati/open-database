@@ -1,1 +1,151 @@
-123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport platform123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport os123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom numpy.random import choice123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# change these if you want the output to be somewhere else123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFcluster_output_file_location = '.'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef do_one_clustering(input_fasta_file):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    We appreciate the contribution from MMseq2, which offers people an ultra fast sequence database scheme123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for more information , please visit their github page.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    https://github.com/soedinglab/mmseqs2123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    In other words, this script will fail on Windows.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param input_fasta_file: where the program get the fasta result, it can be either aligned data123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF     or nonaligned sequence stirng123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return: use mmseq2 to finish a dirty and fast sequence clustering123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    import subprocess123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    import shlex123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if 'Linux' not in platform.system():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print 'This might not be an linux machine. Mac might be ok but please do not use Windows for this scirpt.'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #quick and dirty way to do sequence clustering123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #This will be changed in future123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    subprocess.call(shlex.split('./mmseqs.sh %s %s'%(input_fasta_file,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                         os.path.join(cluster_output_file_location,'clustered.tsv'))))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef parse_group_result(cluster_file,result_file="result_group.txt"):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Parse results from mmseq2 and write it into a file with designate format123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    The format will be:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        First line: a postitive interger N with the number of groups123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Next N lines: each line has several PDB ids which means they are in same group123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param cluster_file: file location for tsv cluster file123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param result_file: file location for writing result123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return: write results into result_file and return the list of result (group result)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    representative = "XXXX"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    list= []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    count=0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    with open(cluster_file,'r') as f:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for each_line in f.readlines():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            first= each_line.split('\t')[0]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            second = each_line.split('\t')[1].rstrip('\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            print first,second123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if representative != first:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                count+=1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                list.append([])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                representative = first123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            list[-1].append(second)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    with open(result_file,'w') as w:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        w.write(str(count)+'\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for each_group in list:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            for each in each_group[:-1]:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                w.write(each+' ')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            w.write(each_group[-1]+'\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return list123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef create_group_from_FASTA(fasta_file,result_file='result_group.txt'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param fasta_file:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    tag = do_one_clustering(fasta_file)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if tag==False:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "Input Error! Try again"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Ans = parse_group_result(os.path.join(cluster_output_file_location,'clustered.tsv'),result_file)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return Ans123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef select_subgroup_from_variable(group, max_element_number=0):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Select some results and make sure each group will have at most one element to be selected.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Note this is the uniform sampling for each group.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param max_element_number: how many elements will pick up at most. by default 0 means123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    the maximum number, i.e. the total group number123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return: a list file in which PDB IDs are provided123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    length= len(group)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    subgroup = []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if max_element_number==0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        max_element_number=length123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if max_element_number>length:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            print 'This is out of range, there will be only ' \123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                  '%s groups and all these will be returned' % str(length)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            max_element_number= length123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if max_element_number==length:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for each_group in group:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            subgroup.append(choice(each_group))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for each_group in choice(group,max_element_number):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            subgroup.append(choice(each_group))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return subgroup123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef select_subgroup_from_file(filename, max_element_number=0):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param filename:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param max_element_number:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    list = []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    first_line= False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        with open(filename, 'r') as f:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            for each_line in f.readlines():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if first_line == False:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    first_line = True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    continue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                group = each_line.split(' ')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                group[-1]=group[-1].rstrip('\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                list.append(group)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return select_subgroup_from_variable(list,max_element_number=max_element_number)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        raise IOError('cannot parse such file!')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFif __name__ == '__main__':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    To Use this script:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    1. run create_group_from_FASTA once and get the variable(optional)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    2. call as many times of either select_subgroup_from_variable or select_subgroup_from_file as123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    you want123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Group = create_group_from_FASTA('full.fasta')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #Group = parse_group_result(os.path.join(cluster_output_file_location,'clustered.tsv'))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    A= select_subgroup_from_variable(Group)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    B= select_subgroup_from_file('result_group.txt',max_element_number=100)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print A123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print B123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+
+import platform
+import os
+from numpy.random import choice
+
+# change these if you want the output to be somewhere else
+cluster_output_file_location = '.'
+
+def do_one_clustering(input_fasta_file):
+    '''
+    We appreciate the contribution from MMseq2, which offers people an ultra fast sequence database scheme
+    for more information , please visit their github page.
+
+    https://github.com/soedinglab/mmseqs2
+
+    In other words, this script will fail on Windows.
+
+    :param input_fasta_file: where the program get the fasta result, it can be either aligned data
+     or nonaligned sequence stirng
+    :return: use mmseq2 to finish a dirty and fast sequence clustering
+
+    '''
+    import subprocess
+    import shlex
+    if 'Linux' not in platform.system():
+        print 'This might not be an linux machine. Mac might be ok but please do not use Windows for this scirpt.'
+
+    #quick and dirty way to do sequence clustering
+    #This will be changed in future
+    subprocess.call(shlex.split('./mmseqs.sh %s %s'%(input_fasta_file,
+                                                         os.path.join(cluster_output_file_location,'clustered.tsv'))))
+
+
+    return True
+
+def parse_group_result(cluster_file,result_file="result_group.txt"):
+    '''
+    Parse results from mmseq2 and write it into a file with designate format
+    The format will be:
+        First line: a postitive interger N with the number of groups
+        Next N lines: each line has several PDB ids which means they are in same group
+
+    :param cluster_file: file location for tsv cluster file
+    :param result_file: file location for writing result
+    :return: write results into result_file and return the list of result (group result)
+    '''
+    representative = "XXXX"
+    list= []
+    count=0
+
+    with open(cluster_file,'r') as f:
+        for each_line in f.readlines():
+            first= each_line.split('\t')[0]
+            second = each_line.split('\t')[1].rstrip('\n')
+            print first,second
+            if representative != first:
+                count+=1
+                list.append([])
+                representative = first
+            list[-1].append(second)
+
+    with open(result_file,'w') as w:
+        w.write(str(count)+'\n')
+        for each_group in list:
+            for each in each_group[:-1]:
+                w.write(each+' ')
+            w.write(each_group[-1]+'\n')
+    return list
+
+
+def create_group_from_FASTA(fasta_file,result_file='result_group.txt'):
+    '''
+
+    :param fasta_file:
+    :return:
+    '''
+
+    tag = do_one_clustering(fasta_file)
+    if tag==False:
+        print "Input Error! Try again"
+        return []
+
+    Ans = parse_group_result(os.path.join(cluster_output_file_location,'clustered.tsv'),result_file)
+
+    return Ans
+
+def select_subgroup_from_variable(group, max_element_number=0):
+    '''
+    Select some results and make sure each group will have at most one element to be selected.
+    Note this is the uniform sampling for each group.
+
+    :param max_element_number: how many elements will pick up at most. by default 0 means
+    the maximum number, i.e. the total group number
+    :return: a list file in which PDB IDs are provided
+    '''
+    length= len(group)
+    subgroup = []
+    if max_element_number==0:
+        max_element_number=length
+    else:
+        if max_element_number>length:
+            print 'This is out of range, there will be only ' \
+                  '%s groups and all these will be returned' % str(length)
+            max_element_number= length
+
+    if max_element_number==length:
+        for each_group in group:
+            subgroup.append(choice(each_group))
+    else:
+        for each_group in choice(group,max_element_number):
+            subgroup.append(choice(each_group))
+
+    return subgroup
+
+def select_subgroup_from_file(filename, max_element_number=0):
+    '''
+
+    :param filename:
+    :param max_element_number:
+    :return:
+    '''
+    list = []
+    first_line= False
+    try:
+        with open(filename, 'r') as f:
+            for each_line in f.readlines():
+                if first_line == False:
+                    first_line = True
+                    continue
+                group = each_line.split(' ')
+                group[-1]=group[-1].rstrip('\n')
+                list.append(group)
+        return select_subgroup_from_variable(list,max_element_number=max_element_number)
+    except:
+        raise IOError('cannot parse such file!')
+
+
+
+if __name__ == '__main__':
+    '''
+    To Use this script:
+    1. run create_group_from_FASTA once and get the variable(optional)
+    2. call as many times of either select_subgroup_from_variable or select_subgroup_from_file as
+    you want
+    '''
+    Group = create_group_from_FASTA('full.fasta')
+    #Group = parse_group_result(os.path.join(cluster_output_file_location,'clustered.tsv'))
+    A= select_subgroup_from_variable(Group)
+    B= select_subgroup_from_file('result_group.txt',max_element_number=100)
+    print A
+    print B

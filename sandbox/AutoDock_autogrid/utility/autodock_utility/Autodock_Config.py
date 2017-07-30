@@ -1,1 +1,6 @@
-123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# Location of pythonsh environment MGLTools provide123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFpythonsh_dir=  '/home/yw174/usr/mgltools/bin/'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#pythonsh_dir= '/home/wy/Application/mgltools_x86_64Linux2_1.5.6/bin/'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+
+# Location of pythonsh environment MGLTools provide
+pythonsh_dir=  '/home/yw174/usr/mgltools/bin/'
+#pythonsh_dir= '/home/wy/Application/mgltools_x86_64Linux2_1.5.6/bin/'
+
+

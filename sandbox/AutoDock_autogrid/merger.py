@@ -1,1 +1,59 @@
-from Config import result_PREFIX,merged_Filename123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport os,io123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport csv123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef merge_the_result(filenames):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    totalfile = file(os.path.join(result_PREFIX,merged_Filename),'wb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    out = csv.writer(totalfile)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # the flag to determine whether the first line is output or not123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Never_OUTPUT= True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    count = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    lines =0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    f = open('report.txt', 'wb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # write legal files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for filedir in sorted(filenames):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print filedir123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if filedir== merged_Filename or filedir.split('.')[-1]!='csv':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            continue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # csv writer123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        csvfile= file(os.path.join(result_PREFIX,filedir),'rb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        o = csv.reader(csvfile)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for line in o:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #First line123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if line[0]=='NAME':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if Never_OUTPUT:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    out.writerow(line)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    Never_OUTPUT= False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                continue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #Not the first line123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            out.writerow(line)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            lines+=1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        count+=1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print 'Successfully merge {}'.format(filedir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        f.write('{} lines are valid in {}\n'.format(lines-1,filedir))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        csvfile.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print '{} files and {} lines are merged into one called {}'.format(count,lines,merged_Filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    f.write('{} files and {} lines are merged into one called {}'.format(count,lines,merged_Filename))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    f.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    totalfile.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFif __name__=='__main__':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    filenames= os.listdir(result_PREFIX)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    result_filename = []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for filename in filenames:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if 'filter' in filename:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            result_filename.append(filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    merge_the_result(result_filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+from Config import result_PREFIX,merged_Filename
+import os,io
+import csv
+
+def merge_the_result(filenames):
+    totalfile = file(os.path.join(result_PREFIX,merged_Filename),'wb')
+    out = csv.writer(totalfile)
+
+    # the flag to determine whether the first line is output or not
+    Never_OUTPUT= True
+
+    count = 0
+    lines =0
+
+    f = open('report.txt', 'wb')
+
+    # write legal files
+    for filedir in sorted(filenames):
+        print filedir
+        if filedir== merged_Filename or filedir.split('.')[-1]!='csv':
+            continue
+
+        # csv writer
+        csvfile= file(os.path.join(result_PREFIX,filedir),'rb')
+        o = csv.reader(csvfile)
+
+        for line in o:
+            #First line
+            if line[0]=='NAME':
+                if Never_OUTPUT:
+                    out.writerow(line)
+                    Never_OUTPUT= False
+                continue
+
+            #Not the first line
+            out.writerow(line)
+            lines+=1
+
+        count+=1
+        print 'Successfully merge {}'.format(filedir)
+        f.write('{} lines are valid in {}\n'.format(lines-1,filedir))
+
+        csvfile.close()
+
+    print '{} files and {} lines are merged into one called {}'.format(count,lines,merged_Filename)
+
+    f.write('{} files and {} lines are merged into one called {}'.format(count,lines,merged_Filename))
+    f.close()
+    totalfile.close()
+
+if __name__=='__main__':
+
+    filenames= os.listdir(result_PREFIX)
+
+    result_filename = []
+    for filename in filenames:
+        if 'filter' in filename:
+            result_filename.append(filename)
+    merge_the_result(result_filename)

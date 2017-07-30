@@ -1,1 +1,136 @@
-import tensorflow as tf123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport numpy as np123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport time,os123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom av4_input import single_dense_image_example123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom av4_atomdict import atom_dictionary123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom av4_utils import affine_transform123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef split_dense_image(dense_image):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''With input of a numpy array, splits ligand and receptor coordinates123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    and names.'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    inv_ATM = {v: k for k, v in atom_dictionary.ATM.iteritems()}123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    ligand_names,ligand_coords = [],[]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    receptor_names,receptor_coords = [],[]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for (x,y,z),atom_value in np.ndenumerate(dense_image):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if atom_value > 0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if atom_value > 10:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                atom_value -= 10123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ligand_names.append(inv_ATM[atom_value])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ligand_coords.append([float(x),float(y),float(z)])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                receptor_names.append(inv_ATM[atom_value])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                receptor_coords.append([float(x),float(y),float(z)])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return ligand_names,ligand_coords,receptor_names,receptor_coords123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef convert_to_vmd(filename,r_coords,l_coords):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''Converts a list of ligand and receptor coordinates to a tcl script123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    that can be run in VMD. Ligand will appear in red, receptor in blue.'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    f = open(filename+'.tcl','w')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # write receptor coordinates123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for position in r_coords:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        x,y,z = str(position[0])+' ',str(position[1])+' ',str(position[2])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        f.write('draw sphere {'+x+y+z+'} radius 0.3 resolution 100\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # switch color123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    f.write('draw color red\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # write ligand coordinates123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for position in l_coords:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        x,y,z = str(position[0])+' ',str(position[1])+' ',str(position[2])                                                                                              123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        f.write('draw sphere {'+x+y+z+'} radius 0.3 resolution 100\n')    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    f.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef visualize_complex():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''writes a VMD output file so you can see the complex'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # with the current setup all of the TF's operations are happening in one session123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    sess = tf.Session()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    current_filename,ligand_com,final_transition_matrix,current_idx,label,dense_image = single_dense_image_example(sess=sess,batch_size=FLAGS.batch_size,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                pixel_size=FLAGS.pixel_size,side_pixels=FLAGS.side_pixels,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                num_threads=FLAGS.num_threads,database_path=FLAGS.database_path,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                                num_epochs=FLAGS.num_epochs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    sess.run(tf.global_variables_initializer())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # launch all threads only after the graph is complete and all the variables initialized123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # previously, there was a hard to find occasional problem where the computations would start on unfinished nodes123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # IE: lhs shape [] is different from rhs shape [100] and others123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    coord = tf.train.Coordinator()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    threads = tf.train.start_queue_runners(sess=sess, coord=coord)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    batch_num = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    my_filename,my_idx,my_dense_image,my_final_matrix,my_com = sess.run([current_filename,current_idx,dense_image,final_transition_matrix,ligand_com])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print "filename",my_filename123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print "idx:",my_idx123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print "affine_matrix:",my_final_matrix123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print "center of mass", my_com123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # given a filename, extract the 4-letter PDB code (makes file naming easier later)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def get_protein_id(filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        underscores = [idx for idx, letter in enumerate(my_filename) if letter == '_']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        underscore_after_id = underscores[-2]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        protein_id = my_filename[underscore_after_id-4:underscore_after_id]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return protein_id123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    my_protein_id = get_protein_id(my_filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # invert the affine transformation matrix123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    inverted_matrix = np.linalg.inv(my_final_matrix).astype('float32')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    _,l_coords,_,r_coords = split_dense_image(my_dense_image)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # apply the inverse affine transform123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    l_coords_,_ = affine_transform(l_coords,inverted_matrix)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    r_coords_,_ = affine_transform(r_coords,inverted_matrix)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    l_coords_inv = sess.run(l_coords_)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    r_coords_inv = sess.run(r_coords_)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # invert the translation by ligand's center of mass (performed in av4_input)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for (i,j), coordinate in np.ndenumerate(l_coords):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        l_coords[i][j] = (l_coords[i][j] - (FLAGS.side_pixels * 0.5) + 0.5) + my_com[j] 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for (i,j), coordinate in np.ndenumerate(r_coords):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        r_coords[i][j] = (r_coords[i][j] - (FLAGS.side_pixels * 0.5) + 0.5) + my_com[j]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    convert_to_vmd('./complexes/'+my_protein_id,r_coords,l_coords)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    time.sleep(5)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFclass FLAGS:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """important model parameters"""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # size of one pixel generated from protein in Angstroms (float)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pixel_size = 0.5123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # size of the box around the ligand in pixels123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    side_pixels = 40123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # weights for each class for the scoring function123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # number of times each example in the dataset will be read123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    num_epochs = 5000 # epochs are counted based on the number of the protein examples123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # usually the dataset would have multiples frames of ligand binding to the same protein123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # av4_input also has an oversampling algorithm.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Example: if the dataset has 50 frames with 0 labels and 1 frame with 1 label, and we want to run it for 50 epochs,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # 50 * 2(oversampling) * 50(negative samples) = 50 * 100 = 5000123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # parameters to optimize runs on different machines for speed/performance123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # number of vectors(images) in one batch123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    batch_size = 1  # number of background processes to fill the queue with images123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    num_threads = 1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # data directories123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # path to the csv file with names of images selected for training123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    database_path = "../datasets/labeled_av4/**/"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # directory where to write variable summaries123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    output_dir = './complexes'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # optional saved session: network from which to load variable states123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    saved_session = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef main(_):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """gracefully creates directories for the log files and for the network state launches. After that orders network training to start"""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    output_dir = os.path.join(FLAGS.output_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if not tf.gfile.Exists(output_dir):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        tf.gfile.MakeDirs(output_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    visualize_complex()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFif __name__ == '__main__':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFtf.app.run()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+import tensorflow as tf
+import numpy as np
+import time,os
+from av4_input import single_dense_image_example
+from av4_atomdict import atom_dictionary
+from av4_utils import affine_transform
+
+def split_dense_image(dense_image):
+    '''With input of a numpy array, splits ligand and receptor coordinates
+    and names.'''
+    inv_ATM = {v: k for k, v in atom_dictionary.ATM.iteritems()}
+    ligand_names,ligand_coords = [],[]
+    receptor_names,receptor_coords = [],[]
+    for (x,y,z),atom_value in np.ndenumerate(dense_image):
+        if atom_value > 0:
+            if atom_value > 10:
+                atom_value -= 10
+                ligand_names.append(inv_ATM[atom_value])
+                ligand_coords.append([float(x),float(y),float(z)])
+            else:
+                receptor_names.append(inv_ATM[atom_value])
+                receptor_coords.append([float(x),float(y),float(z)])
+    return ligand_names,ligand_coords,receptor_names,receptor_coords
+
+def convert_to_vmd(filename,r_coords,l_coords):
+    '''Converts a list of ligand and receptor coordinates to a tcl script
+    that can be run in VMD. Ligand will appear in red, receptor in blue.'''
+    f = open(filename+'.tcl','w')
+    # write receptor coordinates
+    for position in r_coords:
+        x,y,z = str(position[0])+' ',str(position[1])+' ',str(position[2])
+        f.write('draw sphere {'+x+y+z+'} radius 0.3 resolution 100\n')
+    
+    # switch color
+    f.write('draw color red\n')
+
+    # write ligand coordinates
+    for position in l_coords:
+        x,y,z = str(position[0])+' ',str(position[1])+' ',str(position[2])                                                                                              
+        f.write('draw sphere {'+x+y+z+'} radius 0.3 resolution 100\n')    
+    
+    f.close()
+
+def visualize_complex():
+    '''writes a VMD output file so you can see the complex'''
+
+    # with the current setup all of the TF's operations are happening in one session
+    sess = tf.Session()
+
+    current_filename,ligand_com,final_transition_matrix,current_idx,label,dense_image = single_dense_image_example(sess=sess,batch_size=FLAGS.batch_size,
+                                                pixel_size=FLAGS.pixel_size,side_pixels=FLAGS.side_pixels,
+                                                num_threads=FLAGS.num_threads,database_path=FLAGS.database_path,
+                                                num_epochs=FLAGS.num_epochs)
+    sess.run(tf.global_variables_initializer())
+
+    # launch all threads only after the graph is complete and all the variables initialized
+    # previously, there was a hard to find occasional problem where the computations would start on unfinished nodes
+    # IE: lhs shape [] is different from rhs shape [100] and others
+    coord = tf.train.Coordinator()
+    threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
+    batch_num = 0
+    
+    my_filename,my_idx,my_dense_image,my_final_matrix,my_com = sess.run([current_filename,current_idx,dense_image,final_transition_matrix,ligand_com])
+    print "filename",my_filename
+    print "idx:",my_idx
+    print "affine_matrix:",my_final_matrix
+    print "center of mass", my_com
+
+    # given a filename, extract the 4-letter PDB code (makes file naming easier later)
+    def get_protein_id(filename):
+        underscores = [idx for idx, letter in enumerate(my_filename) if letter == '_']
+        underscore_after_id = underscores[-2]
+        protein_id = my_filename[underscore_after_id-4:underscore_after_id]
+        return protein_id
+    my_protein_id = get_protein_id(my_filename)
+
+    # invert the affine transformation matrix
+    inverted_matrix = np.linalg.inv(my_final_matrix).astype('float32')
+
+    _,l_coords,_,r_coords = split_dense_image(my_dense_image)
+    
+    # apply the inverse affine transform
+    l_coords_,_ = affine_transform(l_coords,inverted_matrix)
+    r_coords_,_ = affine_transform(r_coords,inverted_matrix)
+    l_coords_inv = sess.run(l_coords_)
+    r_coords_inv = sess.run(r_coords_)
+
+    # invert the translation by ligand's center of mass (performed in av4_input)
+    for (i,j), coordinate in np.ndenumerate(l_coords):
+        l_coords[i][j] = (l_coords[i][j] - (FLAGS.side_pixels * 0.5) + 0.5) + my_com[j] 
+    for (i,j), coordinate in np.ndenumerate(r_coords):
+        r_coords[i][j] = (r_coords[i][j] - (FLAGS.side_pixels * 0.5) + 0.5) + my_com[j]
+
+    convert_to_vmd('./complexes/'+my_protein_id,r_coords,l_coords)
+
+    time.sleep(5)
+
+
+class FLAGS:
+    """important model parameters"""
+
+    # size of one pixel generated from protein in Angstroms (float)
+    pixel_size = 0.5
+    # size of the box around the ligand in pixels
+    side_pixels = 40
+    # weights for each class for the scoring function
+    # number of times each example in the dataset will be read
+    num_epochs = 5000 # epochs are counted based on the number of the protein examples
+    # usually the dataset would have multiples frames of ligand binding to the same protein
+    # av4_input also has an oversampling algorithm.
+    # Example: if the dataset has 50 frames with 0 labels and 1 frame with 1 label, and we want to run it for 50 epochs,
+    # 50 * 2(oversampling) * 50(negative samples) = 50 * 100 = 5000
+
+    # parameters to optimize runs on different machines for speed/performance
+    # number of vectors(images) in one batch
+    batch_size = 1  # number of background processes to fill the queue with images
+    num_threads = 1
+    # data directories
+    # path to the csv file with names of images selected for training
+    database_path = "../datasets/labeled_av4/**/"
+    # directory where to write variable summaries
+    output_dir = './complexes'
+    # optional saved session: network from which to load variable states
+    saved_session = None
+
+
+def main(_):
+    """gracefully creates directories for the log files and for the network state launches. After that orders network training to start"""
+    output_dir = os.path.join(FLAGS.output_dir)
+    if not tf.gfile.Exists(output_dir):
+        tf.gfile.MakeDirs(output_dir)
+    visualize_complex()
+
+if __name__ == '__main__':
+tf.app.run()

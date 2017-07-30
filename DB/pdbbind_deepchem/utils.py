@@ -1,1 +1,305 @@
-import pickle123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport sys123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport io123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport zlib123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport gzip123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport bz2123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport warnings123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport contextlib123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport os123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport numpy as np 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport pandas as pd123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport joblib123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom contextlib import closing123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom io import BytesIO123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom threading import RLock123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFUnpickler = pickle.Unpickler123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFPickler = pickle.Pickler123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# Magic numbers of supported compression file formats.        '123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_ZFILE_PREFIX = b'ZF'  # used with pickle files created before 0.9.3.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_ZLIB_PREFIX = b'\x78'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_GZIP_PREFIX = b'\x1f\x8b'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_BZ2_PREFIX = b'BZ'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_XZ_PREFIX = b'\xfd\x37\x7a\x58\x5a'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_LZMA_PREFIX = b'\x5d\x00'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# Supported compressors123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_COMPRESSORS = ('zlib', 'bz2', 'lzma', 'xz', 'gzip')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_COMPRESSOR_CLASSES = [gzip.GzipFile, bz2.BZ2File]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# The max magic number length of supported compression file types.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_MAX_PREFIX_LEN = max(len(prefix)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                      for prefix in (_ZFILE_PREFIX, _GZIP_PREFIX, _BZ2_PREFIX,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                     _XZ_PREFIX, _LZMA_PREFIX))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# Buffer size used in io.BufferedReader and io.BufferedWriter123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_IO_BUFFER_SIZE = 1024 ** 2123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef hex_str(an_int):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """Convert an int to an hexadecimal string."""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return '{0:#x}'.format(an_int)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_MAX_LEN = len(hex_str(2 ** 64))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF_CHUNK_SIZE = 64 * 1024123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFPath = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF####################################################################################123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef _detect_compressor(fileobj):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """Return the compressor matching fileobj."""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Ensure we read the first bytes.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    fileobj.seek(0)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    first_bytes = fileobj.read(_MAX_PREFIX_LEN)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    fileobj.seek(0)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if first_bytes.startswith(_ZLIB_PREFIX):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return "zlib"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    elif first_bytes.startswith(_GZIP_PREFIX):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return "gzip"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    elif first_bytes.startswith(_BZ2_PREFIX):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return "bz2"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    elif first_bytes.startswith(_LZMA_PREFIX):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return "lzma"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    elif first_bytes.startswith(_XZ_PREFIX):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return "xz"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    elif first_bytes.startswith(_ZFILE_PREFIX):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return "compat"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return "not-compressed"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef _read_fileobject(fileobj, filename, mmap_mode=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	compressor = _detect_compressor(fileobj)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	if compressor == 'compat':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		return filename123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef read_zfile(file_handle):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """Read the z-file and return the content as a string.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Z-files are raw data compressed with zlib used internally by joblib123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for persistence. Backward compatibility is not guaranteed. Do not123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    use for external purposes.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    file_handle.seek(0)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    header_length = len(_ZFILE_PREFIX) + _MAX_LEN123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    length = file_handle.read(header_length)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    length = length[len(_ZFILE_PREFIX):]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    length = int(length, 16)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # With python2 and joblib version <= 0.8.4 compressed pickle header is one123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # character wider so we need to ignore an additional space if present.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Note: the first byte of the zlib data is guaranteed not to be a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # space according to123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # https://tools.ietf.org/html/rfc6713#section-2.1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    next_byte = file_handle.read(1)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if next_byte != b' ':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # The zlib compressed data has started and we need to go back123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # one byte123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        file_handle.seek(header_length)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # We use the known length of the data to tell Zlib the size of the123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # buffer to allocate.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    data = zlib.decompress(file_handle.read(), 15, length)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    assert len(data) == length, (123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        "Incorrect data length while decompressing %s."123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        "The file could be corrupted." % file_handle)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return data123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFclass NDArrayWrapper(object):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """An object to be persisted instead of numpy arrays.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    The only thing this object does, is to carry the filename in which123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    the array has been persisted, and the array subclass.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def __init__(self, filename, subclass, allow_mmap=True):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        """Constructor. Store the useful information for later."""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.filename = filename123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.subclass = subclass123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.allow_mmap = allow_mmap123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def read(self, unpickler):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        """Reconstruct the array."""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        filename = os.path.join(unpickler._dirname, self.filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Load the array from the disk123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # use getattr instead of self.allow_mmap to ensure backward compat123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # with NDArrayWrapper instances pickled with joblib < 0.9.0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        allow_mmap = getattr(self, 'allow_mmap', True)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        memmap_kwargs = ({} if not allow_mmap123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                         else {'mmap_mode': unpickler.mmap_mode})123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        array = unpickler.np.load(filename, **memmap_kwargs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Reconstruct subclasses. This does not work with old123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # versions of numpy123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if (hasattr(array, '__array_prepare__') and123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.subclass not in (unpickler.np.ndarray,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                  unpickler.np.memmap)):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # We need to reconstruct another subclass123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            new_array = unpickler.np.core.multiarray._reconstruct(123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                self.subclass, (0,), 'b')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            return new_array.__array_prepare__(array)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			return array123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFclass ZipNumpyUnpickler(Unpickler):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    """A subclass of the Unpickler to unpickle our numpy pickles."""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    dispatch = Unpickler.dispatch.copy()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def __init__(self, filename, file_handle, mmap_mode=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        """Constructor."""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self._filename = os.path.basename(filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self._dirname = os.path.dirname(filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.mmap_mode = mmap_mode123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.file_handle = self._open_pickle(file_handle)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Unpickler.__init__(self, self.file_handle)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            import numpy as np123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        except ImportError:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            np = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        self.np = np123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def _open_pickle(self, file_handle):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return BytesIO(read_zfile(file_handle))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def load_build(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        """Set the state of a newly created object.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        We capture it to replace our place-holder objects,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        NDArrayWrapper, by the array we are interested in. We123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        replace them directly in the stack of pickler.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        """123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Unpickler.load_build(self)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if isinstance(self.stack[-1], NDArrayWrapper):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if self.np is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                raise ImportError("Trying to unpickle an ndarray, "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                  "but numpy didn't import correctly")123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            nd_array_wrapper = self.stack.pop()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            array = nd_array_wrapper.read(self)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            self.stack.append(array)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Be careful to register our new method.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    dispatch[pickle.BUILD] = load_build123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef load(filename, mmap_mode=None):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	"""Reconstruct a Python object from a file persisted with joblib.dump."""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	f = open(filename, 'rb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	fobj = _read_fileobject(f, filename, mmap_mode)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	if isinstance(fobj, (str, unicode)):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		return load_compatibility(fobj)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	obj = _unpickle(fobj, filename, mmap_mode)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	return obj123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef load_compatibility(filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	"""Reconstruct a Python object from a file persisted with joblib.dump.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	This function ensure the compatibility of joblib old persistence format (<= 0.9.3)"""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	file_handle = open(filename, 'rb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	unpickler = ZipNumpyUnpickler(filename, file_handle=file_handle)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		obj = unpickler.load()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	finally:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		if hasattr(unpickler, 'file_handle'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			unpickler.file_handle.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	return obj123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef load_from_disk(filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	return load(filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFclass DiskDataset:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	def __init__(self, data_dir):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		self.data_dir = data_dir123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		metadata_filename = os.path.join(self.data_dir, "metadata.joblib")123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		if os.path.exists(metadata_filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			# self.tasks, self.metadata_df = joblib.load(metadata_filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			self.tasks, self.metadata_df = load_from_disk(metadata_filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			raise ValueError("No metadata found on disk")123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	def __len__(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		"""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		Finds number of elements in dataset.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		"""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		total = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		for _, row in self.metadata_df.iterrows():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		  y = load_from_disk(os.path.join(self.data_dir, row['ids']))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		  total += len(y)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		return total123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	def itershards(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		def iterate(dataset):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			for _, row in dataset.metadata_df.iterrows():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF				X = np.array(load_from_disk(os.path.join(dataset.data_dir, row['X'])))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF				ids = np.array(load_from_disk(os.path.join(dataset.data_dir, row['ids'])), dtype=object)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF				if row['y'] is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF					y = np.array(load_from_disk(os.path.join(dataset.data_dir, row['y'])))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF				else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF					y = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF				if row['w'] is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF					w_filename = os.path.join(dataset.data_dir, row['w'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF					if os.path.exists(w_filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF						w = np.array(load_from_disk(w_filename))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF					else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF						w = np.ones(y.shape)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF				else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF					w = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF				yield (X, y, w, ids)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		return iterate(self)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	@property123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	def ids(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		"""Get the ids vector for this dataset as a single numpy array"""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		if len(self) == 0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			return np.array([])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		ids = []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		for (_, _, _, ids_b) in self.itershards():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			ids.append(np.atleast_1d(np.squeeze(ids_b)))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		return np.concatenate(ids)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	@property123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	def X(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		"""Gets the X vector for this dataset as a single numpy array"""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		Xs = []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		one_dimensional = False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		for (X_b, _, _, _) in self.itershards():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			Xs.append(X_b)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			if len(X_b.shape) == 1:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF				one_dimensional = True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			if not one_dimensional:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF				return np.vstack(Xs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF				return np.concatenate(Xs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	@property123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	def y(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		"""Get the y vector for this dataset as a single numpy array."""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		ys = []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		for (_, y_b, _, _) in self.itershards():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			ys.append(y_b)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		return np.vstack(ys)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	@property123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF	def w(self):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		"""Get the weight vector for this dataset as a single numpy array."""123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		ws = []123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		for (_, _, w_b, _) in self.itershards():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF			ws.append(np.array(w_b))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF		return np.vstack(ws)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+import pickle
+import sys
+import io
+import zlib
+import gzip
+import bz2
+import warnings
+import contextlib
+import os
+import numpy as np 
+import pandas as pd
+import joblib
+from contextlib import closing
+from io import BytesIO
+
+
+from threading import RLock
+
+Unpickler = pickle.Unpickler
+Pickler = pickle.Pickler
+
+
+# Magic numbers of supported compression file formats.        '
+_ZFILE_PREFIX = b'ZF'  # used with pickle files created before 0.9.3.
+_ZLIB_PREFIX = b'\x78'
+_GZIP_PREFIX = b'\x1f\x8b'
+_BZ2_PREFIX = b'BZ'
+_XZ_PREFIX = b'\xfd\x37\x7a\x58\x5a'
+_LZMA_PREFIX = b'\x5d\x00'
+
+# Supported compressors
+_COMPRESSORS = ('zlib', 'bz2', 'lzma', 'xz', 'gzip')
+_COMPRESSOR_CLASSES = [gzip.GzipFile, bz2.BZ2File]
+
+# The max magic number length of supported compression file types.
+_MAX_PREFIX_LEN = max(len(prefix)
+                      for prefix in (_ZFILE_PREFIX, _GZIP_PREFIX, _BZ2_PREFIX,
+                                     _XZ_PREFIX, _LZMA_PREFIX))
+
+# Buffer size used in io.BufferedReader and io.BufferedWriter
+_IO_BUFFER_SIZE = 1024 ** 2
+
+def hex_str(an_int):
+    """Convert an int to an hexadecimal string."""
+    return '{0:#x}'.format(an_int)
+
+_MAX_LEN = len(hex_str(2 ** 64))
+_CHUNK_SIZE = 64 * 1024
+
+Path = None
+
+####################################################################################
+
+
+
+def _detect_compressor(fileobj):
+    """Return the compressor matching fileobj."""
+
+    # Ensure we read the first bytes.
+    fileobj.seek(0)
+    first_bytes = fileobj.read(_MAX_PREFIX_LEN)
+    fileobj.seek(0)
+
+    if first_bytes.startswith(_ZLIB_PREFIX):
+        return "zlib"
+    elif first_bytes.startswith(_GZIP_PREFIX):
+        return "gzip"
+    elif first_bytes.startswith(_BZ2_PREFIX):
+        return "bz2"
+    elif first_bytes.startswith(_LZMA_PREFIX):
+        return "lzma"
+    elif first_bytes.startswith(_XZ_PREFIX):
+        return "xz"
+    elif first_bytes.startswith(_ZFILE_PREFIX):
+        return "compat"
+
+    return "not-compressed"
+
+
+def _read_fileobject(fileobj, filename, mmap_mode=None):
+	compressor = _detect_compressor(fileobj)
+	if compressor == 'compat':
+		return filename
+
+def read_zfile(file_handle):
+    """Read the z-file and return the content as a string.
+    Z-files are raw data compressed with zlib used internally by joblib
+    for persistence. Backward compatibility is not guaranteed. Do not
+    use for external purposes.
+    """
+    file_handle.seek(0)
+    header_length = len(_ZFILE_PREFIX) + _MAX_LEN
+    length = file_handle.read(header_length)
+    length = length[len(_ZFILE_PREFIX):]
+    length = int(length, 16)
+
+    # With python2 and joblib version <= 0.8.4 compressed pickle header is one
+    # character wider so we need to ignore an additional space if present.
+    # Note: the first byte of the zlib data is guaranteed not to be a
+    # space according to
+    # https://tools.ietf.org/html/rfc6713#section-2.1
+    next_byte = file_handle.read(1)
+    if next_byte != b' ':
+        # The zlib compressed data has started and we need to go back
+        # one byte
+        file_handle.seek(header_length)
+
+    # We use the known length of the data to tell Zlib the size of the
+    # buffer to allocate.
+    data = zlib.decompress(file_handle.read(), 15, length)
+    assert len(data) == length, (
+        "Incorrect data length while decompressing %s."
+        "The file could be corrupted." % file_handle)
+    return data
+
+
+class NDArrayWrapper(object):
+    """An object to be persisted instead of numpy arrays.
+    The only thing this object does, is to carry the filename in which
+    the array has been persisted, and the array subclass.
+    """
+
+    def __init__(self, filename, subclass, allow_mmap=True):
+        """Constructor. Store the useful information for later."""
+        self.filename = filename
+        self.subclass = subclass
+        self.allow_mmap = allow_mmap
+
+    def read(self, unpickler):
+        """Reconstruct the array."""
+        filename = os.path.join(unpickler._dirname, self.filename)
+        # Load the array from the disk
+        # use getattr instead of self.allow_mmap to ensure backward compat
+        # with NDArrayWrapper instances pickled with joblib < 0.9.0
+        allow_mmap = getattr(self, 'allow_mmap', True)
+        memmap_kwargs = ({} if not allow_mmap
+                         else {'mmap_mode': unpickler.mmap_mode})
+        array = unpickler.np.load(filename, **memmap_kwargs)
+        # Reconstruct subclasses. This does not work with old
+        # versions of numpy
+        if (hasattr(array, '__array_prepare__') and
+            self.subclass not in (unpickler.np.ndarray,
+                                  unpickler.np.memmap)):
+            # We need to reconstruct another subclass
+            new_array = unpickler.np.core.multiarray._reconstruct(
+                self.subclass, (0,), 'b')
+            return new_array.__array_prepare__(array)
+        else:
+			return array
+
+
+class ZipNumpyUnpickler(Unpickler):
+    """A subclass of the Unpickler to unpickle our numpy pickles."""
+
+    dispatch = Unpickler.dispatch.copy()
+
+    def __init__(self, filename, file_handle, mmap_mode=None):
+        """Constructor."""
+        self._filename = os.path.basename(filename)
+        self._dirname = os.path.dirname(filename)
+        self.mmap_mode = mmap_mode
+        self.file_handle = self._open_pickle(file_handle)
+        Unpickler.__init__(self, self.file_handle)
+        try:
+            import numpy as np
+        except ImportError:
+            np = None
+        self.np = np
+
+    def _open_pickle(self, file_handle):
+        return BytesIO(read_zfile(file_handle))
+
+    def load_build(self):
+        """Set the state of a newly created object.
+        We capture it to replace our place-holder objects,
+        NDArrayWrapper, by the array we are interested in. We
+        replace them directly in the stack of pickler.
+        """
+        Unpickler.load_build(self)
+        if isinstance(self.stack[-1], NDArrayWrapper):
+            if self.np is None:
+                raise ImportError("Trying to unpickle an ndarray, "
+                                  "but numpy didn't import correctly")
+            nd_array_wrapper = self.stack.pop()
+            array = nd_array_wrapper.read(self)
+            self.stack.append(array)
+
+    # Be careful to register our new method.
+    dispatch[pickle.BUILD] = load_build
+
+
+def load(filename, mmap_mode=None):
+	"""Reconstruct a Python object from a file persisted with joblib.dump."""
+	f = open(filename, 'rb')
+	fobj = _read_fileobject(f, filename, mmap_mode)
+	if isinstance(fobj, (str, unicode)):
+		return load_compatibility(fobj)
+
+	obj = _unpickle(fobj, filename, mmap_mode)
+
+	return obj
+
+
+def load_compatibility(filename):
+	"""Reconstruct a Python object from a file persisted with joblib.dump.
+	This function ensure the compatibility of joblib old persistence format (<= 0.9.3)"""
+	file_handle = open(filename, 'rb')
+	unpickler = ZipNumpyUnpickler(filename, file_handle=file_handle)
+	try:
+		obj = unpickler.load()
+	finally:
+		if hasattr(unpickler, 'file_handle'):
+			unpickler.file_handle.close()
+	return obj
+
+
+def load_from_disk(filename):
+	return load(filename)
+
+
+class DiskDataset:
+
+	def __init__(self, data_dir):
+		self.data_dir = data_dir
+
+		metadata_filename = os.path.join(self.data_dir, "metadata.joblib")
+		if os.path.exists(metadata_filename):
+			# self.tasks, self.metadata_df = joblib.load(metadata_filename)
+			self.tasks, self.metadata_df = load_from_disk(metadata_filename)
+		else:
+			raise ValueError("No metadata found on disk")
+
+	def __len__(self):
+		"""
+		Finds number of elements in dataset.
+		"""
+		total = 0
+		for _, row in self.metadata_df.iterrows():
+		  y = load_from_disk(os.path.join(self.data_dir, row['ids']))
+		  total += len(y)
+		return total
+
+	def itershards(self):
+
+		def iterate(dataset):
+			for _, row in dataset.metadata_df.iterrows():
+				X = np.array(load_from_disk(os.path.join(dataset.data_dir, row['X'])))
+				ids = np.array(load_from_disk(os.path.join(dataset.data_dir, row['ids'])), dtype=object)
+
+				if row['y'] is not None:
+					y = np.array(load_from_disk(os.path.join(dataset.data_dir, row['y'])))
+				else:
+					y = None
+
+				if row['w'] is not None:
+					w_filename = os.path.join(dataset.data_dir, row['w'])
+					if os.path.exists(w_filename):
+						w = np.array(load_from_disk(w_filename))
+					else:
+						w = np.ones(y.shape)
+				else:
+					w = None
+				yield (X, y, w, ids)
+
+		return iterate(self)
+
+	@property
+	def ids(self):
+		"""Get the ids vector for this dataset as a single numpy array"""
+		if len(self) == 0:
+			return np.array([])
+		ids = []
+		for (_, _, _, ids_b) in self.itershards():
+			ids.append(np.atleast_1d(np.squeeze(ids_b)))
+		return np.concatenate(ids)
+
+	@property
+	def X(self):
+		"""Gets the X vector for this dataset as a single numpy array"""
+		Xs = []
+		one_dimensional = False
+		for (X_b, _, _, _) in self.itershards():
+			Xs.append(X_b)
+			if len(X_b.shape) == 1:
+				one_dimensional = True
+			if not one_dimensional:
+				return np.vstack(Xs)
+			else:
+				return np.concatenate(Xs)
+
+	@property
+	def y(self):
+		"""Get the y vector for this dataset as a single numpy array."""
+		ys = []
+		for (_, y_b, _, _) in self.itershards():
+			ys.append(y_b)
+		return np.vstack(ys)
+
+	@property
+	def w(self):
+		"""Get the weight vector for this dataset as a single numpy array."""
+		ws = []
+		for (_, _, w_b, _) in self.itershards():
+			ws.append(np.array(w_b))
+		return np.vstack(ws)

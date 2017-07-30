@@ -1,1 +1,19 @@
-# Target list123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF### main_pdb_target_list123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF - Entries of :123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    - Ligand Search : Has free ligands=yes and Percent Sequence123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    - Alignment Search : PDB can contain Expression Tag sequence = Yes123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF - entry num:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    - 69753 structures123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    - 69357 avaliable123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    - 396   doesn't have pdb structure123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF### main_ligands_target_list123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF - Entries of :123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    - Ligand Search : Has free ligands=yes and Percent Sequence123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    - Alignment Search : PDB can contain Expression Tag sequence = Yes123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF - entry num:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    - 17786 ligands123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+# Target list
+
+### main_pdb_target_list
+ - Entries of :
+    - Ligand Search : Has free ligands=yes and Percent Sequence
+    - Alignment Search : PDB can contain Expression Tag sequence = Yes
+
+ - entry num:
+    - 69753 structures
+    - 69357 avaliable
+    - 396   doesn't have pdb structure
+
+### main_ligands_target_list
+ - Entries of :
+    - Ligand Search : Has free ligands=yes and Percent Sequence
+    - Alignment Search : PDB can contain Expression Tag sequence = Yes
+
+ - entry num:
+    - 17786 ligands

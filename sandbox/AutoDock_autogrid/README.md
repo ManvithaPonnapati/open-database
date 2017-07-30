@@ -1,1 +1,17 @@
-# MIT Affinity --- Data Preprocessing123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF## Intro123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFThis is the program to convert source file into the vector123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFthat will be selected and feed into the network123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFThe program aims at the following goals:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF*   Get source sdf files and split them by pdbnames123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF*   For each RCSB protein ID (i.e. 4 character ID), prepare experimental data123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF*   In the meantime, seperate ligans on pdb and send them to the pipeline that will be docking to generate unlabeled samples123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF*   Get result from smina and mark them as the input files.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF## Usage123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFTo be continue
+# MIT Affinity --- Data Preprocessing
+
+
+## Intro
+
+This is the program to convert source file into the vector
+that will be selected and feed into the network
+
+The program aims at the following goals:
+*   Get source sdf files and split them by pdbnames
+*   For each RCSB protein ID (i.e. 4 character ID), prepare experimental data
+*   In the meantime, seperate ligans on pdb and send them to the pipeline that will be docking to generate unlabeled samples
+*   Get result from smina and mark them as the input files.
+
+## Usage
+
+To be continue

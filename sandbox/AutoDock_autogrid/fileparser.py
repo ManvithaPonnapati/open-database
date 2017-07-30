@@ -1,1 +1,312 @@
-__author__ = 'wy'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport csv123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport logging123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport os123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport time123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport urllib123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom functools import wraps123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom Config import *123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom data_process.preprocess.utility.autodock_utility import repair_pdbfile123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom data_process.preprocess.utility.Receptor_container import pdb_container123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFThe main program to extract molecules in .sdf files and compare with ligands on PDB files.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFThen accept all pairs with similarity >= 0.85 and generate the corresponding vectors.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#This part is used to set debug log123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#This will generate a log that record every content logged with a specific security levels123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfileHandler = logging.FileHandler('debug.log',mode='w')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfileHandler.setLevel(logging.DEBUG)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFformatter = logging.Formatter('LINE %(lineno)-4d  %(levelname)-8s %(message)s', '%m-%d %H:%M')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfileHandler.setFormatter(formatter)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFlogging.getLogger('').addHandler(fileHandler)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef list_formatter(table):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    I don't know if there is a better solution to format a list into string123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param table:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        output='['+str(table[0])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for i in range(len(table)-1):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            output+=(','+str(table[i+1]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        output+=']'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        raise TypeError('This object is not iterable!')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return output123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef fn_timer(function):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    This is the decorator used for time counting issue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Need not understand this one. It has nothing to do with generating files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param function:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return: no return. just print and record the time the decorated program ran.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    @wraps(function)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def function_timer(*args, **kwargs):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        t0 = time.time()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        result = function(*args, **kwargs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        t1 = time.time()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print ("Total time running %s: %s seconds" %123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF               (function.func_name, str(t1 - t0))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF               )123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        logging.warning ("Total time running %s: %s seconds" %123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF               (function.func_name, str(t1 - t0))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF               )123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return result123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return function_timer123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF@fn_timer123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef mol_ligand_tar_generator(src,filepos,statistic_csv=None,CLEAN=False,fileforbabel='a.sdf'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param src: pdb name123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param statistic_csv: the report csv file's name123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param CLEAN: Wipe temporary pdb files or not. Note I will not give options to wipe results. That's dangerous123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return: True: If everything works fine123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF             False: Unexpected error happens. Note if there is no reuslt, it will return True because everything runs fine.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #Wipe the pdb temporary files if you wish:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if CLEAN:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        files = os.listdir('data/')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for filename in files:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            loc = os.path.join('data/') + filename123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if os.path.exists(loc):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                os.remove(loc)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # write the result123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    result_file_name ='filter_{}'.format(src.split('/')[-1].split('.')[0])+'.csv'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    filedir = os.path.join(result_PREFIX,result_file_name)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if not os.path.isfile(filedir):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not os.path.exists(result_PREFIX):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            os.mkdir(result_PREFIX)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # in case for overwriting123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if os.path.exists(filedir):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print '{} already done.'.format(src)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        logging.info('{} already done'.format(src))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # csv writer123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer = file(filedir, 'w')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w = csv.writer(writer)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w.writerow(experiment_part+PDB_part)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print len(experiment_part+PDB_part)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # combine as file direction123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    sdfone = filedir_PREFIX + src.upper() + '.sdf'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #open the source molecule files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #Naming format [PDB name].sdf all lowercase123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        input_sdf = open(sdfone,'r')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        logging.error('PDB {} with ligands sdf not found!'.format(src))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # This variables are used for counting and statistic issue.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    active_count=0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    count=0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    bad_one=0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Combine as pdb file address123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # We generate a class to store each ligands as a dict, and use a method123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # to find the similar ones by tanimoto comparing scores to specific input files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    PDBindex= pdb_container(src,filepos=filepos)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if PDBindex.get_pdb_type()!='Protein':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # In each time123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # We write one single molecule in to a sdf file called a.sdf123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Then use this file to compare with the one we extract from pdb files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Since we use scripts so I just extract them to make sure that is what123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # we really want to compare123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # (But there should be a smarter way to do so)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        mol = ''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        LINE_BEGIN=True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Wait_Signal= 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        experimental_data = {}123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        one_line=['']*len(experiment_part)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #print 'here'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for line in input_sdf:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            mol+=line123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #This part is finding columns need to be recorded in sdf files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if LINE_BEGIN:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                one_line[0] = line.lstrip(' ').rstrip('\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                LINE_BEGIN = False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # just lazy123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if Wait_Signal>0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if Wait_Signal==999:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    one_line[1]=line.lstrip(' ').rstrip('\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    monomerID = one_line[1]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    one_line[2+Wait_Signal]= line.lstrip(' ').rstrip('\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                Wait_Signal= 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            for i in range(len(key)):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if key[i] in line:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    Wait_Signal=i+1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    break123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if NAME in line:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                Wait_Signal=999123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if '$$$$' in line:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                #end of a molecule123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                assert monomerID is not None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if monomerID not in experimental_data:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    fileforbabel = temp_pdb_PREFIX+'/{}/{}_{}.sdf'.format(src,src,monomerID)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    o = open(fileforbabel, "wb")123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    o.write(mol)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    o.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    experimental_data[monomerID]=one_line123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    one_line = [''] * len(experiment_part)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    #combine experimental data together123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    for i in range(len(key)):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        if experimental_data[monomerID][3+i]=='':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            experimental_data[monomerID][3 + i] = one_line[3+i]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            if len(one_line[3+i])>0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                                experimental_data[monomerID][3+i] += '|'+one_line[3+i]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                mol = ''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                LINE_BEGIN=False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                monomerID = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for k,v in experimental_data.items():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #print k,v123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            fileforbabel  = temp_pdb_PREFIX+'/{0}/{0}_{1}.sdf'.format(src,k)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # Find pairs with at least 85% similarity scores123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            ans_list = PDBindex.find_similar_target(fileforbabel)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            #print 'here'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            count += 1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            for eachone in ans_list:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # Combine each part together123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                v[2] = eachone['cp']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                active_count += 1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                w.writerow(v + PDBindex.bundle_result(eachone['id']))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if len(ans_list) == 0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                bad_one += 1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                logging.info('not found ligand here: {}_{}.'.format(src, one_line[1]))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #raise TypeError123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        logging.error('Unknown error here!')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    logging.warning('{} bad ligands found'.format(bad_one))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    logging.warning('{} molecules are detected, and {} pairs are recorded.'.format(count,active_count))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #Discard unused one123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    PDBindex.clean_temp_data()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer.flush()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #Do some record123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if statistic_csv is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        writer = file(statistic_csv, 'ab')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        w = csv.writer(writer)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        w.writerow([src,count,count-bad_one,bad_one,active_count])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        writer.flush()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        writer.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef do_one_pdb(pdb,filename=None,REPORTCSV=None,index=0):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    For each target-complex pdb , this program check if .pdb file exists123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if not ,download first then call the function to match all possible target-ligands with123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    molecules in sdf files in one single pdb123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param pdb:name123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :parameter REPORTCSV: sometimes generate a list of report with the filename this one123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # For each pdb name , there should be one corresponding molecule files.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # This will generate one result file.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pdb = pdb.lower()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #if os.path.exists(os.path.join(temp_pdb_PREFIX,pdb)):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #    return123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if filename is None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        filename = os.path.join(pdb_PREFIX,'{}.pdb.gz'.format(pdb))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if os.path.exists(filename):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # pdbfile exists123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        logging.info(pdb + ' has already exists')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return mol_ligand_tar_generator(pdb,filename,statistic_csv=REPORTCSV,fileforbabel='{}.sdf'.format(index))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Not exists, download from the internet123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        urllib.urlretrieve(url_prefix + '{}.pdb.gz'.format(pdb.lower()), filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # Wait for 1 second from rejection on connection.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        time.sleep(1)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # This is to check whether we download the file successfully123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        o = open(filename, 'r')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for l in o:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if l.find('DOCTYPE') != -1:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                print 'download {} failed'.format(pdb)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                logging.error('download {} failed'.format(pdb))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                return False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                #If we download files successfully, then we will run the program123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                print 'download {} successfully'.format(pdb)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                logging.info('download {} successfully'.format(pdb))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                return mol_ligand_tar_generator(pdb,filename,statistic_csv=REPORTCSV,fileforbabel='{}.sdf'.format(index))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        o.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef initiate_report():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    csv_name = 'report.csv'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer = file(csv_name, 'wb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w = csv.writer(writer)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w.writerow(['filename','pdb Name','molecules','paired','bad_one','pairtimes'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return csv_name123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef quick_split(pdb):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pdb = pdb.lower()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    fake_pdb_container(pdb,filepos=os.path.join(pdb_PREFIX,pdb+'.pdb.gz'))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFif __name__ == '__main__':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    DONE=[]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    FAIL=[]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    ct=0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    report = initiate_report()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for pdb in PDB_tar[0:100]:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #dirty way to do small scale tests123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #Use a count variable123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        pdb =pdb.lower()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        real_dir = repair_pdbfile(os.path.join(pdb_PREFIX,'{}.pdb'.format(pdb)))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if do_one_pdb(pdb,filename=real_dir,REPORTCSV=report):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            DONE.append(pdb)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            FAIL.append(pdb)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        ct+=1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print ct123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    logging.info('total: {}'.format(ct))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+__author__ = 'wy'
+
+import csv
+import logging
+import os
+import time
+import urllib
+from functools import wraps
+
+from Config import *
+from data_process.preprocess.utility.autodock_utility import repair_pdbfile
+from data_process.preprocess.utility.Receptor_container import pdb_container
+
+'''
+The main program to extract molecules in .sdf files and compare with ligands on PDB files.
+Then accept all pairs with similarity >= 0.85 and generate the corresponding vectors.
+'''
+
+#This part is used to set debug log
+#This will generate a log that record every content logged with a specific security levels
+fileHandler = logging.FileHandler('debug.log',mode='w')
+fileHandler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('LINE %(lineno)-4d  %(levelname)-8s %(message)s', '%m-%d %H:%M')
+fileHandler.setFormatter(formatter)
+logging.getLogger('').addHandler(fileHandler)
+
+def list_formatter(table):
+    '''
+    I don't know if there is a better solution to format a list into string
+    :param table:
+    :return:
+    '''
+    try:
+        output='['+str(table[0])
+        for i in range(len(table)-1):
+            output+=(','+str(table[i+1]))
+        output+=']'
+    except:
+        raise TypeError('This object is not iterable!')
+    return output
+
+
+
+def fn_timer(function):
+    '''
+    This is the decorator used for time counting issue
+    Need not understand this one. It has nothing to do with generating files
+    :param function:
+    :return: no return. just print and record the time the decorated program ran.
+    '''
+    @wraps(function)
+    def function_timer(*args, **kwargs):
+        t0 = time.time()
+        result = function(*args, **kwargs)
+        t1 = time.time()
+        print ("Total time running %s: %s seconds" %
+               (function.func_name, str(t1 - t0))
+               )
+        logging.warning ("Total time running %s: %s seconds" %
+               (function.func_name, str(t1 - t0))
+               )
+        return result
+
+    return function_timer
+
+
+
+@fn_timer
+def mol_ligand_tar_generator(src,filepos,statistic_csv=None,CLEAN=False,fileforbabel='a.sdf'):
+    '''
+
+    :param src: pdb name
+    :param statistic_csv: the report csv file's name
+    :param CLEAN: Wipe temporary pdb files or not. Note I will not give options to wipe results. That's dangerous
+    :return: True: If everything works fine
+             False: Unexpected error happens. Note if there is no reuslt, it will return True because everything runs fine.
+    '''
+
+    #Wipe the pdb temporary files if you wish:
+    if CLEAN:
+        files = os.listdir('data/')
+        for filename in files:
+            loc = os.path.join('data/') + filename
+            if os.path.exists(loc):
+                os.remove(loc)
+
+    # write the result
+
+    result_file_name ='filter_{}'.format(src.split('/')[-1].split('.')[0])+'.csv'
+    filedir = os.path.join(result_PREFIX,result_file_name)
+    if not os.path.isfile(filedir):
+        if not os.path.exists(result_PREFIX):
+            os.mkdir(result_PREFIX)
+
+    # in case for overwriting
+    '''
+    if os.path.exists(filedir):
+        print '{} already done.'.format(src)
+        logging.info('{} already done'.format(src))
+        return True
+    '''
+
+    # csv writer
+    writer = file(filedir, 'w')
+    w = csv.writer(writer)
+    w.writerow(experiment_part+PDB_part)
+    print len(experiment_part+PDB_part)
+
+    # combine as file direction
+    sdfone = filedir_PREFIX + src.upper() + '.sdf'
+
+    #open the source molecule files
+    #Naming format [PDB name].sdf all lowercase
+    try:
+        input_sdf = open(sdfone,'r')
+    except:
+        logging.error('PDB {} with ligands sdf not found!'.format(src))
+        return False
+
+
+    # This variables are used for counting and statistic issue.
+    active_count=0
+    count=0
+    bad_one=0
+
+    # Combine as pdb file address
+    # We generate a class to store each ligands as a dict, and use a method
+    # to find the similar ones by tanimoto comparing scores to specific input files
+    PDBindex= pdb_container(src,filepos=filepos)
+    if PDBindex.get_pdb_type()!='Protein':
+        return False
+    # In each time
+    # We write one single molecule in to a sdf file called a.sdf
+    # Then use this file to compare with the one we extract from pdb files
+    # Since we use scripts so I just extract them to make sure that is what
+    # we really want to compare
+    # (But there should be a smarter way to do so)
+
+    try:
+        mol = ''
+        LINE_BEGIN=True
+        Wait_Signal= 0
+        experimental_data = {}
+        one_line=['']*len(experiment_part)
+        #print 'here'
+        for line in input_sdf:
+            mol+=line
+
+            #This part is finding columns need to be recorded in sdf files
+            if LINE_BEGIN:
+                one_line[0] = line.lstrip(' ').rstrip('\n')
+                LINE_BEGIN = False
+
+            # just lazy
+            if Wait_Signal>0:
+                if Wait_Signal==999:
+                    one_line[1]=line.lstrip(' ').rstrip('\n')
+                    monomerID = one_line[1]
+                else:
+                    one_line[2+Wait_Signal]= line.lstrip(' ').rstrip('\n')
+                Wait_Signal= 0
+
+            for i in range(len(key)):
+                if key[i] in line:
+                    Wait_Signal=i+1
+                    break
+
+            if NAME in line:
+                Wait_Signal=999
+
+            if '$$$$' in line:
+                #end of a molecule
+                assert monomerID is not None
+                if monomerID not in experimental_data:
+                    fileforbabel = temp_pdb_PREFIX+'/{}/{}_{}.sdf'.format(src,src,monomerID)
+                    o = open(fileforbabel, "wb")
+                    o.write(mol)
+                    o.close()
+                    experimental_data[monomerID]=one_line
+                    one_line = [''] * len(experiment_part)
+                else:
+                    #combine experimental data together
+                    for i in range(len(key)):
+                        if experimental_data[monomerID][3+i]=='':
+                            experimental_data[monomerID][3 + i] = one_line[3+i]
+                        else:
+                            if len(one_line[3+i])>0:
+                                experimental_data[monomerID][3+i] += '|'+one_line[3+i]
+
+
+
+
+                mol = ''
+                LINE_BEGIN=False
+                monomerID = None
+
+        for k,v in experimental_data.items():
+            #print k,v
+            fileforbabel  = temp_pdb_PREFIX+'/{0}/{0}_{1}.sdf'.format(src,k)
+            # Find pairs with at least 85% similarity scores
+            ans_list = PDBindex.find_similar_target(fileforbabel)
+            #print 'here'
+            count += 1
+            for eachone in ans_list:
+                # Combine each part together
+                v[2] = eachone['cp']
+                active_count += 1
+                w.writerow(v + PDBindex.bundle_result(eachone['id']))
+
+            if len(ans_list) == 0:
+                bad_one += 1
+                logging.info('not found ligand here: {}_{}.'.format(src, one_line[1]))
+
+    except:
+        #raise TypeError
+        logging.error('Unknown error here!')
+        return False
+    logging.warning('{} bad ligands found'.format(bad_one))
+    logging.warning('{} molecules are detected, and {} pairs are recorded.'.format(count,active_count))
+
+    #Discard unused one
+    PDBindex.clean_temp_data()
+
+    writer.flush()
+    writer.close()
+
+    #Do some record
+    if statistic_csv is not None:
+        writer = file(statistic_csv, 'ab')
+        w = csv.writer(writer)
+        w.writerow([src,count,count-bad_one,bad_one,active_count])
+        writer.flush()
+        writer.close()
+    return True
+
+def do_one_pdb(pdb,filename=None,REPORTCSV=None,index=0):
+    '''
+    For each target-complex pdb , this program check if .pdb file exists
+    if not ,download first then call the function to match all possible target-ligands with
+    molecules in sdf files in one single pdb
+    :param pdb:name
+    :parameter REPORTCSV: sometimes generate a list of report with the filename this one
+    :return:
+    '''
+
+    # For each pdb name , there should be one corresponding molecule files.
+    # This will generate one result file.
+    pdb = pdb.lower()
+
+    #if os.path.exists(os.path.join(temp_pdb_PREFIX,pdb)):
+    #    return
+
+    if filename is None:
+        filename = os.path.join(pdb_PREFIX,'{}.pdb.gz'.format(pdb))
+    if os.path.exists(filename):
+        # pdbfile exists
+        logging.info(pdb + ' has already exists')
+        return mol_ligand_tar_generator(pdb,filename,statistic_csv=REPORTCSV,fileforbabel='{}.sdf'.format(index))
+
+    else:
+        # Not exists, download from the internet
+        urllib.urlretrieve(url_prefix + '{}.pdb.gz'.format(pdb.lower()), filename)
+        # Wait for 1 second from rejection on connection.
+        time.sleep(1)
+
+        # This is to check whether we download the file successfully
+        o = open(filename, 'r')
+        for l in o:
+            if l.find('DOCTYPE') != -1:
+                print 'download {} failed'.format(pdb)
+                logging.error('download {} failed'.format(pdb))
+                return False
+            else:
+                #If we download files successfully, then we will run the program
+                print 'download {} successfully'.format(pdb)
+                logging.info('download {} successfully'.format(pdb))
+                return mol_ligand_tar_generator(pdb,filename,statistic_csv=REPORTCSV,fileforbabel='{}.sdf'.format(index))
+        o.close()
+
+def initiate_report():
+    csv_name = 'report.csv'
+    writer = file(csv_name, 'wb')
+    w = csv.writer(writer)
+    w.writerow(['filename','pdb Name','molecules','paired','bad_one','pairtimes'])
+    return csv_name
+
+def quick_split(pdb):
+    pdb = pdb.lower()
+    fake_pdb_container(pdb,filepos=os.path.join(pdb_PREFIX,pdb+'.pdb.gz'))
+
+
+if __name__ == '__main__':
+
+    DONE=[]
+    FAIL=[]
+    ct=0
+    report = initiate_report()
+
+    for pdb in PDB_tar[0:100]:
+        #dirty way to do small scale tests
+        #Use a count variable
+        pdb =pdb.lower()
+        real_dir = repair_pdbfile(os.path.join(pdb_PREFIX,'{}.pdb'.format(pdb)))
+
+        if do_one_pdb(pdb,filename=real_dir,REPORTCSV=report):
+            DONE.append(pdb)
+        else:
+            FAIL.append(pdb)
+        ct+=1
+
+    print ct
+    logging.info('total: {}'.format(ct))

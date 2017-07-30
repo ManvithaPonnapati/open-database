@@ -1,1 +1,190 @@
-#!/usr/bin/env python123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# $Header: /opt/cvs/python/packages/share1.5/AutoDockTools/Utilities24/prepare_receptor4.py,v 1.13 2010/01/25 23:37:14 rhuey Exp $123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport os 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom MolKit import Read123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport MolKit.molecule123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport MolKit.protein123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom AutoDockTools.MoleculePreparation import AD4ReceptorPreparation123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFif __name__ == '__main__':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    import sys123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    import getopt123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def usage():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        "Print helpful, accurate usage statement to stdout."123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "Usage: prepare_receptor4.py -r filename"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "    Description of command..."123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "         -r   receptor_filename "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "        supported file types include pdb,mol2,pdbq,pdbqs,pdbqt, possibly pqr,cif"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "    Optional parameters:"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "        [-v]  verbose output (default is minimal output)"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "        [-o pdbqt_filename]  (default is 'molecule_name.pdbqt')"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "        [-A]  type(s) of repairs to make: "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             'bonds_hydrogens': build bonds and add hydrogens "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             'bonds': build a single bond from each atom with no bonds to its closest neighbor" 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             'hydrogens': add hydrogens"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             'checkhydrogens': add hydrogens only if there are none already"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             'None': do not make any repairs "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             (default is 'None')"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "        [-C]  preserve all input charges ie do not add new charges "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             (default is addition of gasteiger charges)"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "        [-p]  preserve input charges on specific atom types, eg -p Zn -p Fe"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "        [-U]  cleanup type:"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             'nphs': merge charges and remove non-polar hydrogens"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             'lps': merge charges and remove lone pairs"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             'waters': remove water residues"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             'nonstdres': remove chains composed entirely of residues of"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "                      types other than the standard 20 amino acids"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             'deleteAltB': remove XX@B atoms and rename XX@A atoms->XX"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             (default is 'nphs_lps_waters_nonstdres') "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "        [-e]  delete every nonstd residue from any chain"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "              'True': any residue whose name is not in this list:"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "                      ['CYS','ILE','SER','VAL','GLN','LYS','ASN', "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "                      'PRO','THR','PHE','ALA','HIS','GLY','ASP', "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "                      'LEU', 'ARG', 'TRP', 'GLU', 'TYR','MET', "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "                      'HID', 'HSP', 'HIE', 'HIP', 'CYX', 'CSS']"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "              will be deleted from any chain. "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "              NB: there are no  nucleic acid residue names at all "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "              in the list and no metals. "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             (default is False which means not to do this)"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "        [-M]  interactive "123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "             (default is 'automatic': outputfile is written with no further user input)"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "        [-d dictionary_filename] file to contain receptor summary information"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # process command arguments123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        opt_list, args = getopt.getopt(sys.argv[1:], 'r:vo:A:Cp:U:eM:d:')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    except getopt.GetoptError, msg:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print 'prepare_receptor4.py: %s' %msg123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        usage()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        sys.exit(2)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # initialize required parameters123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #-s: receptor123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    receptor_filename =  None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # optional parameters123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    verbose = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #-A: repairs to make: add bonds and/or hydrogens or checkhydrogens123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    repairs = ''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #-C default: add gasteiger charges 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    charges_to_add = 'gasteiger'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #-p preserve charges on specific atom types123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    preserve_charge_types=None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #-U: cleanup by merging nphs_lps, nphs, lps, waters, nonstdres123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    cleanup  = "nphs_lps_waters_nonstdres"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #-o outputfilename123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    outputfilename = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #-m mode 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    mode = 'automatic'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #-e delete every nonstd residue from each chain123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    delete_single_nonstd_residues = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #-d dictionary123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    dictionary = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #'r:vo:A:Cp:U:eMh'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for o, a in opt_list:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-r', '--r'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            receptor_filename = a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'set receptor_filename to ', a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-v', '--v'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            verbose = True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'set verbose to ', True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-o', '--o'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            outputfilename = a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'set outputfilename to ', a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-A', '--A'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            repairs = a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'set repairs to ', a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-C', '--C'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            charges_to_add = None123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'do not add charges'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-p', '--p'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if not preserve_charge_types:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                preserve_charge_types = a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                preserve_charge_types = preserve_charge_types + ','+ a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'preserve initial charges on ', preserve_charge_types123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-U', '--U'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            cleanup  = a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'set cleanup to ', a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-e', '--e'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            delete_single_nonstd_residues  = True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'set delete_single_nonstd_residues to True'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-M', '--M'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            mode = a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'set mode to ', a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-d', '--d'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            dictionary  = a123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'set dictionary to ', dictionary123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if o in ('-h', '--'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            usage()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            sys.exit()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if not receptor_filename:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print 'prepare_receptor4: receptor filename must be specified.'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        usage()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        sys.exit()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #what about nucleic acids???123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    mols = Read(receptor_filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if verbose: print 'read ', receptor_filename123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    mol = mols[0]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    preserved = {}123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if charges_to_add is not None and preserve_charge_types is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        preserved_types = preserve_charge_types.split(',') 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if verbose: print "preserved_types=", preserved_types123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for t in preserved_types:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print 'preserving charges on type->', t123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if not len(t): continue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            ats = mol.allAtoms.get(lambda x: x.autodock_element==t)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if verbose: print "preserving charges on ", ats.name123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            for a in ats:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if a.chargeSet is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    preserved[a] = [a.chargeSet, a.charge]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if len(mols)>1:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if verbose: print "more than one molecule in file"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #use the molecule with the most atoms123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        ctr = 1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for m in mols[1:]:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            ctr += 1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if len(m.allAtoms)>len(mol.allAtoms):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                mol = m123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if verbose: print "mol set to ", ctr, "th molecule with", len(mol.allAtoms), "atoms"123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    mol.buildBondsByDistance()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if verbose:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "setting up RPO with mode=", mode,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "and outputfilename= ", outputfilename123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "charges_to_add=", charges_to_add123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print "delete_single_nonstd_residues=", delete_single_nonstd_residues123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    RPO = AD4ReceptorPreparation(mol, mode, repairs, charges_to_add, 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        cleanup, outputfilename=outputfilename,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        preserved=preserved, 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        delete_single_nonstd_residues=delete_single_nonstd_residues,123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        dict=dictionary)    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if charges_to_add is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #restore any previous charges123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for atom, chargeList in preserved.items():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            atom._charges[chargeList[0]] = chargeList[1]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            atom.chargeSet = chargeList[0]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# To execute this command type:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# prepare_receptor4.py -r pdb_file -o outputfilename -A checkhydrogens 123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF
+#!/usr/bin/env python
+#
+# 
+#
+# $Header: /opt/cvs/python/packages/share1.5/AutoDockTools/Utilities24/prepare_receptor4.py,v 1.13 2010/01/25 23:37:14 rhuey Exp $
+#
+import os 
+
+from MolKit import Read
+import MolKit.molecule
+import MolKit.protein
+from AutoDockTools.MoleculePreparation import AD4ReceptorPreparation
+
+
+if __name__ == '__main__':
+    import sys
+    import getopt
+
+
+    def usage():
+        "Print helpful, accurate usage statement to stdout."
+        print "Usage: prepare_receptor4.py -r filename"
+        print
+        print "    Description of command..."
+        print "         -r   receptor_filename "
+        print "        supported file types include pdb,mol2,pdbq,pdbqs,pdbqt, possibly pqr,cif"
+        print "    Optional parameters:"
+        print "        [-v]  verbose output (default is minimal output)"
+        print "        [-o pdbqt_filename]  (default is 'molecule_name.pdbqt')"
+        print "        [-A]  type(s) of repairs to make: "
+        print "             'bonds_hydrogens': build bonds and add hydrogens "
+        print "             'bonds': build a single bond from each atom with no bonds to its closest neighbor" 
+        print "             'hydrogens': add hydrogens"
+        print "             'checkhydrogens': add hydrogens only if there are none already"
+        print "             'None': do not make any repairs "
+        print "             (default is 'None')"
+        print "        [-C]  preserve all input charges ie do not add new charges "
+        print "             (default is addition of gasteiger charges)"
+        print "        [-p]  preserve input charges on specific atom types, eg -p Zn -p Fe"
+        print "        [-U]  cleanup type:"
+        print "             'nphs': merge charges and remove non-polar hydrogens"
+        print "             'lps': merge charges and remove lone pairs"
+        print "             'waters': remove water residues"
+        print "             'nonstdres': remove chains composed entirely of residues of"
+        print "                      types other than the standard 20 amino acids"
+        print "             'deleteAltB': remove XX@B atoms and rename XX@A atoms->XX"
+        print "             (default is 'nphs_lps_waters_nonstdres') "
+        print "        [-e]  delete every nonstd residue from any chain"
+        print "              'True': any residue whose name is not in this list:"
+        print "                      ['CYS','ILE','SER','VAL','GLN','LYS','ASN', "
+        print "                      'PRO','THR','PHE','ALA','HIS','GLY','ASP', "
+        print "                      'LEU', 'ARG', 'TRP', 'GLU', 'TYR','MET', "
+        print "                      'HID', 'HSP', 'HIE', 'HIP', 'CYX', 'CSS']"
+        print "              will be deleted from any chain. "
+        print "              NB: there are no  nucleic acid residue names at all "
+        print "              in the list and no metals. "
+        print "             (default is False which means not to do this)"
+        print "        [-M]  interactive "
+        print "             (default is 'automatic': outputfile is written with no further user input)"
+        print "        [-d dictionary_filename] file to contain receptor summary information"
+
+
+    # process command arguments
+    try:
+        opt_list, args = getopt.getopt(sys.argv[1:], 'r:vo:A:Cp:U:eM:d:')
+
+    except getopt.GetoptError, msg:
+        print 'prepare_receptor4.py: %s' %msg
+        usage()
+        sys.exit(2)
+
+    # initialize required parameters
+    #-s: receptor
+    receptor_filename =  None
+
+    # optional parameters
+    verbose = None
+    #-A: repairs to make: add bonds and/or hydrogens or checkhydrogens
+    repairs = ''
+    #-C default: add gasteiger charges 
+    charges_to_add = 'gasteiger'
+    #-p preserve charges on specific atom types
+    preserve_charge_types=None
+    #-U: cleanup by merging nphs_lps, nphs, lps, waters, nonstdres
+    cleanup  = "nphs_lps_waters_nonstdres"
+    #-o outputfilename
+    outputfilename = None
+    #-m mode 
+    mode = 'automatic'
+    #-e delete every nonstd residue from each chain
+    delete_single_nonstd_residues = None
+    #-d dictionary
+    dictionary = None
+
+    #'r:vo:A:Cp:U:eMh'
+    for o, a in opt_list:
+        if o in ('-r', '--r'):
+            receptor_filename = a
+            if verbose: print 'set receptor_filename to ', a
+        if o in ('-v', '--v'):
+            verbose = True
+            if verbose: print 'set verbose to ', True
+        if o in ('-o', '--o'):
+            outputfilename = a
+            if verbose: print 'set outputfilename to ', a
+        if o in ('-A', '--A'):
+            repairs = a
+            if verbose: print 'set repairs to ', a
+        if o in ('-C', '--C'):
+            charges_to_add = None
+            if verbose: print 'do not add charges'
+        if o in ('-p', '--p'):
+            if not preserve_charge_types:
+                preserve_charge_types = a
+            else:
+                preserve_charge_types = preserve_charge_types + ','+ a
+            if verbose: print 'preserve initial charges on ', preserve_charge_types
+        if o in ('-U', '--U'):
+            cleanup  = a
+            if verbose: print 'set cleanup to ', a
+        if o in ('-e', '--e'):
+            delete_single_nonstd_residues  = True
+            if verbose: print 'set delete_single_nonstd_residues to True'
+        if o in ('-M', '--M'):
+            mode = a
+            if verbose: print 'set mode to ', a
+        if o in ('-d', '--d'):
+            dictionary  = a
+            if verbose: print 'set dictionary to ', dictionary
+        if o in ('-h', '--'):
+            usage()
+            sys.exit()
+
+
+    if not receptor_filename:
+        print 'prepare_receptor4: receptor filename must be specified.'
+        usage()
+        sys.exit()
+
+    #what about nucleic acids???
+
+    mols = Read(receptor_filename)
+    if verbose: print 'read ', receptor_filename
+    mol = mols[0]
+    preserved = {}
+    if charges_to_add is not None and preserve_charge_types is not None:
+        preserved_types = preserve_charge_types.split(',') 
+        if verbose: print "preserved_types=", preserved_types
+        for t in preserved_types:
+            if verbose: print 'preserving charges on type->', t
+            if not len(t): continue
+            ats = mol.allAtoms.get(lambda x: x.autodock_element==t)
+            if verbose: print "preserving charges on ", ats.name
+            for a in ats:
+                if a.chargeSet is not None:
+                    preserved[a] = [a.chargeSet, a.charge]
+
+    if len(mols)>1:
+        if verbose: print "more than one molecule in file"
+        #use the molecule with the most atoms
+        ctr = 1
+        for m in mols[1:]:
+            ctr += 1
+            if len(m.allAtoms)>len(mol.allAtoms):
+                mol = m
+                if verbose: print "mol set to ", ctr, "th molecule with", len(mol.allAtoms), "atoms"
+    mol.buildBondsByDistance()
+
+    if verbose:
+        print "setting up RPO with mode=", mode,
+        print "and outputfilename= ", outputfilename
+        print "charges_to_add=", charges_to_add
+        print "delete_single_nonstd_residues=", delete_single_nonstd_residues
+
+    RPO = AD4ReceptorPreparation(mol, mode, repairs, charges_to_add, 
+                        cleanup, outputfilename=outputfilename,
+                        preserved=preserved, 
+                        delete_single_nonstd_residues=delete_single_nonstd_residues,
+                        dict=dictionary)    
+
+    if charges_to_add is not None:
+        #restore any previous charges
+        for atom, chargeList in preserved.items():
+            atom._charges[chargeList[0]] = chargeList[1]
+            atom.chargeSet = chargeList[0]
+
+
+# To execute this command type:
+# prepare_receptor4.py -r pdb_file -o outputfilename -A checkhydrogens 
+

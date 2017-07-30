@@ -1,1 +1,81 @@
-import sys123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport os123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport mpi4py.MPI as MPI123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport numpy as np123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom main import bindingDB_pdb_tar_generator123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom fileparser import do_one_pdb,initiate_report,quick_split123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom Config import PDB_tar,pdb_PREFIX123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom job_dispatcher import *123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    This program use MPI to fulfill multiprocessing need with a dirty way.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Just divide the PDB list into pieces and broadcast them to all processes123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF'''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#  Global variables for MPI123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# instance for invoking MPI relatedfunctions123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFcomm = MPI.COMM_WORLD123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# the node rank in the whole community123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFcomm_rank = comm.Get_rank()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# the size of the whole community, i.e.,the total number of working nodes in the MPI cluster123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFcomm_size = comm.Get_size()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfast_dir = '/n/scratch2/xl198/data/H/wp_fast'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFrigor_dir = '/n/scratch2/xl198/data/H/wp_rigorous'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFrigorso_dir = '/n/scratch2/xl198/data/H/so_rigorous'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFrandom_dir = ''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFbenchmark_dir = '/n/scratch2/xl198/data/H/addH'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFrigor_job = dock_dispatcher(jobname='rigor', filedir=rigor_dir, benchmark=benchmark_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFrigorso_job = dock_dispatcher(jobname='rigor_so', filedir=rigorso_dir, benchmark=benchmark_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef do_one_full_job(pdb,resid):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print 'do fast docking one'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    fast_job.do_one_ligand(pdb,resid)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print 'do rigorous docking one'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    rigor_job.do_one_ligand(pdb,resid)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print 'do rigorous site_only one'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    rigorso_job.do_one_ligand(pdb,resid)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef get_file_list():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    filename='/n/scratch2/xl198/data/H/namelist/wp_fast.txt'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    with open(filename,'rb') as f:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        list_dir =[]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for each in f.readlines():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            list_dir.append(each)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return list_dir123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFif __name__ == '__main__':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #dirty and lazy way to multiprocessing123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #just split files to each processors.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #and you will see multiprocessing123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if comm_rank == 0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        # the No.0 one hand out issues123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        file_list = get_file_list()[-20000:]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        file_num = len(file_list)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        sys.stderr.write("%d files\n" % len(file_list))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        file_num = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # broadcast filelist123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    file_list = comm.bcast(file_list if comm_rank == 0 else None, root=0)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    file_num = len(file_list)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    local_files_offset = np.linspace(0, file_num, comm_size + 1).astype('int')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # receive own part123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    local_files = file_list[local_files_offset[comm_rank]:local_files_offset[comm_rank + 1]]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    sys.stderr.write("%d/%d processor gets %d/%d data \n" % (comm_rank, comm_size, len(local_files), file_num))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF# Do seperately123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfor file_name in local_files:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pdb = file_name.split('_')[0]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    resid = file_name.split('_')[1].rstrip('\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print 'try to do %s_%s'%(pdb,resid)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    fast_job = dock_dispatcher(jobname='fast', filedir=fast_dir, benchmark=benchmark_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    fast_job.do_one_ligand(pdb, resid)
+import sys
+import os
+import mpi4py.MPI as MPI
+import numpy as np
+from main import bindingDB_pdb_tar_generator
+from fileparser import do_one_pdb,initiate_report,quick_split
+from Config import PDB_tar,pdb_PREFIX
+from job_dispatcher import *
+'''
+    This program use MPI to fulfill multiprocessing need with a dirty way.
+    Just divide the PDB list into pieces and broadcast them to all processes
+'''
+
+#
+#  Global variables for MPI
+#
+
+# instance for invoking MPI relatedfunctions
+comm = MPI.COMM_WORLD
+# the node rank in the whole community
+comm_rank = comm.Get_rank()
+# the size of the whole community, i.e.,the total number of working nodes in the MPI cluster
+comm_size = comm.Get_size()
+
+
+
+
+
+fast_dir = '/n/scratch2/xl198/data/H/wp_fast'
+rigor_dir = '/n/scratch2/xl198/data/H/wp_rigorous'
+rigorso_dir = '/n/scratch2/xl198/data/H/so_rigorous'
+random_dir = ''
+benchmark_dir = '/n/scratch2/xl198/data/H/addH'
+
+rigor_job = dock_dispatcher(jobname='rigor', filedir=rigor_dir, benchmark=benchmark_dir)
+rigorso_job = dock_dispatcher(jobname='rigor_so', filedir=rigorso_dir, benchmark=benchmark_dir)
+
+def do_one_full_job(pdb,resid):
+    print 'do fast docking one'
+    fast_job.do_one_ligand(pdb,resid)
+    print 'do rigorous docking one'
+    rigor_job.do_one_ligand(pdb,resid)
+    print 'do rigorous site_only one'
+    rigorso_job.do_one_ligand(pdb,resid)
+
+def get_file_list():
+    filename='/n/scratch2/xl198/data/H/namelist/wp_fast.txt'
+    with open(filename,'rb') as f:
+        list_dir =[]
+        for each in f.readlines():
+            list_dir.append(each)
+    return list_dir
+
+
+if __name__ == '__main__':
+    #dirty and lazy way to multiprocessing
+    #just split files to each processors.
+    #and you will see multiprocessing
+    if comm_rank == 0:
+        # the No.0 one hand out issues
+        file_list = get_file_list()[-20000:]
+        file_num = len(file_list)
+        sys.stderr.write("%d files\n" % len(file_list))
+    else:
+        file_num = 0
+    # broadcast filelist
+    file_list = comm.bcast(file_list if comm_rank == 0 else None, root=0)
+    file_num = len(file_list)
+    local_files_offset = np.linspace(0, file_num, comm_size + 1).astype('int')
+
+    # receive own part
+    local_files = file_list[local_files_offset[comm_rank]:local_files_offset[comm_rank + 1]]
+    sys.stderr.write("%d/%d processor gets %d/%d data \n" % (comm_rank, comm_size, len(local_files), file_num))
+
+# Do seperately
+for file_name in local_files:
+    pdb = file_name.split('_')[0]
+    resid = file_name.split('_')[1].rstrip('\n')
+    print 'try to do %s_%s'%(pdb,resid)
+    fast_job = dock_dispatcher(jobname='fast', filedir=fast_dir, benchmark=benchmark_dir)
+    fast_job.do_one_ligand(pdb, resid)

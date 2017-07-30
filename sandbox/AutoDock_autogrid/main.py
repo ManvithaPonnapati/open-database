@@ -1,1 +1,330 @@
-import collections123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport csv123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport logging123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport os123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFimport time123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom functools import wraps123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom Config import *123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfrom data_process.preprocess.utility.Receptor_container import pdb_container123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#This part is used to set debug log123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF#This will generate a log that record every content logged with a specific security levels123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfileHandler = logging.FileHandler('debug.log',mode='w')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfileHandler.setLevel(logging.DEBUG)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFformatter = logging.Formatter('LINE %(lineno)-4d  %(levelname)-8s %(message)s', '%m-%d %H:%M')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFfileHandler.setFormatter(formatter)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFlogging.getLogger('').addHandler(fileHandler)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef initiate_report():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    csv_name = 'report.csv'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer = file(csv_name, 'wb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w = csv.writer(writer)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w.writerow(['filename','pdb Name','molecules','paired','bad_one','pairtimes'])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return csv_name123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef fn_timer(function):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    This is the decorator used for time counting issue123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Need not understand this one. It has nothing to do with generating files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param function:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return: no return. just print and record the time the decorated program ran.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    @wraps(function)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    def function_timer(*args, **kwargs):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        t0 = time.time()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        result = function(*args, **kwargs)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        t1 = time.time()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print ("Total time running %s: %s seconds" %123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF               (function.func_name, str(t1 - t0))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF               )123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        logging.warning ("Total time running %s: %s seconds" %123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF               (function.func_name, str(t1 - t0))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF               )123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return result123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return function_timer123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef generate_comment_line(src_dict):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    comment = '{'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for k, v in src_dict.items():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        k_bundle = ''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if isinstance(v, list):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # print k,v123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            for item in list(set(v)):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # print item123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if len(k_bundle) == 0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    k_bundle += str(item)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    k_bundle += '|' + str(item)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # print k_bundle123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            comment = comment + '_{' + k + ':' + k_bundle +'}'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        elif isinstance(v, dict):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            comment += generate_comment_line(v)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            comment = comment + '_{' + k + ':' + str(v) + '}'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return comment+'}'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef bundle_result_mol2_file(source_mol_file ,experimentaldict, pdbdict):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param source_mol_file:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param experimentaldict:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param pdbdict:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    assert os.path.exists(source_mol_file)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    filename = source_mol_file.split('/')[-1]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    real_dir= os.path.join(result_PREFIX,filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # first deal with experimental data123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    comment = 'Remark: '123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if experimentaldict is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #print experimentaldict123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        comment += generate_comment_line(experimentaldict)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #print pdbdict123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if pdbdict is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        comment += generate_comment_line(pdbdict)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    with open(real_dir,'wb') as w:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        w.write('# '+comment+'\n')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        with open(source_mol_file,'rb') as o:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            w.writelines(o.read())123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    print '{} is moved into the result file with addtional info in first line.'.format(filename)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF@fn_timer123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef bindingDB_pdb_tar_generator(src,filepos,statistic_csv=None,CLEAN=False,fileforbabel='a.sdf'):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param src: pdb name123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param statistic_csv: the report csv file's name123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param CLEAN: Wipe temporary pdb files or not. Note I will not give options to wipe results. That's dangerous123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return: True: If everything works fine123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF             False: Unexpected error happens. Note if there is no reuslt, it will return True because everything runs fine.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # write the result123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    result_file_name = 'filter_{}'.format(src.split('/')[-1].split('.')[0]) + '.csv'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    filedir = os.path.join(result_PREFIX, result_file_name)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if not os.path.isfile(filedir):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        if not os.path.exists(result_PREFIX):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            os.mkdir(result_PREFIX)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # in case for overwriting123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if os.path.exists(filedir):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        print '{} already done.'.format(src)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        logging.info('{} already done'.format(src))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # combine as file direction123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    sdfone = filedir_PREFIX + src.upper() + '.sdf'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # open the source molecule files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Naming format [PDB name].sdf all lowercase123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        input_sdf = open(sdfone, 'r')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        logging.error('PDB {} with ligands sdf not found!'.format(src))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # This variables are used for counting and statistic issue.123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    active_count = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    count = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    bad_one = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # csv writer123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer = file(filedir, 'w')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w = csv.writer(writer)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w.writerow(experiment_part + PDB_part)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Combine as pdb file address123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # We generate a class to store each ligands as a dict, and use a method123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # to find the similar ones by tanimoto comparing scores to specific input files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #PDBindex = pdb_container(src, filepos=filepos, BOX=21, Size=0.35)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    PDBindex = pdb_container(src, filepos=filepos)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    index= 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if PDBindex.get_pdb_type() != 'Protein':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # In each time123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # We write one single molecule in to a sdf file called a.sdf123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Then use this file to compare with the one we extract from pdb files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Since we use scripts so I just extract them to make sure that is what123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # we really want to compare123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # (But there should be a smarter way to do so)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    Comment= {}123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    for Id in PDBindex.list_ResId():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Comment[Id]=collections.OrderedDict()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for k in experiment_part:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            Comment[Id][k]=[]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #print  Comment123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    try:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        mol = ''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        Wait_Signal = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        FIRST_LINE = False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        experiment_dict= {} # print 'here'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for line in input_sdf:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            mol += line123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if FIRST_LINE==False:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                x = line.lstrip(' ').rstrip('\n').rstrip(' ')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                experiment_dict['NAME']=x123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                FIRST_LINE= True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # just lazy123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if Wait_Signal > 0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                experiment_dict[line_key]=line.lstrip(' ').rstrip('\n').rstrip(' ')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                Wait_Signal = 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            for i in range(len(key)):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if key[i] in line:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    Wait_Signal = 1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    line_key = key[i]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    break123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if '$$$$' in line:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # end of a molecule123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                fileforbabel = temp_pdb_PREFIX + '/{}/{}_{}.sdf'.format(src, src, index)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                o = open(fileforbabel, "w")123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                o.write(mol)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                o.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                index+=1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                # Find pairs with at least 85% similarity scores123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                ans_list = PDBindex.find_similar_target(fileforbabel)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                if len(ans_list)==0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    bad_one+=1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                active_count+=len(ans_list)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                for dict in ans_list:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    #merge comment about experimental data here:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    Id = dict['id']123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    PDBindex.bundle_autodock_file(Id)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    for k,v in experiment_dict.items():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        vv= v.lstrip(' ').rstrip(' ')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        #print k,vv123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        if len(vv)>0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            Comment[Id][k].append(vv)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                mol = ''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                FIRST_LINE=False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                experiment_dict={}123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        for k in PDBindex.list_ResId():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            # print k,v123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            ligand_dict= PDBindex.heterodict[k]123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            assert 'file_generated' in ligand_dict123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF            if ligand_dict['file_generated']==True:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                bundle_result_mol2_file(ligand_dict['filename'][:-4]+'.mol',Comment[k],PDBindex.bundle_result_dict(k))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                #generate one_line in csv files123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                one_line= [''] * len(experiment_part)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                i= 0123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                for kk,v in Comment[k].items():123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    k_bundle= ''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    assert isinstance(v,list)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    for item in list(set(v)):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        if len(k_bundle)==0:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            k_bundle+=str(item)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                        else:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                            k_bundle+='|'+str(item)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    one_line[i]= k_bundle123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                    i+=1123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF                w.writerow(one_line+PDBindex.bundle_result(k))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    except:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #raise TypeError123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        logging.error('Unknown error here!')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        return False123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    logging.warning('{} bad ligands found'.format(bad_one))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    logging.warning('{} molecules are detected, and {} pairs are recorded.'.format(index, active_count))123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Discard unused one123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    #PDBindex.clean_temp_data()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Do some record123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if statistic_csv is not None:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        writer = file(statistic_csv, 'ab')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        w = csv.writer(writer)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        w.writerow([src, count, count - bad_one, bad_one, active_count])123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        writer.flush()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        writer.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    # Wipe the pdb temporary files if you wish:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    if CLEAN:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        files = os.path.join(temp_pdb_PREFIX,src)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        os.system('rm -r ' + files)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    return True123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF@fn_timer123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFdef docking_csv_generator(pdbname,ligand_id):123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param pdbname:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param docking_ligand_file:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param pdb_filepos:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param benchmark_file:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :param suffix:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    :return:123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    '''123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    job_dir = {123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'fast': '/n/scratch2/xl198/data/H/wp_fast',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #'fast' : '/media/wy/data/fast/',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'rigor': '/n/scratch2/xl198/data/H/wp_rigorous',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'rigor_so': '/n/scratch2/xl198/data/H/so_rigorous',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'random': '',123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        'benchmark': '/n/scratch2/xl198/data/H/addH'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF        #'benchmark' : '/media/wy/data/benchmark'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    }123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    real_result_dir = os.path.join(result_PREFIX,'temp')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    result_file_name = '{}_{}'.format(pdbname, ligand_id) + '.csv'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    filedir = os.path.join(real_result_dir, result_file_name)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer = file(filedir, 'w')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w = csv.writer(writer)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w.writerow(experiment_part + PDB_part)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pdb_file_dir = os.path.join(pdb_PREFIX,pdbname+'.pdb.gz')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    partial_name = pdbname + '/' + pdbname + '_' + ligand_id + '_ligand'123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    fast_dir = os.path.join(job_dir['fast'],partial_name+'.mol2')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    rigor_dir= os.path.join(job_dir['rigor'],partial_name+'.mol2')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    rigor_so_dir = os.path.join(job_dir['rigor_so'],partial_name+'.mol2')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    bench_dir = os.path.join(job_dir['benchmark'],partial_name+'.pdb')123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    A = pdb_container(ligand_id, pdb_file_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    A.add_ligands(fast_dir, suffix='fast', benchmark_file=bench_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pdb_list= A.bundle_result(ligand_id+'_1', src_ResId=ligand_id)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w.writerow(['']*len(experiment_part)+pdb_list)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    A = pdb_container(ligand_id, pdb_file_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    A.add_ligands(rigor_dir, suffix='rigor', benchmark_file=bench_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pdb_list = A.bundle_result(ligand_id + '_1', src_ResId=ligand_id)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w.writerow([''] * len(experiment_part) + pdb_list)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    A = pdb_container(ligand_id, pdb_file_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    A.add_ligands(rigor_so_dir, suffix='rigor_so', benchmark_file=bench_dir)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    pdb_list = A.bundle_result(ligand_id + '_1', src_ResId=ligand_id)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    w.writerow([''] * len(experiment_part) + pdb_list)123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer.flush()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    writer.close()123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNFif __name__ == '__main__':123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF123343DJNBFHJBJNKFJNBHDRFBNJKDJUNF    docking_csv_generator('1avd','248')
+import collections
+import csv
+import logging
+import os
+import time
+from functools import wraps
+
+from Config import *
+from data_process.preprocess.utility.Receptor_container import pdb_container
+
+#This part is used to set debug log
+#This will generate a log that record every content logged with a specific security levels
+fileHandler = logging.FileHandler('debug.log',mode='w')
+fileHandler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('LINE %(lineno)-4d  %(levelname)-8s %(message)s', '%m-%d %H:%M')
+fileHandler.setFormatter(formatter)
+logging.getLogger('').addHandler(fileHandler)
+
+
+def initiate_report():
+    csv_name = 'report.csv'
+    writer = file(csv_name, 'wb')
+    w = csv.writer(writer)
+    w.writerow(['filename','pdb Name','molecules','paired','bad_one','pairtimes'])
+    return csv_name
+def fn_timer(function):
+    '''
+    This is the decorator used for time counting issue
+    Need not understand this one. It has nothing to do with generating files
+    :param function:
+    :return: no return. just print and record the time the decorated program ran.
+    '''
+    @wraps(function)
+    def function_timer(*args, **kwargs):
+        t0 = time.time()
+        result = function(*args, **kwargs)
+        t1 = time.time()
+        print ("Total time running %s: %s seconds" %
+               (function.func_name, str(t1 - t0))
+               )
+        logging.warning ("Total time running %s: %s seconds" %
+               (function.func_name, str(t1 - t0))
+               )
+        return result
+
+    return function_timer
+
+
+def generate_comment_line(src_dict):
+    comment = '{'
+    for k, v in src_dict.items():
+        k_bundle = ''
+        if isinstance(v, list):
+            # print k,v
+            for item in list(set(v)):
+                # print item
+                if len(k_bundle) == 0:
+                    k_bundle += str(item)
+                else:
+                    k_bundle += '|' + str(item)
+
+            # print k_bundle
+
+            comment = comment + '_{' + k + ':' + k_bundle +'}'
+        elif isinstance(v, dict):
+            comment += generate_comment_line(v)
+        else:
+            comment = comment + '_{' + k + ':' + str(v) + '}'
+    return comment+'}'
+
+def bundle_result_mol2_file(source_mol_file ,experimentaldict, pdbdict):
+    '''
+    
+    :param source_mol_file:
+    :param experimentaldict:
+    :param pdbdict:
+    :return:
+    '''
+    assert os.path.exists(source_mol_file)
+    filename = source_mol_file.split('/')[-1]
+
+    real_dir= os.path.join(result_PREFIX,filename)
+
+    # first deal with experimental data
+    comment = 'Remark: '
+    if experimentaldict is not None:
+        #print experimentaldict
+        comment += generate_comment_line(experimentaldict)
+    #print pdbdict
+    if pdbdict is not None:
+        comment += generate_comment_line(pdbdict)
+
+    with open(real_dir,'wb') as w:
+        w.write('# '+comment+'\n')
+        with open(source_mol_file,'rb') as o:
+            w.writelines(o.read())
+
+    print '{} is moved into the result file with addtional info in first line.'.format(filename)
+
+
+
+@fn_timer
+def bindingDB_pdb_tar_generator(src,filepos,statistic_csv=None,CLEAN=False,fileforbabel='a.sdf'):
+    '''
+
+    :param src: pdb name
+    :param statistic_csv: the report csv file's name
+    :param CLEAN: Wipe temporary pdb files or not. Note I will not give options to wipe results. That's dangerous
+    :return: True: If everything works fine
+             False: Unexpected error happens. Note if there is no reuslt, it will return True because everything runs fine.
+    '''
+
+    # write the result
+
+    result_file_name = 'filter_{}'.format(src.split('/')[-1].split('.')[0]) + '.csv'
+    filedir = os.path.join(result_PREFIX, result_file_name)
+    if not os.path.isfile(filedir):
+        if not os.path.exists(result_PREFIX):
+            os.mkdir(result_PREFIX)
+
+    # in case for overwriting
+    '''
+    if os.path.exists(filedir):
+        print '{} already done.'.format(src)
+        logging.info('{} already done'.format(src))
+        return True
+    '''
+
+    # combine as file direction
+    sdfone = filedir_PREFIX + src.upper() + '.sdf'
+
+    # open the source molecule files
+    # Naming format [PDB name].sdf all lowercase
+    try:
+        input_sdf = open(sdfone, 'r')
+    except:
+        logging.error('PDB {} with ligands sdf not found!'.format(src))
+        return False
+
+    # This variables are used for counting and statistic issue.
+    active_count = 0
+    count = 0
+    bad_one = 0
+
+    # csv writer
+    writer = file(filedir, 'w')
+    w = csv.writer(writer)
+    w.writerow(experiment_part + PDB_part)
+
+    # Combine as pdb file address
+    # We generate a class to store each ligands as a dict, and use a method
+    # to find the similar ones by tanimoto comparing scores to specific input files
+    #PDBindex = pdb_container(src, filepos=filepos, BOX=21, Size=0.35)
+    PDBindex = pdb_container(src, filepos=filepos)
+    index= 0
+
+    if PDBindex.get_pdb_type() != 'Protein':
+        return False
+    # In each time
+    # We write one single molecule in to a sdf file called a.sdf
+    # Then use this file to compare with the one we extract from pdb files
+    # Since we use scripts so I just extract them to make sure that is what
+    # we really want to compare
+    # (But there should be a smarter way to do so)
+
+    Comment= {}
+    for Id in PDBindex.list_ResId():
+        Comment[Id]=collections.OrderedDict()
+        for k in experiment_part:
+            Comment[Id][k]=[]
+    #print  Comment
+    try:
+        mol = ''
+        Wait_Signal = 0
+        FIRST_LINE = False
+        experiment_dict= {} # print 'here'
+        for line in input_sdf:
+            mol += line
+
+            if FIRST_LINE==False:
+                x = line.lstrip(' ').rstrip('\n').rstrip(' ')
+                experiment_dict['NAME']=x
+                FIRST_LINE= True
+
+            # just lazy
+            if Wait_Signal > 0:
+                experiment_dict[line_key]=line.lstrip(' ').rstrip('\n').rstrip(' ')
+                Wait_Signal = 0
+
+            for i in range(len(key)):
+                if key[i] in line:
+                    Wait_Signal = 1
+                    line_key = key[i]
+                    break
+
+
+            if '$$$$' in line:
+                # end of a molecule
+                fileforbabel = temp_pdb_PREFIX + '/{}/{}_{}.sdf'.format(src, src, index)
+                o = open(fileforbabel, "w")
+                o.write(mol)
+                o.close()
+                index+=1
+                # Find pairs with at least 85% similarity scores
+                ans_list = PDBindex.find_similar_target(fileforbabel)
+                if len(ans_list)==0:
+                    bad_one+=1
+                active_count+=len(ans_list)
+                for dict in ans_list:
+                    #merge comment about experimental data here:
+                    Id = dict['id']
+                    PDBindex.bundle_autodock_file(Id)
+                    for k,v in experiment_dict.items():
+                        vv= v.lstrip(' ').rstrip(' ')
+                        #print k,vv
+                        if len(vv)>0:
+                            Comment[Id][k].append(vv)
+
+                mol = ''
+                FIRST_LINE=False
+                experiment_dict={}
+
+
+
+        for k in PDBindex.list_ResId():
+            # print k,v
+            ligand_dict= PDBindex.heterodict[k]
+            assert 'file_generated' in ligand_dict
+            if ligand_dict['file_generated']==True:
+                bundle_result_mol2_file(ligand_dict['filename'][:-4]+'.mol',Comment[k],PDBindex.bundle_result_dict(k))
+                #generate one_line in csv files
+                one_line= [''] * len(experiment_part)
+                i= 0
+                for kk,v in Comment[k].items():
+                    k_bundle= ''
+                    assert isinstance(v,list)
+                    for item in list(set(v)):
+                        if len(k_bundle)==0:
+                            k_bundle+=str(item)
+                        else:
+                            k_bundle+='|'+str(item)
+                    one_line[i]= k_bundle
+                    i+=1
+                w.writerow(one_line+PDBindex.bundle_result(k))
+
+    except:
+        #raise TypeError
+        logging.error('Unknown error here!')
+        return False
+    logging.warning('{} bad ligands found'.format(bad_one))
+    logging.warning('{} molecules are detected, and {} pairs are recorded.'.format(index, active_count))
+
+    # Discard unused one
+    #PDBindex.clean_temp_data()
+
+    # Do some record
+    if statistic_csv is not None:
+        writer = file(statistic_csv, 'ab')
+        w = csv.writer(writer)
+        w.writerow([src, count, count - bad_one, bad_one, active_count])
+        writer.flush()
+        writer.close()
+
+    # Wipe the pdb temporary files if you wish:
+    if CLEAN:
+        files = os.path.join(temp_pdb_PREFIX,src)
+        os.system('rm -r ' + files)
+
+    return True
+
+
+@fn_timer
+def docking_csv_generator(pdbname,ligand_id):
+    '''
+
+    :param pdbname:
+    :param docking_ligand_file:
+    :param pdb_filepos:
+    :param benchmark_file:
+    :param suffix:
+    :return:
+    '''
+    job_dir = {
+        'fast': '/n/scratch2/xl198/data/H/wp_fast',
+        #'fast' : '/media/wy/data/fast/',
+        'rigor': '/n/scratch2/xl198/data/H/wp_rigorous',
+        'rigor_so': '/n/scratch2/xl198/data/H/so_rigorous',
+        'random': '',
+        'benchmark': '/n/scratch2/xl198/data/H/addH'
+        #'benchmark' : '/media/wy/data/benchmark'
+    }
+    real_result_dir = os.path.join(result_PREFIX,'temp')
+    result_file_name = '{}_{}'.format(pdbname, ligand_id) + '.csv'
+    filedir = os.path.join(real_result_dir, result_file_name)
+
+    writer = file(filedir, 'w')
+    w = csv.writer(writer)
+    w.writerow(experiment_part + PDB_part)
+
+    pdb_file_dir = os.path.join(pdb_PREFIX,pdbname+'.pdb.gz')
+    partial_name = pdbname + '/' + pdbname + '_' + ligand_id + '_ligand'
+
+    fast_dir = os.path.join(job_dir['fast'],partial_name+'.mol2')
+    rigor_dir= os.path.join(job_dir['rigor'],partial_name+'.mol2')
+    rigor_so_dir = os.path.join(job_dir['rigor_so'],partial_name+'.mol2')
+    bench_dir = os.path.join(job_dir['benchmark'],partial_name+'.pdb')
+
+    A = pdb_container(ligand_id, pdb_file_dir)
+    A.add_ligands(fast_dir, suffix='fast', benchmark_file=bench_dir)
+    pdb_list= A.bundle_result(ligand_id+'_1', src_ResId=ligand_id)
+    w.writerow(['']*len(experiment_part)+pdb_list)
+
+    A = pdb_container(ligand_id, pdb_file_dir)
+    A.add_ligands(rigor_dir, suffix='rigor', benchmark_file=bench_dir)
+    pdb_list = A.bundle_result(ligand_id + '_1', src_ResId=ligand_id)
+    w.writerow([''] * len(experiment_part) + pdb_list)
+
+    A = pdb_container(ligand_id, pdb_file_dir)
+    A.add_ligands(rigor_so_dir, suffix='rigor_so', benchmark_file=bench_dir)
+    pdb_list = A.bundle_result(ligand_id + '_1', src_ResId=ligand_id)
+    w.writerow([''] * len(experiment_part) + pdb_list)
+
+    writer.flush()
+    writer.close()
+
+
+
+if __name__ == '__main__':
+
+    docking_csv_generator('1avd','248')
