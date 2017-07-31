@@ -1,8 +1,11 @@
 # AffinityDB
 
-## Requirement
+## Requirements
 
-Install using `pip install -r requirements.txt`
+numpy==1.12.1
+pandas==0.19.2
+ProDy==1.8.2
+scipy==0.19.0
 
 ## Edit config
 
