@@ -14,7 +14,7 @@ import multiprocessing
 from multiprocessing.managers import BaseManager, NamespaceProxy
 from glob import glob
 from functools import partial
-from utils import smina_param
+#from utils import smina_param
 
 import numpy as np 
 import pandas as pd 
@@ -137,27 +137,17 @@ def run_multiprocess(target_list, func, monitering, bucket, db):
 class db_creator(object):
     def __init__(self, FLAGS, db):
         self.db = db
-        self.FALGS = FLAGS
-        self.data_func_dict{
+        self.FLAGS = FLAGS
+        self.data_func_dict = {
             'download':self.data_download,
             'split_ligand':self.data_split_ligand,
-            'split_receptor':self.data_split_ligand,
-            'reorder':self.data_reorder,
-            'dock':self.data_dock,
-            'rmsd':self.data_rmsd,
-            'overlap':self.data_overlap,
-            'native_contact':self.data_native_contact
+            'split_receptor':self.data_split_ligand
         }
 
-        self.create_func_dict{
+        self.create_func_dict = {
             'download':self.create_download,
             'split_ligand':self.create_split_ligand,
-            'split_receptor':self.create_split_receptor,
-            'reorder':self.create_reorder,
-            'dock':self.create_dock,
-            'rmsd':self.create_rmsd,
-            'overlap':self.create_overlap,
-            'native_contact':self.create_native_contact
+            'split_receptor':self.create_split_receptor
         }
 
         
@@ -214,152 +204,7 @@ class db_creator(object):
 
         return table_param
 
-    def create_reorder(self):
-        if self.FLAGS.folder_name is None:
-            raise Exception("folder_name required")
-        if self.FLAGS.receptor_idx is None:
-            raise Exception('receptor_idx required')
-        if self.FLAGS.ligand_idx is None:
-            raise Exception('ligand_idx required')
 
-        folder_name = self.FLAGS.folder_name
-        receptor_idx = self.FLAGS.receptor_idx
-        receptor_folder = self.db.get_folder(receptor_idx)
-        ligand_idx = self.FLAGS.ligand_idx
-        ligand_folder = self.db.get_folder(ligand_idx)
-        table_param = {
-            'func': 'reorder',
-            'output_folder': folder_name,
-            'receptor_idx':receptor_idx,
-            'input_receptor_folder':'{}_{}'.format(receptor_idx,receptor_folder),
-            'ligand_idx': ligand_idx,
-            'input_ligand_folder': '{}_{}'.format(ligand_idx, ligand_folder),
-            'depend':[receptor_idx, ligand_idx],
-            'smina_param':db_config.smina_dock_pm['reorder']
-        }
-
-        return table_param
-
-    def create_dock(self):
-        if self.FLAGS.folder_name is None:
-            raise Exception("folder_name required")
-        if self.FLAGS.receptor_idx is None:
-            raise Exception('receptor_idx required')
-        if self.FLAGS.ligand_idx is None:
-            raise Exception('ligand_idx required')
-        if self.FLAGS.param is None:
-            raise Exception('param required')
-
-        dock_param = self.FLAGS.param
-        if not dock_param in db_config.smina_dock_pm.keys():
-            raise KeyError("dock param {} doesn't exists. ".format(dock_param)\
-                            + "available options are: {}".format(', '.join(db_config.smina_dock_pm.keys())))
-        dock_param = db_config.smina_dock_pm[dock_param]
-        folder_name = self.FLAGS.folder_name
-        receptor_idx = self.FLAGS.receptor_idx
-        receptor_folder = self.db.get_folder(receptor_idx)
-        ligand_idx = self.FLAGS.ligand_idx
-        ligand_folder = self.db.get_folder(ligand_idx)
-        table_param = {
-            'func': 'dock',
-            'output_folder': folder_name,
-            'receptor_idx':receptor_idx,
-            'input_receptor_folder': '{}_{}'.format(receptor_idx, receptor_folder),
-            'ligand_idx': ligand_idx,
-            'input_ligand_folder': '{}_{}'.format(ligand_idx, ligand_folder),
-            'depend':[receptor_idx, ligand_idx],
-            'smina_param':dock_param
-        }
-
-        return table_param
-
-    def create_rmsd(self):
-        if self.FLAGS.crystal_idx is None:
-            raise Exception('crystal_idx required')
-        if self.FLAGS.docked_idx is None:
-            raise Exception('docked_idx required')
-
-        crystal_idx = self.FLAGS.crystal_idx
-        crystal_folder = self.db.get_folder(crystal_idx)
-        docked_idx = self.FLAGS.docked_idx
-        docked_folder = self.db.get_folder(docked_idx)
-        table_param = {
-            'func':'rmsd',
-            'crystal_idx': crystal_idx,
-            'input_crystal_folder':'{}_{}'.format(crystal_idx, crystal_folder),
-            'docked_idx': docked_idx,
-            'input_docked_folder':'{}_{}'.format(docked_idx, docked_folder),
-            'depend':[crystal_idx, docked_idx]
-        }
-
-        return table_param
-
-    def create_overlap(self):
-        if self.FLAGS.crystal_idx is None:
-            raise Exception('crystal_idx require')
-        if self.FLAGS.docked_idx is None:
-            raise Exception('docked_idx required')
-        if self.FLAGS.param is None:
-            raise Exception('param required')
-        overlap_param = self.FLAGS.param
-        if not overlap_param in db_config.overlap_pm.keys():
-            raise KeyError("dock param {} doesn't exists. ".format(overlap_param) \
-                           + "available options are: {}".format(', '.join(db_config.overlap_pm.keys())))
-
-        crystal_idx = self.FLAGS.crystal_idx
-        crystal_folder = self.db.get_folder(crystal_idx)
-        docked_idx = self.FLAGS.docked_idx
-        docked_folder = self.db.get_folder(docked_idx)
-        
-        
-        table_param = {
-            'func':'overlap',
-            'crystal_idx': crystal_idx,
-            'input_crystal_folder':'{}_{}'.format(crystal_idx, crystal_folder),
-            'docked_idx': docked_idx,
-            'input_docked_folder':'{}_{}'.format(docked_idx, docked_folder),
-            'depend':[crystal_idx, docked_idx],
-            'overlap_param':db_config.overlap_pm[overlap_param]
-        }
-
-        return table_param
-
-    def create_native_contact(self):
-        if self.FLAGS.receptor_idx is None:
-            raise Exception('receptor_idx required')
-        if self.FLAGS.crystal_idx is None:
-            raise Exception('crystal_idx require')
-        if self.FLAGS.docked_idx is None:
-            raise Exception('docked_idx required')
-        if self.FLAGS.param is None:
-            raise Exception('param required')
-        native_contact_param = self.FLAGS.param
-        if not native_contact_param in db_config.native_contact_pm.keys():
-            raise KeyError("dock param {} doesn't exists. ".format(native_contact_param) \
-                           + "available options are: {}".format(', '.join(db_config.native_contact_pm.keys())))
-
-        native_contact_param = db_config.native_contact_pm[native_contact_param]
-
-        receptor_idx = self.FLAGS.receptor_idx
-        receptor_folder = self.db.get_folder(receptor_idx)
-        crystal_idx = self.FLAGS.crystal_idx
-        crystal_folder = self.db.get_folder(crystal_idx)
-        docked_idx = self.FLAGS.docked_idx
-        docked_folder = self.db.get_folder(docked_idx)
-        table_param = {
-            'func':'native_contact',
-            'receptor_idx': receptor_idx,
-            'input_receptor_folder':'{}_{}'.format(receptor_idx, receptor_folder),
-            'crystal_idx': crystal_idx,
-            'input_crystal_folder':'{}_{}'.format(crystal_idx, crystal_folder),
-            'docked_idx': docked_idx,
-            'input_docked_folder':'{}_{}'.format(docked_idx, docked_folder),
-            'depend': [receptor_idx, crystal_idx, docked_idx],
-        }
-
-        table_param.update(native_contact_param)
-
-        return table_param
 
         
     def run_create(self):
@@ -381,7 +226,7 @@ class db_creator(object):
         return table_idx, table_param, data  
 
 
-    def run_data(self, data_type, table_idx, table_param, progress=False):
+    def run_data(self, func_name, table_idx, table_param, progress=False):
         if not func_name in self.data_func_dict.keys():
             raise Exception("function name {} unrecognized ".format(func_name))
 
@@ -411,188 +256,6 @@ class db_creator(object):
         else:
             return rest_list   
 
-    def data_split_ligand(self, table_idx, table_param, progress=False):
-
-        download_idx = table_param['download_idx']
-        download_list = self.db.get_all_success(download_idx)
-
-        finished_list = self.db.get_all_success(table_idx)
-        finished_list = map(lambda x:(x[0],),finished_list)
-        failed_list = self.db.get_all_failed(table_idx)
-        failed_list = map(lambda x:(x[0],), failed_list)
-
-        if self.FLAGS.retry_failed:
-            rest_list = list(set(download_list) - set(finished_list) | set(failed_list))
-        else:
-            rest_list = list(set(download_list) - set(finished_list) - set(failed_list))
-
-        total = len(set(download_list))
-        finished = len(set(finished_list)-set(failed_list))
-        failed = len(set(failed_list))
-
-        if progress:
-            return (total, finished, failed)
-        else:
-            return rest_list   
-
-    def data_split_receptor(self, table_idx, table_param, progress=False):
-
-        download_idx = table_param['download_idx']
-        download_list = self.db.get_all_success(download_idx)
-
-        finished_list = self.db.get_all_success(table_idx)
-        finished_list = map(lambda x:(x[0],),finished_list)
-        failed_list = self.db.get_all_failed(table_idx)
-        failed_list = map(lambda x:(x[0],), failed_list)
-
-        if self.FLAGS.retry_failed:
-            rest_list = list(set(download_list) - set(finished_list) | set(failed_list))
-        else:
-            rest_list = list(set(download_list) - set(finished_list) - set(failed_list))
-
-        total = len(set(download_list))
-        finished = len(set(finished_list)-set(failed_list))
-        failed = len(set(failed_list))
-
-        if progress:
-            return (total, finished, failed)
-        else:
-            return rest_list   
-
-    def data_reorder(self, table_idx, table_param, progress=False):
-
-        rec_idx = table_param['receptor_idx']
-        rec_list = self.db.get_all_success(rec_idx)
-
-        lig_idx = table_param['ligand_idx']
-        lig_list = self.db.get_all_success(lig_idx)
-
-        finished_list = self.db.get_all_success(table_idx)
-        failed_list = self.db.get_all_failed(table_idx)
-
-        if self.FLAGS.retry_failed:
-            rest_list = list(set(rec_list) & set(lig_list) - set(finished_list) | set(failed_list))
-        else:
-            rest_list = list(set(rec_list) & set(lig_list) - set(finished_list) - set(failed_list))
-
-        total = len(set(rec_list) & set(lig_list))
-        finished = len(set(finished_list)-set(failed_list))
-        failed = len(set(failed_list))
-
-        if progress:
-            return (total, finished, failed)
-        else:
-            return rest_list   
-
-
-    def data_dock(self, table_idx, table_param, progress=False):
-
-        rec_idx = table_param['receptor_idx']
-        rec_list = self.db.get_all_success(rec_idx)
-
-        lig_idx = table_param['ligand_idx']
-        lig_list = self.db.get_all_success(lig_idx)
-
-        finished_list = self.db.get_all_success(table_idx)
-        failed_list = self.db.get_all_failed(table_idx)
-
-        if self.FLAGS.retry_failed:
-            rest_list = list(set(rec_list) & set(lig_list) - set(finished_list) | set(failed_list))
-        else:
-            rest_list = list(set(rec_list) & set(lig_list) - set(finished_list) - set(failed_list))
-
-        total = len(set(rec_list) & set(lig_list))
-        finished = len(set(finished_list)-set(failed_list))
-        failed = len(set(failed_list))
-
-        if progress:
-            return (total, finished, failed)
-        else:
-            return rest_list   
-
-    def data_rmsd(self, table_idx, table_param, progress=False):
-
-        cry_idx = table_param['crystal_idx']
-        cry_list = self.db.get_all_success(cry_idx)
-
-        doc_idx = table_param['docked_idx']
-        doc_list = self.db.get_all_success(doc_idx)
-
-        finished_list = self.db.get_all_success(table_idx)
-        finished_list = map(lambda x: x[:-1], finished_list)
-        failed_list = self.db.get_all_failed(table_idx)
-        failed_list = map(lambda x: x[:-1], failed_list)
-
-        if self.FLAGS.retry_failed:
-            rest_list = list(set(cry_list) & set(doc_list) - set(finished_list) | set(failed_list))
-        else:
-            rest_list = list(set(cry_list) & set(doc_list) - set(finished_list) - set(failed_list))
-
-        total = len(set(cry_list) & set(doc_list))
-        finished = len(set(finished_list)-set(failed_list))
-        failed = len(set(failed_list))
-
-        if progress:
-            return (total, finished, failed)
-        else:
-            return rest_list   
-
-    def data_overlap(self, table_idx, table_param, progress=False):
-
-        cry_idx = table_param['crystal_idx']
-        cry_list = self.db.get_all_success(cry_idx)
-
-        doc_idx = table_param['docked_idx']
-        doc_list = self.db.get_all_success(doc_idx)
-
-        finished_list = self.db.get_all_success(table_idx)
-        finished_list = map(lambda x: x[:-1], finished_list)
-        failed_list = self.db.get_all_failed(table_idx)
-        failed_list = map(lambda x: x[:-1], failed_list)
-
-        if self.FLAGS.retry_failed:
-            rest_list = list(set(cry_list) & set(doc_list) - set(finished_list) | set(failed_list))
-        else:
-            rest_list = list(set(cry_list) & set(doc_list) - set(finished_list) - set(failed_list))
-
-        total = len(set(cry_list) & set(doc_list))
-        finished = len(set(finished_list)-set(failed_list))
-        failed = len(set(failed_list))
-
-        if progress:
-            return (total, finished, failed)
-        else:
-            return rest_list            
-
-    def data_native_contact(self, table_idx, table_param, progress=False):
-
-        rec_idx = table_param['receptor_idx']
-        rec_list = self.db.get_all_success(rec_idx)
-
-        cry_idx = table_param['crystal_idx']
-        cry_list = self.db.get_all_success(cry_idx)
-
-        doc_idx = table_param['docked_idx']
-        doc_list = self.db.get_all_success(doc_idx)
-
-        finished_list = self.db.get_all_success(table_idx)
-        finished_list = map(lambda x: x[:-1], finished_list)
-        failed_list = self.db.get_all_failed(table_idx)
-        failed_list = map(lambda x: x[:-1], failed_list)
-
-        if self.FLAGS.retry_failed:
-            rest_list = list(set(rec_list) & set(cry_list) & set(doc_list) - set(finished_list) | set(failed_list))
-        else:
-            rest_list = list(set(rec_list) & set(cry_list) & set(doc_list) - set(finished_list) - set(failed_list))
-
-        total = len(set(rec_list) & set(cry_list) & set(doc_list))
-        finished = len(set(finished_list)- set(failed_list))
-        failed = len(set(failed_list))
-
-        if progress:
-            return (total, finished, failed)
-        else:
-            return rest_list
 
 def db_continue(FLAGS, db):
     if FLAGS.table_idx is None:

@@ -13,7 +13,7 @@ import prody
 
 sys.path.append('../..')
 from db import AffinityDatabase
-
+from db_config import data_dir
 db = AffinityDatabase()
 
 def _makedir(path):

@@ -1,49 +1,6 @@
 from collections import namedtuple, OrderedDict
 
 tables = {
-    'download':table(*['download',
-                     OrderedDict(
-                         [
-                             ('receptor','text'),
-                             ('experiment','text'),
-                             ('resolution','real'),
-                             ('state','integer'),
-                             ('comment','text')
-                         ]
-                     ),
-                     ['receptor']]),
-    'split_ligand':table(*['splited_ligand',
-                     OrderedDict(
-                        [
-                            ('receptor','text'),
-                            ('chain','text'),
-                            ('resnum','text'),
-                            ('resname','text'),
-                            ('resid','text'),
-                            ('heavy_atom','integer'),
-                            ('max_size_on_axis', 'real'),
-                            ('state','integer'),
-                            ('comment','text')
-                        ]
-                     ),
-                     ['receptor','chain','resnum','resname']
-                ]),
-    'split_receptor':table(*['splited_receptor',
-                        OrderedDict(
-                            [
-                                ('receptor','text'),
-                                ('chain','text'),
-                                ('resnum','text'),
-                                ('resname','text'),
-                                ('heavy_atom','integer'),
-                                ('experiment','text'),
-                                ('resolution','real'),
-                                ('state','integer'),
-                                ('comment','text')
-                            ]
-                        ),
-                        ['receptor','chain','resnum','resname']
-                ]),
     'reorder':table(*['reorder',
                      OrderedDict(
                         [

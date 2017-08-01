@@ -5,17 +5,17 @@ import time
 import subprocess
 from functools import partial
 from glob import glob
-from utils import log, smina_param, timeit, count_lines, hydrogen_bond_count, rotatable_bond_count
+#from utils import log, smina_param, timeit, count_lines, hydrogen_bond_count, rotatable_bond_count
 import numpy as np 
 import scipy.spatial.distance
 #import openbabel
 import prody
-import config
-from config import data_dir                                                                 # todo(maksym) import config
+#import config
+#from config import data_dir                                                                 # todo(maksym) import config
 from db import AffinityDatabase
-from parse_binding_DB import parse_bind_func
-from ccdc import io
-import ast
+#from parse_binding_DB import parse_bind_func
+#from ccdc import io
+#import ast
 
 db = AffinityDatabase()
 

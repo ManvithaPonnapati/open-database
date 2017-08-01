@@ -1,22 +1,23 @@
-
+import os
+import sys 
 # path of smina binary file
 #smina = 'smina.static'
 smina = '/Users/xander/Projects/AffDB/smina.osx'
 
 # pdb_target_list
-list_of_PDBs_to_download = os.path.join(sys.path[0],'target_list','main_pdb_target_list.txt')
+list_of_PDBs_to_download = os.path.join(sys.path[0],'data','main_pdb_target_list.txt')
 #list_of_PDBs_to_download = '/home/maksym/ryan/AffinityDB/pdb_list/main_pdb_target_list.txt'
 # list_of_PDBs_to_download = os.path.join(sys.path[0], 'pdb_list','pdb_list.txt')
 
 
 # example scoring
-scoring_terms = os.path.join(sys.path[0], 'scoring', 'smina.score')
+scoring_terms = os.path.join(sys.path[0], 'lib', 'smina.score')
 
 
 """
 docking para
 """
-smina_dock_pm = {
+dock_pm = {
     'vinardo':{
         'args': [],
         'kwargs' : {
