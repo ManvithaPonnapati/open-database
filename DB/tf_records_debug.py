@@ -2,25 +2,17 @@ import tensorflow as tf
 import time, os
 from glob import glob
 
-def read_my_file_format(myFile):
+def read_my_file_format(filename_queue):
 	reader = tf.TFRecordReader()
-	_, example = reader.read(myFile)
-	return example
-	#features = tf.parse_example(example, features={'labels':tf.FixedLenFeature([], tf.float32), #[], tf.int64
-	                                                        # 'number_of_examples':tf.FixedLenFeature([], tf.int64), #[], tf.int64
-	                                                        # 'elements':tf.VarLenFeature(tf.int64), #tf.int64
-	                                                        # 'multiframe_coords': tf.VarLenFeature(tf.float32)}) 
+	key, example = reader.read(filename_queue)
+	features = tf.parse_single_example(example, features={'labels':tf.FixedLenFeature([], tf.float32), #[], tf.int64
+	                                                        'number_of_examples':tf.FixedLenFeature([], tf.int64), #[], tf.int64
+	                                                        'elements':tf.VarLenFeature(tf.int64), #tf.int64
+	                                                        'multiframe_coords': tf.VarLenFeature(tf.float32)}) 
 
 	elements = features['elements'].values
 	coords = features['multiframe_coords'].values
 	return  elements, coords
-
-def big_read(batch):
-	features = tf.parse_example(batch, features={'labels':tf.FixedLenFeature([], tf.float32), #[], tf.int64
-	                                                        'number_of_examples':tf.FixedLenFeature([], tf.int64), #[], tf.int64
-	                                                        'elements':tf.VarLenFeature(tf.int64), #tf.int64
-	                                                        'multiframe_coords': tf.VarLenFeature(tf.float32)})
-
 	# print(sess.run(tf.shape(elements)))
 	# print(sess.run(tf.shape(coords)))
 	
@@ -47,19 +39,12 @@ if __name__ == "__main__":
 		init_op = tf.global_variables_initializer()
 		coord = tf.train.Coordinator()
 		threads = tf.train.start_queue_runners(sess=sess, coord=coord)
-		example_list = [read_my_file_format(filename_queue) for myFile in ligand_file_list]
-		print(example_list)
-		batch_size = 5
-		min_after_dequeue = 10000
-		capacity = min_after_dequeue + 3 * batch_size
-		example_batch, label_batch = tf.train.shuffle_batch_join(example_list, batch_size=batch_size, capacity=capacity,
-				min_after_dequeue=min_after_dequeue)
-		#for i in range(5):
-		elements, coords = big_read(example_batch) 
-		print(sess.run(elements))
-		print(sess.run(tf.shape(elements)))
-		print(sess.run(coords))
-		print(sess.run(tf.shape(coords)))
+		for i in range(20):
+			elements, coords = read_my_file_format(filename_queue) 
+			print(sess.run(elements))
+			print(sess.run(tf.shape(elements)))
+			print(sess.run(coords))
+			print(sess.run(tf.shape(coords)))
 		coord.request_stop()
 		coord.join(threads)
 		sess.close()
