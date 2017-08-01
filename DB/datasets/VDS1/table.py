@@ -1,3 +1,5 @@
+from collections import namedtuple, OrderedDict
+
 tables = {
     'download':table(*['download',
                      OrderedDict(
@@ -42,7 +44,7 @@ tables = {
                         ),
                         ['receptor','chain','resnum','resname']
                 ]),
-    'reorder_ligand':table(*['reorder_ligand',
+    'reorder':table(*['reorder',
                      OrderedDict(
                         [
                             ('receptor','text'),
@@ -55,7 +57,7 @@ tables = {
                      ),
                      ['receptor','chain','resnum','resname']
                 ]),
-    'docked_ligand':table(*['docked_ligand',
+    'docked':table(*['docked',
                      OrderedDict(
                         [
                             ('receptor','text'),
@@ -123,3 +125,4 @@ tables = {
                         ]
                     )
 }
+

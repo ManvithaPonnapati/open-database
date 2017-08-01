@@ -38,6 +38,7 @@ def insert_column(bucket, table_idx, param, input_data):
         print("Error Found")
         pass
 
+DatabaseAction = {}
 """
 DatabaseAction={
     'local_qm9_load':local_qm9_load,

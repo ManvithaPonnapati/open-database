@@ -8,7 +8,7 @@ from copy import copy
 from collections import Counter
 import numpy as np 
 import pandas as pd 
-import config
+import db_config
 from db import database
 
 

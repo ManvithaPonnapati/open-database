@@ -1,3 +1,25 @@
+# database action
+
+import os
+import sys 
+import re 
+import time 
+import subprocess 
+from fucntools import partial 
+from glob import glob 
+
+import numpy as np 
+import prody 
+
+sys.path.append('../..')
+from db import AffinityDatabase
+
+db = AffinityDatabase()
+
+def _makedir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
 def download(bucket, table_idx, param, input_data):         # todo(maksym) input_data = pdb_ids
     '''
     Download pdb file from rcsb
@@ -204,7 +226,7 @@ def reorder(bucket, table_idx, param, input_data):                              
         records = [record]
         db.insert(table_idx, records, bucket=bucket)
 
-def smina_dock(bucket, table_idx, param, input_data):
+def dock(bucket, table_idx, param, input_data):
     '''
     Use smina to docking lignad, 
     ligand can be identified by input_data, take the ligand and receptor
@@ -475,3 +497,14 @@ def native_contact(bucket, table_idx, param, input_data):
         records = [record]
         db.insert(table_idx, records, bucket=bucket)
 
+DatabaseAction={
+    'download':download,
+    'split_ligand':split_ligand,
+    'split_receptor':split_receptor,
+    'reorder':reorder,
+    'dock':dock,
+    'overlap':overlap,
+    'rmsd':rmsd,
+    'native_contact':native_contact
+    }
+    

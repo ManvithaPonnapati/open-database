@@ -1,3 +1,5 @@
+from collections import namedtuple, OrderedDict
+
 table = namedtuple('Table',['type','columns','primary_key'])
 
 """

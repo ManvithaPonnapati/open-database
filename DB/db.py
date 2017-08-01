@@ -7,15 +7,15 @@ import sys
 import sqlite3
 import base64 
 import json
-import config 
+import db_config 
 import time 
-from config import lock 
-from utils import lockit, param_equal 
+from db_config import lock 
+from utils.utils import lockit, param_equal 
 import csv 
 import numpy as np
 import pandas as pd
 from collections import namedtuple, OrderedDict, Counter
-from database_table import basic_tables, tables
+from db_table import basic_tables, tables
 
 class AffinityDatabase:
     """
@@ -23,11 +23,11 @@ class AffinityDatabase:
     """
 
     def __init__(self):
-        self.db_path = config.db_path
+        self.db_path = db_config.db_path
         self.tables = tables
 
         if not os.path.exists(os.path.dirname(self.db_path)):
-            print self.db_path
+            print (self.db_path)
             os.makedirs(os.path.dirname(self.db_path))
         
         if not os.path.exists(self.db_path):
@@ -38,7 +38,7 @@ class AffinityDatabase:
     def connect_db(self):
         self.conn = sqlite3.connect(self.db_path)
         self.connect = True
-        print "connect to %s" % self.db_path
+        print ("connect to %s" % self.db_path)
 
     def backup_db(self):
 
@@ -47,7 +47,7 @@ class AffinityDatabase:
         if os.path.exists(self.db_path):
             cmd = 'cp %s %s' % (self.db_path , backup_db_path)
             os.system(cmd)
-            print "backup database %s" % backup_db_path
+            print ("backup database %s" % backup_db_path)
 
     def backup_and_reset_db(self):
         """
@@ -200,8 +200,8 @@ class AffinityDatabase:
         if 'output_folder' in table_param.keys():
             folder_name = '{}_{}'.format(idx, table_param['output_folder'])
             del_folder_name = 'del_' + folder_name
-            folder_dir = os.path.join(config.data_dir, folder_name)
-            del_folder_dir = os.path.join(config.data_dir, del_folder_name)
+            folder_dir = os.path.join(db_config.data_dir, folder_name)
+            del_folder_dir = os.path.join(db_config.data_dir, del_folder_name)
             if os.path.exists(folder_dir):
                 
                 os.system('mv {} {} '.format(folder_dir, del_folder_dir))
@@ -347,7 +347,7 @@ class AffinityDatabase:
         table_name, table_param = self.get_table(idx, with_param=True)
         stmt = 'select * from ' + table_name 
         stmt += ' where state=1' #what does this statement do?
-        print stmt
+        print (stmt)
         cursor = self.conn.cursor()
         cursor.execute(stmt)
         values = cursor.fetchall()
@@ -378,7 +378,7 @@ class AffinityDatabase:
 
 
     def init_table(self):
-        print 'init'
+        print ('init')
         for tab in basic_tables.values():
             stmt = 'create table '+ tab.type + ' ('
             for key in tab.columns.keys():
@@ -388,6 +388,6 @@ class AffinityDatabase:
                 else:
                     stmt += ' ,'
             stmt += 'primary key(' + ','.join(tab.primary_key) + '));'
-            print "create ",tab.type
-            print stmt
+            print ("create ",tab.type)
+            print (stmt)
             self.conn.execute(stmt) 

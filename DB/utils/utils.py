@@ -1,8 +1,8 @@
 import os
 import sys
-import config
+import db_config
 import sqlite3
-from config import lock
+from db_config import lock
 from functools import wraps
 import time
 import subprocess

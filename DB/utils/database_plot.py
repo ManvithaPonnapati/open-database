@@ -7,7 +7,7 @@ import sys
 from collections import Counter
 from scipy import stats
 
-import config
+
 from database_action import db
 
 def multi_bar(xs,ys,title,xlabel,ylabel,filename,save=False,width=0.8,legend=None, alpha=0.5, cm = plt.get_cmap('Vega20'), cm_indice=None):
