@@ -375,8 +375,16 @@ class db_operator(object):
             func_name = table_param['func']
             data_type = func_name
 
-            
-            
+            if func_name == 'smina_dock':
+                table_type = 'docked_ligand'
+                data_type = 'dock'
+            elif func_name == 'reorder':
+                table_type = 'reorder_ligand'
+                data_type = 'reorder'
+            else:
+                table_type = func_name
+                data_type = func_name            
+                
             total, finished, failed = self.prepare_data(data_type, table_idx, table_param, progress=True)
             print( "{:<13d} {:<11d} {:<15.2f} {:<11d} {:<14.2f} {:<11d} {:<12.2f} {}". \
                     format(total,

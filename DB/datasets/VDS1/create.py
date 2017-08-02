@@ -39,7 +39,7 @@ class db_operation(db_operator):
 
         create_func_dict = {
             'reorder':self.create_reorder,
-            'dock':self.create_dock,
+            'smina_dock':self.create_dock,
             'rmsd':self.create_rmsd,
             'overlap':self.create_overlap,
             'native_contact':self.create_native_contact            
@@ -79,6 +79,8 @@ class db_operation(db_operator):
         data = self.prepare_data(data_type, table_idx, table_param)
 
         return table_idx, table_param, data  
+
+
 
     def db_continue(self):
         table_idx, table_param, data = self.prepare_continue()

@@ -503,7 +503,7 @@ DatabaseAction={
     'split_ligand':split_ligand,
     'split_receptor':split_receptor,
     'reorder':reorder,
-    'dock':dock,
+    'smina_dock':dock,
     'overlap':overlap,
     'rmsd':rmsd,
     'native_contact':native_contact
