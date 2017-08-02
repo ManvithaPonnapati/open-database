@@ -5,15 +5,16 @@ import sys
 import re 
 import time 
 import subprocess 
-from fucntools import partial 
+from functools import partial 
 from glob import glob 
-
+import scipy
 import numpy as np 
 import prody 
 
 sys.path.append('../..')
 from db import AffinityDatabase
 from db_config import data_dir
+from lib.smina_param import smina_param
 db = AffinityDatabase()
 
 def _makedir(path):
@@ -48,7 +49,7 @@ def download(bucket, table_idx, param, input_data):         # todo(maksym) input
         #print ('pdb',pdb_path)
         if not os.path.exists(pdb_path):
             download_address = 'https://files.rcsb.org/download/{}.pdb'.format(receptor)
-            os.system('wget -P {} {}'.format(dest_dir, download_address))
+            os.system('wget --no-check-certificate -P {} {}'.format(dest_dir, download_address))
         header = prody.parsePDBHeader(pdb_path)
         record = [receptor, header['experiment'], header['resolution'], 1, 'success']
         records = [record]

@@ -13,23 +13,23 @@ from multiprocessing.managers import BaseManager, NamespaceProxy
 from glob import glob
 from functools import partial
 import config
-from db_create import get_baseparser, monitering, run_multiprocess, db_creator, db_continue, db_delete, db_progress, db_param, DBManager
+from db_create import get_baseparser, monitering, run_multiprocess, db_operator, DBManager
 from db import AffinityDatabase
 from db_action import DatabaseAction as db_action_dict
 from action import DatabaseAction as action_dict 
-
+from table import tables
 action_dict.update(db_action_dict)
 
-db = AffinityDatabase()
+
 manager = DBManager()
 manager.start()
 bucket = manager.bucket() 
 
-class db_create(db_creator):
+class db_operation(db_operator):
     def __init__(self, FLAGS, db):
-        super(db_create, self).__init__(FLAGS, db)
+        super(db_operation, self).__init__(FLAGS, db)
 
-        create_func_dict = {
+        data_func_dict = {
             'reorder':self.data_reorder,
             'dock':self.data_dock,
             'rmsd':self.data_rmsd,
@@ -37,7 +37,7 @@ class db_create(db_creator):
             'native_contact':self.data_native_contact            
         }
 
-        data_func_dict = {
+        create_func_dict = {
             'reorder':self.create_reorder,
             'dock':self.create_dock,
             'rmsd':self.create_rmsd,
@@ -49,13 +49,48 @@ class db_create(db_creator):
 
         self.data_func_dict.update(data_func_dict)
 
-        self.run()
+        self.db.update_table(tables)
 
-    def run(self):
-        table_idx, table_param, data = self.run_create()
+        #self.run()
+
+    def prepare_create(self):
+
+        action = self.FLAGS.action
+        if not action in self.create_func_dict.keys():
+            raise Exception("action {} unrecognized".format(action))
+
+        create_func = self.create_func_dict[action]
+        table_param = create_func()
+        func_name = table_param['func']
+        
+
+        if func_name == 'smina_dock':
+            table_type = 'docked_ligand'
+            data_type = 'dock'
+        elif func_name == 'reorder':
+            table_type = 'reorder_ligand'
+            data_type = 'reorder'
+        else:
+            table_type = func_name
+            data_type = func_name
+
+        table_idx = self.db.create_table(table_type, table_param)
+
+        data = self.prepare_data(data_type, table_idx, table_param)
+
+        return table_idx, table_param, data  
+
+    def db_continue(self):
+        table_idx, table_param, data = self.prepare_continue()
         func_name = table_param['func']
         func = action_dict[func_name]
-        run_multiprocess(data, partial(func, bucket, table_idx, table_param), monitering, bucket, db)
+        run_multiprocess(data, partial(func, bucket, table_idx, table_param), monitering, bucket)
+
+    def db_create(self):
+        table_idx, table_param, data = self.prepare_create()
+        func_name = table_param['func']
+        func = action_dict[func_name]
+        run_multiprocess(data, partial(func, bucket, table_idx, table_param), monitering, bucket)
 
     def create_reorder(self):
         if self.FLAGS.folder_name is None:
@@ -104,7 +139,7 @@ class db_create(db_creator):
         ligand_idx = self.FLAGS.ligand_idx
         ligand_folder = self.db.get_folder(ligand_idx)
         table_param = {
-            'func': 'dock',
+            'func': 'smina_dock',
             'output_folder': folder_name,
             'receptor_idx':receptor_idx,
             'input_receptor_folder': '{}_{}'.format(receptor_idx, receptor_folder),
@@ -204,53 +239,7 @@ class db_create(db_creator):
 
         return table_param
 
-    def data_split_ligand(self, table_idx, table_param, progress=False):
-
-        download_idx = table_param['download_idx']
-        download_list = self.db.get_all_success(download_idx)
-
-        finished_list = self.db.get_all_success(table_idx)
-        finished_list = map(lambda x:(x[0],),finished_list)
-        failed_list = self.db.get_all_failed(table_idx)
-        failed_list = map(lambda x:(x[0],), failed_list)
-
-        if self.FLAGS.retry_failed:
-            rest_list = list(set(download_list) - set(finished_list) | set(failed_list))
-        else:
-            rest_list = list(set(download_list) - set(finished_list) - set(failed_list))
-
-        total = len(set(download_list))
-        finished = len(set(finished_list)-set(failed_list))
-        failed = len(set(failed_list))
-
-        if progress:
-            return (total, finished, failed)
-        else:
-            return rest_list   
-
-    def data_split_receptor(self, table_idx, table_param, progress=False):
-
-        download_idx = table_param['download_idx']
-        download_list = self.db.get_all_success(download_idx)
-
-        finished_list = self.db.get_all_success(table_idx)
-        finished_list = map(lambda x:(x[0],),finished_list)
-        failed_list = self.db.get_all_failed(table_idx)
-        failed_list = map(lambda x:(x[0],), failed_list)
-
-        if self.FLAGS.retry_failed:
-            rest_list = list(set(download_list) - set(finished_list) | set(failed_list))
-        else:
-            rest_list = list(set(download_list) - set(finished_list) - set(failed_list))
-
-        total = len(set(download_list))
-        finished = len(set(finished_list)-set(failed_list))
-        failed = len(set(failed_list))
-
-        if progress:
-            return (total, finished, failed)
-        else:
-            return rest_list   
+ 
 
     def data_reorder(self, table_idx, table_param, progress=False):
 
@@ -396,16 +385,18 @@ def get_args():
 
 def main():
     FLAGS = get_args()
+    db = AffinityDatabase()
+    op = db_operation(FLAGS, db)
     if FLAGS.db_create:
-        db_create(FLAGS, db)
+        op.db_create()
     if FLAGS.db_continue:
-        db_continue(FLAGS, db)
+        op.db_continue()
     if FLAGS.db_delete:
-        db_delete(FLAGS, db)
+        op.db_delete()
     if FLAGS.db_progress:
-        db_progress(FLAGS, db)
+        op.db_progress()
     if FLAGS.db_param:
-        db_param(FLAGS, db)
+        op.db_param()
 
 
 if __name__ == '__main__':

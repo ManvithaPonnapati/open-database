@@ -1,7 +1,8 @@
 from collections import namedtuple, OrderedDict
+table = namedtuple('Table',['type','columns','primary_key'])
 
 tables = {
-    'reorder':table(*['reorder',
+    'reorder_ligand':table(*['reorder',
                      OrderedDict(
                         [
                             ('receptor','text'),
@@ -14,7 +15,7 @@ tables = {
                      ),
                      ['receptor','chain','resnum','resname']
                 ]),
-    'docked':table(*['docked',
+    'docked_ligand':table(*['docked',
                      OrderedDict(
                         [
                             ('receptor','text'),
@@ -80,6 +81,7 @@ tables = {
                             ('state','ingeter'),
                             ('comment','text')
                         ]
-                    )
+                    ),
+                    ['receptor','resname']]),
 }
 

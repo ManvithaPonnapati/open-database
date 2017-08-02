@@ -16,7 +16,7 @@ Parameter
 db_name='affinity.db'
 
 # number of process running at the same time
-process_num = 1
+process_num = 4
 
 
 # RENAMES:
@@ -99,7 +99,8 @@ Folders
 script_path = sys.path[0]
 #base folder for all the output
 #database_root = os.path.join(script_path, '..', 'AffinityDB')
-database_root = '/home/maksym/ryan/AffinityDB'
+database_root = '/Users/Will/projects/reformat/new_branch/core/DB/datasets/VDS1/AffinityDB'
+
 
 
 db_path =os.path.join(database_root, db_name)

@@ -19,7 +19,7 @@ from functools import partial
 import numpy as np 
 import pandas as pd 
 import db_config 
-
+from db import AffinityDatabase
 
 class Stmt_bucket(object):
     ''' 
@@ -36,8 +36,9 @@ class Stmt_bucket(object):
     def insert(self, stmt):
         self.bucket.append(stmt)
 
-    def commit(self, db):
-        #db = AffinityDatabase()
+    def commit(self):
+        print ('\n\n\n\n\n\n\n\ncommit\n\n\n\n\n\n\n\n')
+        db = AffinityDatabase()
         for stmt in self.bucket:
             db.conn.execute(stmt)
 
@@ -95,14 +96,14 @@ def get_baseparser():
     return parser
 
 
-def monitering(bucket, db):
+def monitering(bucket):
     while (True):
         time.sleep(60)
-        if bucket.size() > 1000:
-            bucket.commit(db)
+        #if bucket.size() > 10:
+        bucket.commit()
 
 
-def run_multiprocess(target_list, func, monitering, bucket, db):
+def run_multiprocess(target_list, func, monitering, bucket):
     logging.basicConfig(level=logging.INFO)
     print(len(target_list))
     start_time = time.time()
@@ -118,7 +119,7 @@ def run_multiprocess(target_list, func, monitering, bucket, db):
     print(len(target_list))
 
 
-    p = multiprocessing.Process(target=monitering, args=(bucket, db))
+    p = multiprocessing.Process(target=monitering, args=(bucket,))
 
     pool = multiprocessing.Pool(db_config.process_num)
     pool.map_async(func, target_list)
@@ -134,7 +135,7 @@ def run_multiprocess(target_list, func, monitering, bucket, db):
     bucket.commit()
 
 
-class db_creator(object):
+class db_operator(object):
     def __init__(self, FLAGS, db):
         self.db = db
         self.FLAGS = FLAGS
@@ -207,10 +208,10 @@ class db_creator(object):
 
 
         
-    def run_create(self):
+    def prepare_create(self):
         action = self.FLAGS.action
         if not action in self.create_func_dict.keys():
-            riase Exception("action {} unrecognized".format(action))
+            raise Exception("action {} unrecognized".format(action))
 
         create_func = self.create_func_dict[action]
         table_param = create_func()
@@ -221,14 +222,15 @@ class db_creator(object):
 
         table_idx = self.db.create_table(table_type, table_param)
 
-        data = self.run_data(data_type, table_idx, table_param)
+        data = self.prepare_data(data_type, table_idx, table_param)
 
         return table_idx, table_param, data  
 
 
-    def run_data(self, func_name, table_idx, table_param, progress=False):
+    def prepare_data(self, func_name, table_idx, table_param, progress=False):
         if not func_name in self.data_func_dict.keys():
             raise Exception("function name {} unrecognized ".format(func_name))
+
 
         data_func = self.data_func_dict[func_name]
         data = data_func(table_idx, table_param, progress)
@@ -237,100 +239,159 @@ class db_creator(object):
 
 
     def data_download(self, table_idx, table_param, progress=False):
-
-        download_list = open(db_config.list_of_PDBs_to_download).readline().strip().split(',')
-        finished_list = self.db.get_all_success(table_idx)
-        failed_list = self.db.get_all_failed(table_idx)
-
-        if self.FLAGS.retry_failed:
-            rest_list = list(set(download_list) - set(finished_list) | set(failed_list))
-        else:
-            rest_list =list(set(download_list) - set(finished_list) - set(failed_list)) 
-
-        total = len(set(download_list))
-        finished = len(set(finished_list)-set(failed_list))
-        failed = len(set(failed_list))
-
+        
         if progress:
+            total = len(open('/Users/Will/projects/reformat/new_branch/core/DB/datasets/VDS1/data/main_pdb_target_list.txt').readline().strip().split(','))
+            finished = self.db.get_num_all_success(table_idx)
+            failed = self.db.get_num_all_failed(table_idx)
             return (total, finished, failed)
+
         else:
+
+            download_list = open('/Users/Will/projects/reformat/new_branch/core/DB/datasets/VDS1/data/main_pdb_target_list.txt').readline().strip().split(',')
+            finished_list = self.db.get_all_success(table_idx)
+            failed_list = self.db.get_all_failed(table_idx)
+
+            if self.FLAGS.retry_failed:
+                rest_list = list(set(download_list) - set(finished_list) | set(failed_list))
+            else:
+                rest_list =list(set(download_list) - set(finished_list) - set(failed_list)) 
+
+            total = len(set(download_list))
+            finished = len(set(finished_list)-set(failed_list))
+            failed = len(set(failed_list))
+
+
             return rest_list   
 
+    def data_split_ligand(self, table_idx, table_param, progress=False):
 
-def db_continue(FLAGS, db):
-    if FLAGS.table_idx is None:
-        raise Exception("table_idx required")
+        if progress:
+            download_idx = table_param['download_idx']
+            total = self.db.get_num_all_success(download_idx)
+            finished = self.db.get_num_all_success(table_idx)
+            failed = self.db.get_num_all_failed(table_idx)
+            return (total, finished, failed)
+
+        else:
+
+            download_idx = table_param['download_idx']
+            download_list = self.db.get_all_success(download_idx)
+
+            finished_list = self.db.get_all_success(table_idx)
+            finished_list = map(lambda x:(x[0],),finished_list)
+            failed_list = self.db.get_all_failed(table_idx)
+            failed_list = map(lambda x:(x[0],), failed_list)
+
+            if self.FLAGS.retry_failed:
+                rest_list = list(set(download_list) - set(finished_list) | set(failed_list))
+            else:
+                rest_list = list(set(download_list) - set(finished_list) - set(failed_list))
+
+            total = len(set(download_list))
+            finished = len(set(finished_list)-set(failed_list))
+            failed = len(set(failed_list))
 
 
-    table_idx = FLAGS.table_idx
-    table_name, table_param = db.get_table(table_idx)
+            return rest_list   
 
-    func_name = table_param['func']
-    func = DatabaseAction[func_name]
-    if func_name == 'smina_dock':
-        table_type = 'docked_ligand'
-        data_type = 'dock'
-    elif func_name == 'reorder':
-        table_type = 'reorder_ligand'
-        data_type = 'reorder'
-    else:
+    def data_split_receptor(self, table_idx, table_param, progress=False):
+
+        if progress:
+            download_idx = table_param['download_idx']
+            total = self.db.get_num_all_success(download_idx)
+            finished = self.db.get_num_all_success(table_idx)
+            failed = self.db.get_num_all_failed(table_idx)
+            return (total, finished, failed)            
+
+        else:
+
+            download_idx = table_param['download_idx']
+            download_list = self.db.get_all_success(download_idx)
+
+            finished_list = self.db.get_all_success(table_idx)
+            finished_list = map(lambda x:(x[0],),finished_list)
+            failed_list = self.db.get_all_failed(table_idx)
+            failed_list = map(lambda x:(x[0],), failed_list)
+
+            if self.FLAGS.retry_failed:
+                rest_list = list(set(download_list) - set(finished_list) | set(failed_list))
+            else:
+                rest_list = list(set(download_list) - set(finished_list) - set(failed_list))
+
+            total = len(set(download_list))
+            finished = len(set(finished_list)-set(failed_list))
+            failed = len(set(failed_list))
+
+            return rest_list  
+
+    def prepare_continue(self):
+        
+        if self.FLAGS.table_idx is None:
+            raise Exception("table_idx required")
+
+
+        table_idx = self.FLAGS.table_idx
+        table_name, table_param = self.db.get_table(table_idx)
+
+        func_name = table_param['func']
+        
         table_type = func_name
         data_type = func_name
 
-    data = get_job_data(data_type, table_idx, table_param)
-    run_multiprocess(data, partial(func, bucket,table_idx, table_param))
-
-def db_delete(FLAGS, db):
-    if FLAGS.table_idx is None:
-        raise Exception('table_idx required')
-
-    table_idx = FLAGS.table_idx
-    db.delete_table(table_idx)
-
-
-def db_progress(FLAGS, db):
-    if FLAGS.table_idx is None:
-        raise Exception('table_idx required')
-    
-    table_idx = FLAGS.table_idx
-
-    if table_idx:
-        table_idxes = [table_idx]
-    else:
-        table_idxes = sorted(db.get_all_dix())
-
-
-    print("Progress\n")
-    if len(table_idxes):
-        print("Total jobs |  Finished  | Finished(%) |   Failed   |  Failed(%)  |   Remain   |  Remain(%)  | Table name ")
-    for table_idx in table_idxes:
-        table_name, table_param = db.get_table(table_idx)
+        data = self.prepare_data(data_type, table_idx, table_param)
         
-        func_name = table_param['func']
-        if func_name == 'smina_dock':
-            data_type = 'dock'
-        elif func_name == 'reorder':
-            data_type='reorder'
+        return table_idx, table_param, data
+
+    def db_delete(self):
+        if self.FLAGS.table_idx is None:
+            raise Exception('table_idx required')
+
+        table_idx = self.FLAGS.table_idx
+        self.db.delete_table(table_idx)
+
+
+
+
+
+    def db_progress(self):
+        if self.FLAGS.table_idx is None:
+            raise Exception('table_idx required')
+        
+        table_idx = self.FLAGS.table_idx
+
+        if table_idx:
+            table_idxes = [table_idx]
         else:
+            table_idxes = sorted(self.db.get_all_dix())
+
+
+        print("Progress\n")
+        if len(table_idxes):
+            print("Total jobs |  Finished  | Finished(%) |   Failed   |  Failed(%)  |   Remain   |  Remain(%)  | Table name ")
+        for table_idx in table_idxes:
+            table_name, table_param = self.db.get_table(table_idx)
+            
+            func_name = table_param['func']
             data_type = func_name
 
-        
-        
-        total, finished, failed = get_job_data(data_type, table_idx, table_param, progress=True)
-        print( "{:<13d} {:<11d} {:<15.2f} {:<11d} {:<14.2f} {:<11d} {:<12.2f} {}". \
-                format(total,
-                       finished, 100.*finished/total  if total else 0,
-                       failed, 100.*failed/total if total else 0,
-                       total - finished - failed, 100.*(total-finished-failed)/total if total else 0,
-                       table_name))
+            
+            
+            total, finished, failed = self.prepare_data(data_type, table_idx, table_param, progress=True)
+            print( "{:<13d} {:<11d} {:<15.2f} {:<11d} {:<14.2f} {:<11d} {:<12.2f} {}". \
+                    format(total,
+                        finished, 100.*finished/total  if total else 0,
+                        failed, 100.*failed/total if total else 0,
+                        total - finished - failed, 100.*(total-finished-failed)/total if total else 0,
+                        table_name))
 
-def db_param(FLAGS, db):
-    if FLAGS.table_idx is None:
-        raise Exception('table_idx required')
+    def db_param(self):
+        if self.FLAGS.table_idx is None:
+            raise Exception('table_idx required')
 
-    table_idx = FLAGS.table_idx
+        table_idx = self.FLAGS.table_idx
 
-    table_name, table_param = db.get_table(table_idx)
+        table_name, table_param = self.b.get_table(table_idx)
 
-    print("Parameter for Table: {}".format(table_name))
-    pprint.pprint(table_param)
+        print("Parameter for Table: {}".format(table_name))
+        pprint.pprint(table_param)

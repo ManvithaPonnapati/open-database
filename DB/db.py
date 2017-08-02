@@ -35,6 +35,9 @@ class AffinityDatabase:
         else:
             self.connect_db()
 
+    def update_table(self, tables):
+        self.tables.update(tables)
+
     def connect_db(self):
         self.conn = sqlite3.connect(self.db_path)
         self.connect = True
@@ -281,6 +284,18 @@ class AffinityDatabase:
             return tables[table_type].primary_key
 
 
+    def get_num_primary_columns_on_key(self, idx, kw):
+        idx = int(idx)
+        table_name = self.get_table(idx, with_param=False)
+        #primary_key = self.primary_key_for(idx)
+        stmt = 'select count(*) from ' + table_name
+        stmt += ' where '
+        stmt += ' and '.join(['{}={}'.format(key, kw[key]) for key in kw.keys()])
+        stmt += ';'
+        cursor = self.conn.cursor()
+        cursor.execute(stmt)
+        values = cursor.fetchone()
+        return values[0]        
 
     def get_primary_columns_on_key(self, idx, kw):
         idx = int(idx)
@@ -294,6 +309,12 @@ class AffinityDatabase:
         cursor.execute(stmt)
         values = cursor.fetchall()
         return values
+
+    def get_num_all_success(self, idx):
+        return self.get_num_primary_columns_on_key(idx, {'state':1})
+
+    def get_num_all_failed(self, idx):
+        return self.get_num_primary_columns_on_key(idx, {'state':0})
 
     def get_all_success(self, idx):
         '''

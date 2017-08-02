@@ -1,4 +1,6 @@
-
+import sys 
+sys.path.append('..')
+from config import smina
 class smina_param:
 
     kw_options = [
@@ -56,7 +58,7 @@ class smina_param:
     ]
 
     def __init__(self, name=None):
-        self.smina = config.smina
+        self.smina = smina
 
         if not name is None:
             self.name = name
