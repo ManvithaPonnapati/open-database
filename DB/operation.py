@@ -1,9 +1,12 @@
 import os
 import sys
-from blocks import download, split_ligand, operation
+import re 
+
 import time 
+import pprint
 import argparse 
 import logging
+
 import multiprocessing
 from multiprocessing.managers import BaseManager, NamespaceProxy
 from glob import glob 
@@ -13,6 +16,7 @@ import numpy as np
 import pandas as pd 
 import db_config
 from db import AffinityDatabase
+from blocks import download, split_ligand, operation
 
 class Stmt_bucket(object):
     ''' 
@@ -33,6 +37,7 @@ class Stmt_bucket(object):
         print ('\n\n\n\n\n\n\n\ncommit\n\n\n\n\n\n\n\n')
         db = AffinityDatabase()
         for stmt in self.bucket:
+            print('stmt '+ stmt)
             db.conn.execute(stmt)
 
         db.conn.commit()
@@ -58,9 +63,7 @@ class DBProxy(NamespaceProxy):
 
 
 DBManager.register("bucket", Stmt_bucket, DBProxy)
-manager = DBManager()
-manager.start()
-bucket = manager.bucket() 
+
 
 
 def get_baseparser():
@@ -97,9 +100,8 @@ def monitering(bucket):
 
 
 def run_multiprocess(target_list, func, monitering, bucket):
-    logging.basicConfig(level=logging.INFO)
-    
-    print(len(target_list))
+    logging.basicConfig(level=logging.DEBUG)
+
     start_time = time.time()
     if len(target_list) == 0:
         return
@@ -110,14 +112,14 @@ def run_multiprocess(target_list, func, monitering, bucket):
             target_list = map(list, target_list)
         except TypeError:
             pass
-    print(len(target_list))
-    func(target_list[0])
+    print('Target list len %d' %len(target_list))
 
     p = multiprocessing.Process(target=monitering, args=(bucket,))
-    print (type(func))
-    pool = multiprocessing.Pool(db_config.process_num)
-    pool.map_async(func, target_list)
 
+    pool = multiprocessing.Pool(db_config.process_num)
+    # running function outside the 
+    func(target_list[0])
+    pool.map_async(func, target_list)
     p.start()
 
     pool.close()
@@ -129,8 +131,8 @@ def run_multiprocess(target_list, func, monitering, bucket):
     bucket.commit()
 
 class executor(object):
-    def __init__(self):
-        pass
+    def __init__(self, bucket):
+        self.bucket = bucket
 
     def db_create(self, FLAGS, db, ops):
         action = FLAGS.action
@@ -142,7 +144,7 @@ class executor(object):
 
         table_idx = db.create_table_with_def(table_param, op.table)
         data = op.data(FLAGS, db, table_idx, table_param)
-        run_multiprocess(data, partial(op.action,db, bucket, table_idx, table_param), monitering, bucket)
+        run_multiprocess(data, partial(op.action,db, self.bucket, table_idx, table_param), monitering, self.bucket)
 
     def db_continue(self, FLAGS, db, ops):
         if FLAGS.table_idx is None:
@@ -154,7 +156,7 @@ class executor(object):
         op = ops.ops[func]
 
         data = op.data(FLAGS, db, table_idx, table_param)
-        run_multiprocess(data, partial(op.action,db, bucket, table_idx, table_param), monitering, bucket)
+        run_multiprocess(data, partial(op.action,db, self.bucket, table_idx, table_param), monitering, self.bucket)
         
     def db_progress(self, FLAGS, db, ops):
         if FLAGS.table_idx is None:
@@ -187,9 +189,10 @@ class executor(object):
                 table_type = func_name
                 data_type = func_name 
 
-            op = ops.ops[func_name]           
-                
-            total, finished, failed = op.porgress(FLAGS, db, data_type, table_idx, table_param)
+            op = ops.ops[func_name]
+                       
+            #print(dir(op))
+            total, finished, failed = op.progress(FLAGS, db, table_idx, table_param)
 
             print( "{:<13d} {:<11d} {:<15.2f} {:<11d} {:<14.2f} {:<11d} {:<12.2f} {}". \
                     format(total,
@@ -206,12 +209,20 @@ class executor(object):
         db.delete_table(table_idx)
 
 def main():
+    
     parser = get_baseparser()
     db = AffinityDatabase()
+    db.regist_table('download',download.table)
+    db.regist_table('splited_ligand', split_ligand.table)
+
+    manager = DBManager()
+    manager.start()
+    bucket = manager.bucket() 
+
     Ops = operation()
     Ops.register('download',download)
     Ops.register('split_ligand',split_ligand)
-    ex = executor()
+    ex = executor(bucket)
     FLAGS, unparsed = parser.parse_known_args()
     if FLAGS.db_create:
         ex.db_create(FLAGS, db, Ops)

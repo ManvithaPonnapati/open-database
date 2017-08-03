@@ -195,7 +195,7 @@ class download(object):
         '''
         print("download action")
         try:
-
+            print('download start')
             receptor = input_data[1:]                                                   # todo(maksym) pdb_id
             output_folder = param['output_folder']
             output_folder_name = '{}_{}'.format(table_idx, output_folder)
@@ -205,13 +205,16 @@ class download(object):
 
             #pdb_path = '/home/maksym/ryan/labeled_pdb/crystal_ligands/'+receptor+'/'+receptor+'.pdb'
             #print ('pdb',pdb_path)
+            print (pdb_path)
             if not os.path.exists(pdb_path):
                 download_address = 'https://files.rcsb.org/download/{}.pdb'.format(receptor)
                 os.system('wget --no-check-certificate -P {} {}'.format(dest_dir, download_address))
             header = prody.parsePDBHeader(pdb_path)
             record = [receptor, header['experiment'], header['resolution'], 1, 'success']
             records = [record]
+            print('insert')
             db.insert(table_idx, records, bucket=bucket)
+            print('finished')
         except Exception as e:
             "Exception causing non success"
             print (e)

@@ -35,10 +35,16 @@ class AffinityDatabase:
         else:
             self.connect_db()
 
+    def regist_table(self, name,table):
+        # add new type of table in tables
+        self.tables.update({name:table})
+
     def update_table(self, tables):
+        # merge self.tables with  tables
         self.tables.update(tables)
 
     def connect_db(self):
+
         self.conn = sqlite3.connect(self.db_path)
         self.connect = True
         print ("connect to %s" % self.db_path)
@@ -66,6 +72,14 @@ class AffinityDatabase:
         self.init_table()
 
     def new_table_idx(self):
+        '''
+        before create a new table 
+        get the idx of the table to be inserted
+
+        return :
+            ids:: int
+
+        '''
         stmt = 'select table_idx from db_info;'
         cursor = self.conn.cursor()
         cursor.execute(stmt)
@@ -84,6 +98,13 @@ class AffinityDatabase:
 
 
     def get_table_type_by_idx(self, idx):
+        '''
+        get the type of table by given table_idx
+
+        return :
+            table_type :: str
+
+        '''
         idx = int(idx)
         cursor = self.conn.cursor()
         stmt = 'select type from db_info where table_idx=%d;' % idx
@@ -95,6 +116,20 @@ class AffinityDatabase:
             return value[0]
 
     def create_table_with_def(self, table_param, table_def):
+        '''
+        create a tabel with given table_param and table_def
+
+        args:
+            table_param:: dict
+                basic information for the table tobe created
+            
+            table_def:: tables
+                definition for the table's columns, primary keys
+
+        return:
+            idx:: int
+        '''
+
         table_idx = self.new_table_idx()
         table_name = '{}_{}'.format(table_def.type, table_idx)
         
@@ -126,6 +161,19 @@ class AffinityDatabase:
         
 
     def create_table(self, table_type, table_param):
+        '''
+        create a table with given table_type and table_param
+
+        args:
+            table_param:: dict
+                basic information for the table tobe created
+
+            table_type:: str
+                type of table, can get the table_def from self.tables[table_type]
+
+        return:
+            idx:: int
+        '''
         table_idx = self.new_table_idx()
         table_name = '{}_{}'.format(table_type, table_idx)
         tab = self.tables[table_type]
@@ -160,6 +208,16 @@ class AffinityDatabase:
         return table_idx
 
     def get_table_name_by_idx(self, idx):
+        '''
+        get the name of table which table_idx is idx
+
+        args:
+            idx:: int
+
+        return:
+            table_name ::str
+
+        '''
         idx = int(idx)
         cursor = self.conn.cursor()
         stmt = 'select name from db_info where table_idx=%d;' % idx
@@ -171,6 +229,22 @@ class AffinityDatabase:
             return value[0]
 
     def get_table(self, idx, with_param=True):
+        '''
+        get the name and table_param of table which table_idx is idx
+
+        args:
+            idx:: int
+                table_idx of the table
+
+            with_param:: bool
+                if return table_param
+
+        return:
+            table_name:: str
+
+            table_param:: dict
+
+        '''
         idx = int(idx)
         cursor = self.conn.cursor()
         stmt = 'select name, parameter from db_info where table_idx=%d;' % idx
@@ -190,6 +264,16 @@ class AffinityDatabase:
 
 
     def get_folder(self, idx):
+        '''
+        get the output folder of the table whit table_idx 
+
+        args:
+            idx:: int
+
+        reutrn:
+            output_folder:: str
+                name of the folder store the output file of target table
+        '''
         idx = int(idx)
         table_name, table_param = self.get_table(idx)
         
@@ -199,6 +283,15 @@ class AffinityDatabase:
             return table_param['output_folder']
 
     def delete_table(self, idx):
+        '''
+        delete table with table_idx and all the table depended it
+        along with the data of those table
+
+        args:
+            idx:: int
+
+
+        '''
         idx = int(idx)
         # if exists get the ble_name and table_taparam
         table_name, table_param = self.get_table(idx)
@@ -243,9 +336,38 @@ class AffinityDatabase:
 
     @lockit
     def insert(self, table_idx, values, head=None, bucket=None):
+        '''
+        insert values to into dataabse
+
+        args:
+            table_idx:: int
+
+            values:: list of value list
+                content to be inserted
+            head:: list of str
+                table head 
+
+            bucket:: object
+                object to hold the insert statement
+        '''
         self.insert_or_replace(table_idx, values, head, bucket)
 
-    def insert_or_replace(self, table_idx, values, head=None, bucket=None):        
+    def insert_or_replace(self, table_idx, values, head=None, bucket=None):
+        '''
+        insert database by "replace into"
+        which will replace the existing entry
+
+        args:
+            table_idx:: int
+
+            values:: list of value list
+                content to be inserted
+            head:: list of str
+                table head 
+
+            bucket:: object
+                object to hold the insert statement
+        '''        
         if table_idx in basic_tables.keys():
             table_name = table_idx
         else:
@@ -270,6 +392,7 @@ class AffinityDatabase:
             self.conn.execute(stmt)
             self.conn.commit()
         else:
+            print('insert stmt '+stmt)
             bucket.insert(stmt)
 
 
@@ -302,6 +425,16 @@ class AffinityDatabase:
 
 
     def primary_key_for(self, idx):
+        '''
+        get the table's primary keys which table_idx is idx
+
+        args:
+            idx:: int
+
+        return:
+            primary_keys:: list of str
+
+        '''
         idx = int(idx)
         stmt = 'select type from db_info where table_idx=%d;' % idx
         cursor = self.conn.cursor()
@@ -315,6 +448,23 @@ class AffinityDatabase:
 
 
     def get_num_primary_columns_on_key(self, idx, kw):
+        '''
+        get the number of entry from table which table_idx is idx
+        with restriction kw
+
+        args:
+            idx:: int
+
+            kw:: dict
+                restrict column name and value
+                e.g. {'state':1} to select all success result
+
+
+        reutrn:
+            num_of_entry:: int
+
+
+        '''
         idx = int(idx)
         table_name = self.get_table(idx, with_param=False)
         #primary_key = self.primary_key_for(idx)
@@ -328,6 +478,23 @@ class AffinityDatabase:
         return values[0]        
 
     def get_primary_columns_on_key(self, idx, kw):
+        '''
+        get the primary columns' content from table which table_idx is idx
+        with restriction kw
+
+        args:
+            idx:: int
+
+            kw:: dict
+                restrict column name and value
+                e.g. {'state':1} to select all success result
+
+        return:
+            content:: list
+                e.g. [('3eml',),('1a2b',),...] for download, which has only one primary key
+                     or [('3eml','A','123','SO4),...] for splited_ligand, which has four primary keys
+
+        '''
         idx = int(idx)
         table_name = self.get_table(idx, with_param=False)
         primary_key = self.primary_key_for(idx)
@@ -341,9 +508,17 @@ class AffinityDatabase:
         return values
 
     def get_num_all_success(self, idx):
+        '''
+        get the number of entry from table which table_idx is idx and state is 1
+
+        '''
         return self.get_num_primary_columns_on_key(idx, {'state':1})
 
     def get_num_all_failed(self, idx):
+        '''
+        get the number of entry from table which table_idx is idx and state is 1
+
+        '''
         return self.get_num_primary_columns_on_key(idx, {'state':0})
 
     def get_all_success(self, idx):
@@ -374,7 +549,9 @@ class AffinityDatabase:
 
 
     def get_all_dix(self):
-        
+        '''
+        get all tables' table_idx from database
+        '''
         stmt = 'select table_idx from db_info;'
         cursor = self.conn.cursor()
         cursor.execute(stmt)
@@ -383,7 +560,9 @@ class AffinityDatabase:
         return values
 
     def get_idx_by_type(self, table_type):
-        
+        '''
+        get table_idx for all table which type is table_type
+        '''
         stmt = 'select table_idx from db_info '
         stmt += ' where type="%s";' % table_type
         cursor = self.conn.cursor()
@@ -414,6 +593,9 @@ class AffinityDatabase:
             return (table_name, table_param, columns,  values)
 
     def get_failed_reason(self, idx):
+        '''
+        get the comment from table which table_idx idx is idx and state is 0
+        '''
         idx = int(idx)
         table_name = self.get_table(idx, with_param=False)
         stmt = 'select comment from ' + table_name
@@ -429,6 +611,11 @@ class AffinityDatabase:
 
 
     def init_table(self):
+        '''
+        when creating new sqlite db,
+        create basic table in the database
+
+        '''
         print ('init')
         for tab in basic_tables.values():
             stmt = 'create table '+ tab.type + ' ('
