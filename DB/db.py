@@ -94,6 +94,36 @@ class AffinityDatabase:
         else:
             return value[0]
 
+    def create_table_with_def(self, table_param, table_def):
+        table_idx = self.new_table_idx()
+        table_name = '{}_{}'.format(table_def.type, table_idx)
+        
+        encoded_param = base64.b64encode(json.dumps(table_param))
+        create_time = time.strftime("%Y-%m-%d", time.gmtime())
+        datum = [table_name, table_def.type, table_idx, create_time, encoded_param]
+        data = [datum]
+        self.insert('db_info',data)
+        
+        stmt = 'create table ' + table_name + ' ('        
+        for key in table_def.columns.keys():
+            stmt += key + ' ' + table_def.columns[key]
+            if key in table_def.primary_key:
+                stmt += ' not null ,'
+            else:
+                stmt += ' ,'
+        stmt += 'primary key(' + ','.join(table_def.primary_key) + '));'
+        print(stmt)            
+        self.conn.execute(stmt)  
+
+        if 'depend' in table_param.keys():
+            depend_tables = table_param['depend']
+            for tab_idx in depend_tables:
+                self.insert('dependence',[[tab_idx, table_idx]])
+
+        self.conn.commit()
+
+        return table_idx    
+        
 
     def create_table(self, table_type, table_param):
         table_idx = self.new_table_idx()

@@ -99,8 +99,8 @@ Folders
 script_path = sys.path[0]
 #base folder for all the output
 #database_root = os.path.join(script_path, '..', 'AffinityDB')
-database_root = '/Users/Will/projects/reformat/new_branch/core/DB/datasets/VDS1/AffinityDB'
-
+#database_root = '/Users/Will/projects/reformat/new_branch/core/DB/datasets/VDS1/AffinityDB'
+database_root = '/Users/Will/projects/reformat/new_branch/core/DB/BlockDB'
 
 
 db_path =os.path.join(database_root, db_name)
