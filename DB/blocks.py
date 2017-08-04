@@ -1,7 +1,8 @@
 import os
 import sys 
 import re 
-import time 
+import time
+import scipy.spatial
 from db_config import data_dir
 from collections import namedtuple, OrderedDict
 import prody
@@ -126,19 +127,18 @@ class split_ligand(object):
             'input_download_folder': '{}_{}'.format(download_idx, download_folder),
             'depend':[download_idx],
             'fit_box_size':20
-        } 
-
+        }
         return table_param
 
     @staticmethod
     def data(FLAGS, db, table_idx, table_param):
 
         download_idx = table_param['download_idx']
-        download_list = db.get_all_success(download_idx)
+        download_list = db.get_primary_columns_on_key(table_idx, {'state':1})
 
-        finished_list = db.get_all_success(table_idx)
+        finished_list = db.get_primary_columns_on_key(table_idx, {'state':1})
         finished_list = map(lambda x:(x[0],),finished_list)
-        failed_list = db.get_all_failed(table_idx)
+        failed_list = db.get_primary_columns_on_key(table_idx, {'state':0})
         failed_list = map(lambda x:(x[0],), failed_list)
 
         if FLAGS.retry_failed:
@@ -149,9 +149,7 @@ class split_ligand(object):
         total = len(set(download_list))
         finished = len(set(finished_list)-set(failed_list))
         failed = len(set(failed_list))
-
-
-        return rest_list   
+        return rest_list
 
     @staticmethod
     def progress(FLAGS, db, table_idx, table_param):
@@ -160,6 +158,7 @@ class split_ligand(object):
         finished = db.get_num_all_success(table_idx)
         failed = db.get_num_all_failed(table_idx)
         return (total, finished, failed)
+
 
 class download(object):
 
@@ -239,9 +238,9 @@ class download(object):
     @staticmethod
     def data(FLAGS, db, table_idx, table_param):
 
-        download_list = open('/Users/Will/projects/reformat/new_branch/core/DB/datasets/VDS1/data/main_pdb_target_list.txt').readline().strip().split(',')
-        finished_list = db.get_all_success(table_idx)
-        failed_list = db.get_all_failed(table_idx)
+        download_list = open('/home/maksym/Projects/28_afdb/DB/datasets/VDS1/data/main_pdb_target_list.txt').readline().strip().split(',')
+        finished_list = db.get_primary_columns_on_key(table_idx, {'state':1})
+        failed_list = db.get_primary_columns_on_key(table_idx, {'state':0})
 
         if FLAGS.retry_failed:
             rest_list = list(set(download_list) - set(finished_list) | set(failed_list))
@@ -251,14 +250,12 @@ class download(object):
         total = len(set(download_list))
         finished = len(set(finished_list)-set(failed_list))
         failed = len(set(failed_list))
-
-
-        return rest_list  
+        return rest_list
 
 
     @staticmethod
     def progress(FLAGS, db, table_idx, table_param):
-        total = len(open('/Users/Will/projects/reformat/new_branch/core/DB/datasets/VDS1/data/main_pdb_target_list.txt').readline().strip().split(','))
+        total = len(open('/home/maksym/Projects/28_afdb/DB/datasets/VDS1/data/main_pdb_target_list.txt').readline().strip().split(','))
         finished = db.get_num_all_success(table_idx)
         failed = db.get_num_all_failed(table_idx)
         return (total, finished, failed)

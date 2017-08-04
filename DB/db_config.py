@@ -19,88 +19,8 @@ db_name='affinity.db'
 process_num = 4
 
 
-# RENAMES:
-# [ ] tanimoto_cutoff    # minimum Tanimoto similarity score to be considered 
-# [ ] clash_size_cutoff  # ls # no cutoff here!
-# [x] base               # database_root
-# [x] lig_download_path  # why ?
-
-# [x] downloads          # raw_pdbs
-# [x] receptors          # raw_receptors
-# [x] raw_ligands
-# [x] docked_ligand_path # SMINA_DOCKED ?? 
-# [x] docking parameters
-
-# [x] target_list_file     list_of_PDBs_to_download
-# [x] lig_target_list_file (Not needed)
- 
-# [x] add folder for repaired ligands and proteins (with H)
-# [x] add folder for minimized hydrogens on ligands and proteins (How does the hydrogen addition happen)
-# [x] think how we can deal with multiple docking parameters
-
-
-# _________________________ Review 2 _________________________________________________
-
-
-# Bugs
-# [ ] 0) Tanimoto similarity cutoff does not work
-# [x] 1) Fraction of native contacts does not work
-# [ ] 2) similarity cutoff, fraction of native contacts, clash -- all should have a similar simple format
-# [x] 3) reorder should become a part of every docking algorithm
-# [x] 4) get_same_ligands becomes standalone
-# [x] 5) ligand_name_of becomes _ligand_name_of same for receptor_of, receptor_path_of, mkdir, run ---> run_multiptocessor
-# [-] 6) calculate_clash becomes a part of detect_overlap
-# [x] 7) dock merges with VInardo_do_docking
-# [x] 8) Empty files + broken file check (have a log file to do the stop so as to be able to resume from any point )
-# [x] broken file is unless "success is written in log"
-
-# Enhancements
-# [ ] 0) Dependencies into README.md
-# [x] 1) rename into 1_download, 2_split, 3_docking
-# [x] 2) split_structure needs medhod (IE: NMR,X-RAY)
-
-# 3) More splitting statistics
-# [x] let's also write a number of receptor atoms when splitting
-# [x] and the number of receptor chains when splitting
-# [x] number of receptor residues when splitting
-
-# 4) write a script that will aether all of the logs together and create many plots about the data in python notebook
-# Statistics about the PDB in README.md with all of the plots
-# def crystal_ligand_for_same_receptor
-
-# 5) Write the script that will do a retrieval based on 4 and write the structures in av4 format
-
-# 6) How do we do this on Orchestra or Bridges -- how do we launch many separate jobs ?
-
-
-# __________________________________ Review 3 ___________________________________________________
-# todo(maksym) - split we should be able to allow peptides as well
-# todo(maksym) - test how many ligands in the initial
-
-# raviables to rename/describe
-# tanimoto_cutoff = 0.75
-# clash_cutoff_A = 4
-# clash_size_cutoff = 0.3
-# reorder_pm
-# remove duplicate default parameters
-# datum = [table_name, table_type, table_sn, create_time, encoded_param]
-# data = [datum]
-
-
-# _____________________________________________ Review 4_______________________________________________
-
-# split receptor and ligand as one function ?
-
-
-"""
-Folders
-"""
-# the path for this script config.py
 script_path = sys.path[0]
-#base folder for all the output
-#database_root = os.path.join(script_path, '..', 'AffinityDB')
-#database_root = '/Users/Will/projects/reformat/new_branch/core/DB/datasets/VDS1/AffinityDB'
-database_root = '/Users/Will/projects/reformat/new_branch/core/DB/BlockDB'
+database_root = '/home/maksym/Projects/t_data'
 
 
 db_path =os.path.join(database_root, db_name)
