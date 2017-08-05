@@ -88,8 +88,6 @@ def get_baseparser():
     return parser
 
 
-
-
 def run_multiprocess(target_list, func, bucket):
     logging.basicConfig(level=logging.DEBUG)
 
@@ -110,12 +108,15 @@ def run_multiprocess(target_list, func, bucket):
     # run in a single thread
     for i in range(len(target_list)):
         func(target_list[i])
+
     print "target list",target_list
     func(target_list[0])
     pool.map_async(func, target_list)
     pool.close()
     pool.join()
     bucket.commit()
+
+
 
 class executor(object):
     def __init__(self, bucket):

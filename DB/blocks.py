@@ -102,7 +102,7 @@ class split_ligand(object):
                     records = [record]
                     db.insert(table_idx, records, bucket=bucket)
                 except Exception as e:
-                    record =  [receptor, chain, resnum, resname, 0, 0, 0, 0, str(e)]
+                    record = [receptor, chain, resnum, resname, 0, 0, 0, 0, str(e)]
                     records = [record]
                     db.insert(table_idx, records, bucket=bucket)
 

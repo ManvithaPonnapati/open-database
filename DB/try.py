@@ -1,15 +1,21 @@
+import numpy as np
 import threading
+import itertools
+import logging
 import time
-
-def printfunc():
-    for i in range(210000000):
-        print i
-        time.sleep(0.1)
+import multiprocessing
+import try_lib
+import nano_db
 
 
+logging.basicConfig(level=logging.DEBUG)
 
-tr = threading.Thread(target=printfunc)
-tr.daemon= True
-tr.start()
 
-print "all done !!!!!!!!!!!"
+
+db = nano_db.AffinityDB()
+
+
+arg_ones = np.arange(10000)
+arg_twos = np.arange(10000)+10
+arg_list = [arg_ones,arg_twos]
+db.run_multiprocess(arg_list,"nano_lib.zz.printnumber")

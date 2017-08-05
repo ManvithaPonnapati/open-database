@@ -10,11 +10,6 @@ from utils.utils import lockit
 
 from db_table import basic_tables, tables
 
-
-
-
-
-
 class AffinityDatabase:
     """
     A simple warpper for sqlite3
@@ -79,6 +74,8 @@ class AffinityDatabase:
         return:
             idx:: int
         '''
+        #print "table param:", table_param
+        #time.sleep(100)
         print "create table with def !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1!!!8"
         table_idx = self.new_table_idx()
         table_name = '{}_{}'.format(table_def.type, table_idx)

@@ -41,8 +41,6 @@ class AffinityDatabase(object):
     def regist_table(self, table_type, table_def):
         '''
         regist new table type
-
-        
         '''
         self.tables.update({table_type: table_def})
 
