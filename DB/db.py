@@ -10,6 +10,7 @@ from utils.utils import lockit
 
 from db_table import basic_tables, tables
 
+
 class AffinityDatabase:
     """
     A simple warpper for sqlite3
