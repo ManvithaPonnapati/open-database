@@ -34,6 +34,8 @@ class AffinityDB:
         time_stamp = time.strftime("%h_%y_%Y_%M_%S").lower()
         arg_table = time_stamp + "_arg_" + func
         out_table = time_stamp + "_out_" + func
+        assert type(arg_lists)==list, "list of inputs is expected"
+        assert all([type(arg_list)==list for arg_list in arg_lists]),"list of lists of inputs is expected"
         assert(set(arg_types).issubset([int,float,str])), "Expected keywords: int,float,str."
         assert len(arg_types)==len(arg_lists), "Bad number of argument types." + str(len(arg_types))
         assert len(out_types)==len(out_names), "Bad number of output types."
@@ -55,8 +57,8 @@ class AffinityDB:
         self.conn.execute(str(sql_cmd))
 
         # fill sqlite3 table with single commands that python threads will execute
-        sql_cmd = "insert into \"" + arg_table + "\" values ("
-        sql_cmd += ", ".join(["{}" for _ in range(num_args+3)]) + ");"
+        sql_cmd = "insert into \"" + arg_table + "\" values ({},"
+        sql_cmd += ", ".join(["\"{}\"" if arg_type=='string' else "{}" for arg_type in arg_types]) + ",{},{});"
         arg_lists = [range(num_runs)] + arg_lists # one column is used for run_index
         arg_sets = [list(x) + ['NULL'] + ['NULL'] for x in zip(*arg_lists)]
         sql_cmds = [sql_cmd.format(*arg_set) for arg_set in arg_sets]
@@ -115,9 +117,9 @@ class AffinityDB:
             tasks.append(task)
 
         # collect the results from the processes in the main thread
-        arg_sql_cmd = 'update \"' + arg_table + '\" set run_state={}, run_message=\'{}\' where run_idx={}'
-        out_sql_cmd = "insert into \"" + out_table + "\" values ("
-        out_sql_cmd += ", ".join(["{}" for _ in range(2+len(out_types))]) + ");"
+        arg_sql_cmd = 'update \"' + arg_table + '\" set run_state={}, run_message=\"{}\" where run_idx={}'
+        out_sql_cmd = "insert into \"" + out_table + "\" values ({},{},"
+        out_sql_cmd += ", ".join(["\"{}\"" if out_type==str else "{}" for out_type in out_types]) + ");"
         out_idx = 0
         for i in range(num_tasks):
             # put the results from the argument queue to the sqlite database
@@ -153,9 +155,9 @@ def _thread_proxie(func,arg_set,arg_q,out_q,out_types):
     :return:
     """
     try:
-        num_arg = len(arg_set)-1
+        arg_types = [type(arg) for arg in arg_set]
         num_out = len(out_types)
-        task = func + "(" + ", ".join(["{}" for _ in range(num_arg)]) +")"
+        task = func + "(" + ", ".join(["\"{}\"" if arg_type==unicode else "{}" for arg_type in arg_types[1:]]) +")"
         task = task.format(*arg_set[1:])
         outss = eval(task)
 
@@ -171,7 +173,6 @@ def _thread_proxie(func,arg_set,arg_q,out_q,out_types):
         # update the results table with the results
         for outs in outss:
             out_q.put([arg_set[0]] + outs)
-
     except Exception as e:
             # update the argument table with the error message
             arg_q.put([0,str(e),arg_set[0]])
