@@ -15,7 +15,7 @@ import xml.dom.minidom
 from chembl_webresource_client.new_client import new_client
 activities = new_client.activity
 
-BLASTDB = '/Users/Will/projects/reformat/uptodate/core/database/datasets/BS1/blastdb/chembl_23_blast.fa'
+BLASTDB = '/core/database/dataset_libs/BS1/blastdb/chembl_23_blast.fa'
 
 def _makedir(path):
     if not os.path.exists(path):
@@ -62,18 +62,24 @@ def blast(pdb_path):
         res_coll = []
         ligCoords = ligand.getCoords()
         print('lig_size', len(ligCoords))
-        for center in ligCoords:
-            around_atoms = rec.select('same residue as within 6 of center', center=center)
-            if around_atoms is None:
-                continue
-            res_coll.append(around_atoms)
-            #res_indices = around_atoms.getResindices()
-            #print(around_atoms.getHierView()['A'].getSequence())
-            #print (res_indices)
-            #res_coll = res_coll | set(res_indices)
-        resindices = reduce(lambda x,y: x|y, res_coll)
-        sequence = resindices.getHierView()['A'].getSequence()
-        print('sequence', sequence)
+
+        sequence = ''
+        i = 4
+        while len(sequence)< 100:
+
+            for center in ligCoords:
+                around_atoms = rec.select('same residue as within {} of center'.format(i), center=center)
+                if around_atoms is None:
+                    continue
+                res_coll.append(around_atoms)
+                #res_indices = around_atoms.getResindices()
+                #print(around_atoms.getHierView()['A'].getSequence())
+                #print (res_indices)
+                #res_coll = res_coll | set(res_indices)
+            resindices = reduce(lambda x,y: x|y, res_coll)
+            sequence = resindices.getHierView()['A'].getSequence()
+            print('sequence', i,len(sequence), sequence)
+            i +=1
         
 
    
@@ -94,40 +100,20 @@ def blast(pdb_path):
         hits = collection.getElementsByTagName("Hit")
 
         hit_result = []
-        
-        print ('hits',len(hits))
+       
         for hit in hits:
             hit_id = hit.getElementsByTagName('Hit_id')[0].childNodes[0].data
             hsps = hit.getElementsByTagName('Hit_hsps')[0]
             identity = hsps.getElementsByTagName('Hsp_identity')[0].childNodes[0].data
             align_len = hsps.getElementsByTagName('Hsp_align-len')[0].childNodes[0].data
-            ident =  float(identity)/float(align_len)
-            print(ident)
-            if ident >= 0.7:
-                hit_result.append([hit_id, ident])
+            qseq = hsps.getElementsByTagName('Hsp_qseq')[0].childNodes[0].data
+            hseq = hsps.getElementsByTagName('Hsp_hseq')[0].childNodes[0].data
+            midline = hsps.getElementsByTagName('Hsp_midline')[0].childNodes[0].data
 
-        for result in hit_result:
-            target_id = result[0]
-            res = activities.filter(target_chembl_id=target_id, pchembl_value__isnull=False)
+            blast_result.append([receptor, hit_id, str(identity), str(align_len), str(len(sequence)),midline, hseq, sequence])
 
-            res_size = len(res)
-            print (res_size)
-            for i in range(res_size):
-                        result = res[i]
-                        aid = result['assay_chembl_id']
-                        smile= result['canonical_smiles']
-                        mid = result['molecule_chembl_id']
-                        measure = result['published_type']
-                        op = result['published_relation']
-                        value = result['published_value']
-                        unit = result['standard_units']
-
-                        blast_result.append([receptor, chain, resnum, aid, mid, target_id, smile, measure, op, value, unit])
-
-
-        
-
-    #print (len(blast_result))
-    #print (blast_result)
     return blast_result
+
+if __name__ == '__main__':
+    blast('3eml')
             
