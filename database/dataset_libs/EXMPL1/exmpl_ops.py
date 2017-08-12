@@ -15,3 +15,11 @@ def strings_test(string):
    some_string = "ABCDEEFGHK"
    #one_ten = num %10
    return [[some_string + string]]
+
+def multi_out(num):
+   if num % 3 == 0:
+       return [[0]]
+   elif num % 3 == 1:
+       return [[1],[1]]
+   elif num % 3 == 2:
+       return [[2],[2],[2]]

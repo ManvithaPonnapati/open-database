@@ -10,7 +10,7 @@ class AffinityDB:
 
     def __init__(self,db_path):
 
-        self.conn = sqlite3.connect(db_path,check_same_thread=False)
+        self.conn = sqlite3.connect(db_path)
 
     def run_multithread(self,func,arg_types,arg_lists,out_types,out_names,num_threads=10,commit_freq=500):
         """ Given set of tasks (any function in python) , breaks the tasks between a given number of processes
@@ -112,6 +112,7 @@ class AffinityDB:
         out_q = m.Queue()
         tasks = []
         num_tasks = len(arg_sets)
+        # TODO: this is a sow place of the script; would be nice to map
         for i in range(num_tasks):
             task = pool.apply_async(_thread_proxie,args=(func,arg_sets[i],arg_q,out_q,out_types,))
             tasks.append(task)
