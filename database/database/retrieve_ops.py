@@ -1,5 +1,6 @@
-import sqlite3,os,re
+import sqlite3,os,re,time
 from itertools import compress
+import numpy as np
 
 class DatabaseGardener:
 
@@ -49,24 +50,19 @@ class DatabaseGardener:
 
         # insert columns into the upstream table
         sql_tmp = "update \"{}\" set ".format(ups_table)
-        sql_tmp += ", ".join([col_names[i] + "=\"{}\"" if col_types[i]=='text'
-                              else col_names[i]+ "={}" for i in range(num_cols)])
-        sql_tmp += " where run_idx={};"
-        for transfer_row in transfer_vals:
-            sql_cmd = sql_tmp.format(*transfer_row)
-            self.conn.execute(sql_cmd)
+        sql_tmp += ", ".join([col_names[i]+ "=?" for i in range(num_cols)])
+        sql_tmp += " where out_idx=?;"
+
+        self.conn.executemany(sql_tmp,transfer_vals)
         self.conn.commit()
 
-    def retrieve(self,table,cols,col_rules):
+    def retrieve(self, table, cols, col_rules):
         """ Retrieves column values from a single table based on a given filtering rule.
-
         example:
         my_db.retrieve(some_table_table,["num1","num2"],{"remainder_div_3":"{}==1 or {}==2", "sum":"{}<200"})
-
         will retrieve:
         columns called "num1" and "num2" from some table. That have value 1 or 2 in the ramainder_div_3 column. Column
         named "sum" of which would be less than 200. All columns are combined with an "AND" statement.
-
         :param table: string (name of the table to retrieve from)
         :param columns: list of strings (names of the columns to retrieve)
         :param column_rules: dictionary of rules that will be eveluated
@@ -82,12 +78,14 @@ class DatabaseGardener:
         filter_sets = cursor.fetchall()
 
         # repeat every argument number of times it appears in the selection
-        mult = [len(re.findall("{}",col_rules[key])) for key in col_rules]
-        def _repeat_vals(vals,repeats):
+        mult = [len(re.findall("{}", col_rules[key])) for key in col_rules]
+
+        def _repeat_vals(vals, repeats):
             rep_vals = []
             [[rep_vals.append(vals[i]) for _ in range(repeats[i])] for i in range(num_cols)]
             return rep_vals
-        filter_sets = [_repeat_vals(set,mult) for set in filter_sets]
+
+        filter_sets = [_repeat_vals(set, mult) for set in filter_sets]
 
         # evaluate every row to get a boolean mask of examples
         rule_tmp = "(" + ") and (".join([col_rules[key] for key in col_rules]) + ")"
@@ -99,8 +97,6 @@ class DatabaseGardener:
         sel_sets = cursor.fetchall()
 
         # apply a boolean mask to take only entries that fit the selection rule
-        sel_sets = list(compress(sel_sets,sel_mask))
+        sel_sets = list(compress(sel_sets, sel_mask))
         sel_vals = [list(x) for x in zip(*sel_sets)]
         return sel_vals
-
-

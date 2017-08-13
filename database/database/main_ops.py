@@ -12,7 +12,7 @@ class AffinityDB:
 
         self.conn = sqlite3.connect(db_path)
 
-    def run_multithread(self,func,arg_types,arg_lists,out_types,out_names,num_threads=10,commit_freq=500):
+    def run_multithread(self,func,arg_types,arg_lists,out_types,out_names,num_threads=10,commit_sec=1):
         """ Given set of tasks (any function in python) , breaks the tasks between a given number of processes
         to execute. Writes inputs into arg_ sqlite table and outputs into _out sqlite table.
 
@@ -57,13 +57,11 @@ class AffinityDB:
         self.conn.execute(str(sql_cmd))
 
         # fill sqlite3 table with single commands that python threads will execute
-        sql_cmd = "insert into \"" + arg_table + "\" values ({},"
-        sql_cmd += ", ".join(["\"{}\"" if arg_type=='string' else "{}" for arg_type in arg_types]) + ",{},{});"
-        arg_lists = [range(num_runs)] + arg_lists # one column is used for run_index
-        arg_sets = [list(x) + ['NULL'] + ['NULL'] for x in zip(*arg_lists)]
-        sql_cmds = [sql_cmd.format(*arg_set) for arg_set in arg_sets]
-        [self.conn.execute(sql_cmd) for sql_cmd in sql_cmds]
-        self.conn.commit()
+        sql_cmd = "insert into \"" + arg_table + "\" values (?,"
+        sql_cmd += ", ".join(["?" for arg_type in arg_types]) + ",?,?);"
+        arg_lists = [range(num_runs)] + arg_lists  # one column is used for run_index
+        arg_sets = [list(x) + [None] + [None] for x in zip(*arg_lists)]
+        self.conn.executemany(sql_cmd,arg_sets)
 
         # create empty sqlite3 table for the outputs
         out_types = [self.python_to_sql[out_type] for out_type in out_types]
@@ -72,10 +70,10 @@ class AffinityDB:
         sql_cmd += ", primary key(out_idx));"
         self.conn.execute(str(sql_cmd))
         # run a regular continue command with the threads
-        self.coninue(arg_table,num_threads=num_threads,commit_freq=commit_freq)
+        self.coninue(arg_table,num_threads=num_threads,commit_sec=commit_sec)
 
 
-    def coninue(self,arg_table,num_threads,commit_freq):
+    def coninue(self,arg_table,num_threads,commit_sec):
         """ Continue the interrupted run_multithread function.
         :param arg_table: string (name of the sqlite table with arguments of the function to run)
         :param num_threads: integer (number of processes)
@@ -97,6 +95,7 @@ class AffinityDB:
         sql_cmd = 'select ' + " ,".join(arg_names) + ' from \"' + arg_table + '\" where run_state is NULL;'
         cursor.execute(sql_cmd)
         arg_sets = cursor.fetchall()
+        num_tasks = len(arg_sets)
 
         # retrieve the information about the output data types of the function
         sql_cmd = 'pragma table_info(\"{}\")'.format(out_table)
@@ -108,41 +107,47 @@ class AffinityDB:
         # run tasks with the multiprocessing pool (on the background)
         pool = multiprocessing.Pool(num_threads)
         m = multiprocessing.Manager()
+        task_q = m.Queue()
         arg_q = m.Queue()
         out_q = m.Queue()
-        tasks = []
-        num_tasks = len(arg_sets)
-        # TODO: this is a sow place of the script; would be nice to map
-        for i in range(num_tasks):
-            task = pool.apply_async(_thread_proxie,args=(func,arg_sets[i],arg_q,out_q,out_types,))
-            tasks.append(task)
+        [task_q.put(arg_set) for arg_set in arg_sets]
+        thrs = [pool.apply_async(_thread_proxie,args=(func,task_q,arg_q,out_q,out_types,i)) for i in range(num_threads)]
 
         # collect the results from the processes in the main thread
-        arg_sql_cmd = 'update \"' + arg_table + '\" set run_state={}, run_message=\"{}\" where run_idx={}'
-        out_sql_cmd = "insert into \"" + out_table + "\" values ({},{},"
-        out_sql_cmd += ", ".join(["\"{}\"" if out_type==str else "{}" for out_type in out_types]) + ");"
+        arg_sql_cmd = 'update \"' + arg_table + '\" set run_state=?, run_message=? where run_idx=?'
+        out_sql_cmd = "insert into \"" + out_table + "\" values (?,?,"
+        out_sql_cmd += ", ".join(["\"?\"" if out_type==str else "?" for out_type in out_types]) + ");"
+
         out_idx = 0
+        arg_q_sets = []
+        out_q_sets = []
+        commit_clock = time.time()
         for i in range(num_tasks):
             # put the results from the argument queue to the sqlite database
-            arg_q_deq = arg_q.get()
-            sql_cmd = arg_sql_cmd.format(arg_q_deq[0], arg_q_deq[1], arg_q_deq[2])
-            self.conn.execute(sql_cmd)
+            arg_q_set = arg_q.get()
+            arg_q_sets.append(arg_q_set)
             # put the results from the outputs queue to the database
             while out_q.qsize() > 0:
-                out_q_deq = out_q.get()
-                outs = [out_idx] + out_q_deq
-                sql_cmd = out_sql_cmd.format(*outs)
-                self.conn.execute(sql_cmd)
+                out_q_set = out_q.get()
+                out_q_set = [out_idx] + out_q_set
+                out_q_sets.append(out_q_set)
                 out_idx+=1
-            if i % commit_freq==commit_freq-1:
+            if time.time() - commit_clock > commit_sec:
+                self.conn.executemany(arg_sql_cmd,arg_q_sets)
+                self.conn.executemany(out_sql_cmd,out_q_sets)
+                out_q_sets = []
+                arg_q_sets = []
                 self.conn.commit()
+                commit_clock = time.time()
 
         # wait for all tasks to complete, report error messages caught by pool threads
-        [task.get() for task in tasks]
+        [thr.get() for thr in thrs]
+        self.conn.executemany(arg_sql_cmd, arg_q_sets)
+        self.conn.executemany(out_sql_cmd, out_q_sets)
         self.conn.commit()
 
 
-def _thread_proxie(func,arg_set,arg_q,out_q,out_types):
+def _thread_proxie(func,task_q,arg_q,out_q,out_types,thr_i):
     """
     Runs a function func with the set of arguments arg_set. Checks is the output of the function is a nested list.
     Checks if every example in the nested list is has type out_types. Sends status updates of tasks to the arg_q,
@@ -155,25 +160,29 @@ def _thread_proxie(func,arg_set,arg_q,out_q,out_types):
     :param out_types: list of [int,flaot,string] (expected kinds of outputs from the function)
     :return:
     """
-    try:
-        arg_types = [type(arg) for arg in arg_set]
-        num_out = len(out_types)
-        task = func + "(" + ", ".join(["\"{}\"" if arg_type==unicode else "{}" for arg_type in arg_types[1:]]) +")"
-        task = task.format(*arg_set[1:])
-        outss = eval(task)
+    while task_q.qsize() > thr_i*2:
+        arg_set = task_q.get()
+        try:
+            arg_types = [type(arg) for arg in arg_set]
+            num_out = len(out_types)
+            task = func + "(" + ", ".join(
+                ["\"{}\"" if arg_type == unicode else "{}" for arg_type in arg_types[1:]]) + ")"
+            task = task.format(*arg_set[1:])
+            outss = eval(task)
 
-        assert type(outss)==list, "list of outputs is expected"
-        assert all([type(outs)==list for outs in outss]),"list of lists of outputs expected"
-        for outs in outss:
-            assert len(outs) == len(out_types), "incorrect number of outputs:" + str(len(outs))
-            got_out_types = [type(outs[i]) for i in range(num_out)]
-            assert all([got_out_types[i]==out_types[i]]), "incorrect outputs type:" + str(got_out_types)
+            assert type(outss) == list, "list of outputs is expected"
+            assert all([type(outs) == list for outs in outss]), "list of lists of outputs expected"
+            for outs in outss:
+                assert len(outs) == len(out_types), "incorrect number of outputs:" + str(len(outs))
+                got_out_types = [type(outs[i]) for i in range(num_out)]
+                assert all([got_out_types[i] == out_types[i]]), "incorrect outputs type:" + str(got_out_types)
 
-        # update the argument table with the success message
-        arg_q.put([1,'success',arg_set[0]])
-        # update the results table with the results
-        for outs in outss:
-            out_q.put([arg_set[0]] + outs)
-    except Exception as e:
+            # update the argument table with the success message
+            arg_q.put([1, 'success', arg_set[0]])
+            # update the results table with the results
+            for outs in outss:
+                out_q.put([arg_set[0]] + outs)
+        except Exception as e:
             # update the argument table with the error message
-            arg_q.put([0,str(e),arg_set[0]])
+            arg_q.put([0, str(e), arg_set[0]])
+
