@@ -116,7 +116,7 @@ class AffinityDB:
         # collect the results from the processes in the main thread
         arg_sql_cmd = 'update \"' + arg_table + '\" set run_state=?, run_message=? where run_idx=?'
         out_sql_cmd = "insert into \"" + out_table + "\" values (?,?,"
-        out_sql_cmd += ", ".join(["\"?\"" if out_type==str else "?" for out_type in out_types]) + ");"
+        out_sql_cmd += ", ".join(["?" for out_type in out_types]) + ");"
 
         out_idx = 0
         arg_q_sets = []

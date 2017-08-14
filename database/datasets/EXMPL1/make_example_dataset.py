@@ -7,8 +7,8 @@ import database,sqlite3
 
 #print EXMPL1.sum_diff(1,2)
 
-db_path = "/home/maksym/Projects/new_data/nano.db"
-os.remove(db_path)
+db_path = "/home/cosmynx/Documents/database/test.db"
+#os.remove(db_path)
 afdb = database.AffinityDB(db_path)
 
 arg_ones = list(np.arange(100000) +7)
@@ -39,7 +39,7 @@ print "sum test took: ", time.time() - start, "seconds"
 
 
 # # Merge and Retrieve examples
-db_path = "/home/maksym/Projects/new_data/nano.db"
+db_path = "/home/cosmynx/Documents/database/test.db"
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
