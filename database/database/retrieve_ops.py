@@ -70,7 +70,7 @@ class DatabaseGardener:
         """
         # todo: add string comp support
         cursor = self.conn.cursor()
-        num_cols = len(cols)
+        num_cols = len(col_rules)
 
         # from the table select all the columns to filter for
         sql_cmd = "select " + ", ".join([key for key in col_rules]) + " from \"" + table + "\""

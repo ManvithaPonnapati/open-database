@@ -22,7 +22,7 @@ class FLAGS:
 	mol_path = os.path.join(base_dir, 'mol')
 
 	# list of all the file paths to the pdb ligand files
-	ligand_files = glob(os.path.join(lig_path + '/**/', '*[_]*.pdb'))[:5]
+	ligand_files = glob(os.path.join(lig_path + '/**/', '*[_]*.pdb'))[:25]
 
 	all_pdb_files = []
 	all_mol_files = []
@@ -112,4 +112,4 @@ def get_ligand_decoys(pdb_file, mol_file, num_atoms):
 			copyfile(FLAGS.all_pdb_files[i], dest)
 			decoy_num += 1
 
-	return decoy_num
+	return [[decoy_num]]
