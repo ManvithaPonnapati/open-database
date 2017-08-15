@@ -8,10 +8,10 @@ import database,sqlite3
 
 db_path = "/home/maksym/Projects/new_data/nano.db"
 #os.remove(db_path)
-afdb = database.AffinityDB(db_path) # inport a certain module here
+afdb = database.AffinityDB(db_path)
 
-arg_ones = list(np.arange(1000) +7)
-arg_twos = list(np.arange(1000) + 15)
+arg_ones = list(np.arange(100000) +7)
+arg_twos = list(np.arange(100000) + 15)
 start = time.time()
 
 
@@ -63,6 +63,7 @@ print "sum test took: ", time.time() - start, "seconds"
 #                      num_threads=10,commit_freq=500)
 
 
+
 # # # Merge and Retrieve examples
 # db_path = "/home/maksym/Projects/new_data/nano.db"
 # conn = sqlite3.connect(db_path)
@@ -82,6 +83,25 @@ print "sum test took: ", time.time() - start, "seconds"
 # sel_vals = my_db.retrieve(ups_table,["num1","num2"],{"run_state":"{}==1 or {}==2",
 #                                           "sum":"{}>200"})
 # print "retrieve test took: ", time.time() - start, "seconds"
+# # Merge and Retrieve examples
+db_path = "/home/cosmynx/Documents/database/test.db"
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
+cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+downs_table,ups_table = cursor.fetchall()
+downs_table = downs_table[0]
+ups_table = ups_table[0]
+# conn.close()
+#
+#
+my_db = database.DatabaseGardener(db_path)
+start = time.time()
+my_db.up_merge(ups_table,downs_table,["num1","num2","run_state"])
+print "merge test took: ", time.time() - start, "seconds"
+start = time.time()
+sel_vals = my_db.retrieve(ups_table,["num1","num2"],{"run_state":"{}==1 or {}==2",
+                                          "sum":"{}>200"})
+print "retrieve test took: ", time.time() - start, "seconds"
 
 # --- version 2 (current)
 #@100K
