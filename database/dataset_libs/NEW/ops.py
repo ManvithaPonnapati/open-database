@@ -1,4 +1,4 @@
-import os, sqlite3, sys
+import os, sqlite3, sys, random
 from glob import glob 
 from rdkit import Chem
 from rdkit.Chem import MCS
@@ -10,7 +10,7 @@ class FLAGS:
 	def __init__(self):
 		pass
 
-	def convert_pdb_to_mol_init(self, base_dir, max_atom_dif, max_substruct):
+	def convert_pdb_to_mol_init(self, base_dir, max_atom_dif, max_substruct, max_num_decoys):
 		# base_dir is the directory in which we'll work in 
 		FLAGS.base_dir = base_dir
 		# lig_path contains our library of ligands
@@ -22,10 +22,11 @@ class FLAGS:
 		FLAGS.mol_path = os.path.join(base_dir, 'mol') 
 
 		# list of all the file paths to the pdb ligand files
-		FLAGS.ligand_files = glob(os.path.join(FLAGS.lig_path + '/**/', '*[_]*.pdb'))[:15]
+		FLAGS.ligand_files = glob(os.path.join(FLAGS.lig_path + '/**/', '*[_]*.pdb'))[:100]
 
 		FLAGS.max_atom_dif = max_atom_dif
 		FLAGS.max_substruct = max_substruct
+		FLAGS.max_num_decoys = max_num_decoys
 
 		print 'Number of ligands:', len(FLAGS.ligand_files)
 
@@ -105,7 +106,8 @@ def get_ligand_decoys(pdb_file, mol_file, num_atoms):
 	mol = reader[0]
 	decoy_files = []
 
-	for i in range(len(FLAGS.all_mols)):
+	shuffle = random.shuffle(range(len(FLAGS.all_mols)))
+	for i in shuffle:
 		if FLAGS.all_mol_files[i] == mol_file:
 			continue
 		if abs(FLAGS.all_num_atoms[i] - num_atoms) <= FLAGS.max_atom_dif:
@@ -113,5 +115,7 @@ def get_ligand_decoys(pdb_file, mol_file, num_atoms):
 			if mcs[4 : mcs.index('has')-1] != 'None':
 				continue
 			decoy_files.append([FLAGS.all_pdb_files[i]])
+		if len(decoy_files) > FLAGS.max_num_decoys:
+			break
 
 	return decoy_files
