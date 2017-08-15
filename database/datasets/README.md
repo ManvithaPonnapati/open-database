@@ -13,19 +13,19 @@ Experiments:
 3*) Predict binders/non-binders with Vina score
 4) Predict true binders/non-binders from docking 
 
-#####ARS1 (part of the VDS1 data)
+##### ARS1 (part of the VDS1 data)
 contains protein-ligand complexes and their binding affinites from three databases: PDBBind, BindingMOAD, and BindingDB. PDBBind contains 10483 samples, BindingMOAD contains 8869 samples, and BindingDB contains 7337 samples. A list of 69357 protein-ligand structures was collected, and all of the structures available as PDB files were downloaded. The functions "split_ligand" and "split_receptor" were used to seperate ligands from protein structures. Ligands were filtered by selecting those that have a maximum pairwise atom distance less than or equal to 20 angstroms. Only complexes that have binding affinities listed in one or more of the databases were selected. This left 21071 unique samples. The samples were exported in TFRecords file format. 
 
 You can access this dataset by going to /data/affinity/ars1_v2 on CBA Titan.
 
-#####VRS1 (part of ARS1 DATA)
+##### VRS1 (part of ARS1 DATA)
 These files are used to obtain the PDBBind data from deepchem's AWS. This dataset reports labels in the form log(Kd/Ki), and is used in deepchem's Atomic Convolutions. 
 
-###(VDS2_DUD) modification of the VDS1 to include incorrect ligands in correct binding sites
+### (VDS2_DUD) modification of the VDS1 to include incorrect ligands in correct binding sites
 ARS1 dataset with structures (From Smiles or confomers) from ARS1. Every ligand will have mathing decoys with +/- same number of atoms and verified not to be a substructure). 
 The future plan is to use confirmed nonbinders
 
-###(ARS2_DUD) modification of the ARS1 to include random conformations (only ligand from SMILES)
+### (ARS2_DUD) modification of the ARS1 to include random conformations (only ligand from SMILES)
 
 
 ### Cambridge Structural Database (Molecule Structure Set) CSD1
