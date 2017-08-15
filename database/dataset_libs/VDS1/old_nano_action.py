@@ -15,7 +15,7 @@ import xml.dom.minidom
 from chembl_webresource_client.new_client import new_client
 activities = new_client.activity
 
-BLASTDB = '/Users/Will/projects/reformat/uptodate/core/database/datasets/BS1/blastdb/chembl_23_blast.fa'
+#BLASTDB = '/Users/Will/projects/reformat/uptodate/core/database/datasets/BS1/blastdb/chembl_23_blast.fa'
 
 def _makedir(path):
     if not os.path.exists(path):

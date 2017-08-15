@@ -1,7 +1,9 @@
 import sys,os,sqlite3,time
 import multiprocessing
 sys.path.append('../')
-import dataset_libs
+print sys.path
+from dataset_libs import EXMPL1
+from dataset_libs import VDS1
 
 
 class AffinityDB:
@@ -9,7 +11,6 @@ class AffinityDB:
     sql_to_python = {'integer': int, 'float': float, 'string': str}
 
     def __init__(self,db_path):
-
         self.conn = sqlite3.connect(db_path)
 
     def run_multithread(self,func,arg_types,arg_lists,out_types,out_names,num_threads=10,commit_sec=1):
@@ -43,6 +44,9 @@ class AffinityDB:
             "List of arguments should be all of the same length."
         for i in range(len(arg_types)):
             assert all([isinstance(arg,arg_types[i]) for arg in arg_lists[i]]),"Incorrect type in arg_list" + str(i)
+        req_args = eval(func).__code__.co_argcount - len(eval(func).__defaults__)
+        assert req_args >= len(arg_types), "missing arguments" + str(req_args) + "found:" + str(len(arg_types))
+
 
         num_args = len(arg_types)
         var_names = list(eval(func).__code__.co_varnames)[:num_args]
@@ -116,7 +120,7 @@ class AffinityDB:
         # collect the results from the processes in the main thread
         arg_sql_cmd = 'update \"' + arg_table + '\" set run_state=?, run_message=? where run_idx=?'
         out_sql_cmd = "insert into \"" + out_table + "\" values (?,?,"
-        out_sql_cmd += ", ".join(["\"?\"" if out_type==str else "?" for out_type in out_types]) + ");"
+        out_sql_cmd += ", ".join(["?" for out_type in out_types]) + ");"
 
         out_idx = 0
         arg_q_sets = []

@@ -16,8 +16,6 @@ def save_record_VDS1(filename,norm_affinity,dock_scores,lig_elem,lig_coord,dock_
     :return:
     """
 
-
-
     lig_coord = np.reshape(lig_coord,[-1])
     dock_coords = np.reshape(dock_coords,[-1])
     rec_coord = np.reshape(rec_coord,[-1])
@@ -40,9 +38,6 @@ def save_record_VDS1(filename,norm_affinity,dock_scores,lig_elem,lig_coord,dock_
     writer.write(serialized)
     writer.close()
     return None
-
-
-
 
 
 
@@ -78,7 +73,6 @@ rec_coord = np.array([[0,0,0],
                      [6,6,6]],np.float32)
 
 
-
 save_record_VDS1(filename= "one.tfr",
                  norm_affinity=norm_affinity,
                  dock_scores=dock_scores,
@@ -87,6 +81,5 @@ save_record_VDS1(filename= "one.tfr",
                  dock_coords=dock_coords,
                  rec_elem=rec_elem,
                  rec_coord=rec_coord)
-
 # Input pipe
 
