@@ -1,42 +1,35 @@
-import os, time, sys, sqlite3, multiprocessing
-import numpy as np  
+import os, sqlite3, sys
 from glob import glob 
 from rdkit import Chem
 from rdkit.Chem import MCS
 from rdkit.Chem.rdchem import Mol
 from rdkit.Chem.rdmolfiles import SDWriter, SDMolSupplier
-from shutil import copyfile
 
 
 class FLAGS:
-	# directory which contains our library of ligands
-	lig_path = '/home/cosmynx/Documents/database_old/labeled_pdb/crystal_ligands'
-
-	# base_dir is the directory in which we'll work in 
-	base_dir = '/home/cosmynx/Documents/database'
-	db_path = os.path.join(base_dir, 'affinity.db')
-	vds_pdb_path = os.path.join(base_dir, 'vds_pdb')
-	out_lig_path = os.path.join(base_dir, 'vds_pdb/binding_ligands')
-	out_decoy_path = os.path.join(base_dir, 'vds_pdb/decoy_ligands')
-	out_receptor_path = os.path.join(base_dir, 'vds_pdb/receptors')
-	mol_path = os.path.join(base_dir, 'mol')
-
-	# list of all the file paths to the pdb ligand files
-	ligand_files = glob(os.path.join(lig_path + '/**/', '*[_]*.pdb'))[:25]
-
-	all_pdb_files = []
-	all_mol_files = []
-	all_mols = []
-	all_num_atoms = []
-
-	"""Define constants here"""
-	max_atom_dif = 2
-	max_substruct = 4
-
 	def __init__(self):
+		pass
+
+	def convert_pdb_to_mol_init(self, base_dir, max_atom_dif, max_substruct):
+		# base_dir is the directory in which we'll work in 
+		FLAGS.base_dir = base_dir
+		# lig_path contains our library of ligands
+		FLAGS.lig_path = os.path.join(base_dir, 'labeled_pdb/crystal_ligands')
+		FLAGS.db_path = os.path.join(base_dir, 'labeled_pdb.db')
+		FLAGS.vds_pdb_path = os.path.join(base_dir, 'vds_pdb')
+		FLAGS.out_lig_path = os.path.join(base_dir, 'vds_pdb/binding_ligands')
+		FLAGS.out_receptor_path = os.path.join(base_dir, 'vds_pdb/receptors')
+		FLAGS.mol_path = os.path.join(base_dir, 'mol') 
+
+		# list of all the file paths to the pdb ligand files
+		FLAGS.ligand_files = glob(os.path.join(FLAGS.lig_path + '/**/', '*[_]*.pdb'))[:15]
+
+		FLAGS.max_atom_dif = max_atom_dif
+		FLAGS.max_substruct = max_substruct
+
 		print 'Number of ligands:', len(FLAGS.ligand_files)
 
-		# create the output file structure
+		# initialize the output file structure
 		os.chdir(FLAGS.base_dir)
 		if os.path.exists(FLAGS.vds_pdb_path):
 			os.system('rm -r ' + FLAGS.vds_pdb_path)
@@ -48,13 +41,23 @@ class FLAGS:
 		os.mkdir('mol')
 		os.chdir('./vds_pdb')
 		os.mkdir('binding_ligands')
-		os.mkdir('decoy_ligands')
 		os.mkdir('receptors')
+
+	def get_ligand_decoys_init(self, all_pdb_files, all_mol_files, all_num_atoms):
+		"""Initializes all global variables needed for get_ligand_decoys"""
+		FLAGS.all_pdb_files = all_pdb_files
+		FLAGS.all_mol_files = all_mol_files
+		FLAGS.all_num_atoms = all_num_atoms
+		FLAGS.all_mols = [Chem.MolFromMolFile(all_mol_files[i]) for i in range(len(all_mol_files))]
 
 
 def convert_pdb_to_mol(lig_file):
 	"""Converts the pdb ligand specified by filepath lig_file and appends the
 	converted mol file to m_files. Other procedures:"""
+
+	# first check to make sure convert_pdb_to_mol_init() was performed
+	if not hasattr(FLAGS, 'max_substruct'):
+		raise Exception("FLAGS class was not initialized correctly. Please initialize global variables using convert_pdb_to_mol_init()")
 
 	# create the folder to hold the binding ligand files
 	lig_name = lig_file[len(FLAGS.lig_path)+1: ]
@@ -93,23 +96,22 @@ def get_ligand_decoys(pdb_file, mol_file, num_atoms):
 		> all_mols: Contains all mols (not filenames)
 		> all_num_atoms: Contains all the number of atoms of the corresponding mols
 	All three of these lists are ordered correctly since we pull from database"""
+
+	# first check to make sure get_ligand_decoys_init() was performed
+	if not hasattr(FLAGS, 'all_mols'):
+		raise Exception("FLAGS class was not initialized correctly. Please initialize global variables using get_ligand_decoys_init()")
+
 	reader = SDMolSupplier(mol_file)
 	mol = reader[0]
-
-	# counter for the number of decoys a molecule has
-	decoy_num = 0
+	decoy_files = []
 
 	for i in range(len(FLAGS.all_mols)):
 		if FLAGS.all_mol_files[i] == mol_file:
 			continue
 		if abs(FLAGS.all_num_atoms[i] - num_atoms) <= FLAGS.max_atom_dif:
-			mcs = MCS.FindMCS([all_mols[i], mol], minNumAtoms=FLAGS.max_substruct).__str__()
+			mcs = MCS.FindMCS([FLAGS.all_mols[i], mol], minNumAtoms=FLAGS.max_substruct).__str__()
 			if mcs[4 : mcs.index('has')-1] != 'None':
 				continue
-			receptor_name = all_pdb_files[len(FLAGS.out_lig_path)+1 : len(FLAGS.out_lig_path)+5]
-			extension = all_pdb_files[len(FLAGS.out_lig_path)+6 : -4] + '_' + str(decoy_num) + '.pdb'
-			dest = os.path.join(FLAGS.out_decoy_path, receptor_name, extension)
-			copyfile(FLAGS.all_pdb_files[i], dest)
-			decoy_num += 1
+			decoy_files.append([FLAGS.all_pdb_files[i]])
 
-	return [[decoy_num]]
+	return decoy_files

@@ -1,9 +1,9 @@
 import sys,os,sqlite3,time
 import multiprocessing
 sys.path.append('../')
-print sys.path
 from dataset_libs import EXMPL1
 from dataset_libs import VDS1
+from dataset_libs import NEW
 
 
 class AffinityDB:
@@ -44,7 +44,10 @@ class AffinityDB:
             "List of arguments should be all of the same length."
         for i in range(len(arg_types)):
             assert all([isinstance(arg,arg_types[i]) for arg in arg_lists[i]]),"Incorrect type in arg_list" + str(i)
-        req_args = eval(func).__code__.co_argcount - len(eval(func).__defaults__)
+        if eval(func).__defaults__ is not None:
+            req_args = eval(func).__code__.co_argcount - len(eval(func).__defaults__)
+        else:
+            req_args = eval(func).__code__.co_argcount
         assert req_args >= len(arg_types), "missing arguments" + str(req_args) + "found:" + str(len(arg_types))
 
 

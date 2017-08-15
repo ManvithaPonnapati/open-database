@@ -20,11 +20,16 @@ class DatabaseGardener:
         num_cols = len(col_names)
 
         # find the data types of the columns to transfer
-        sql_cmd = 'pragma table_info(\"{}\")'.format(downs_table)
-        cursor.execute(sql_cmd)
+        sql_cmd = "pragma table_info(\"{}\")".format(downs_table)
+        cursor.execute("{}".format(sql_cmd))
+        # cursor.execute(sql_cmd)
+        # cursor.execute("pragma table_info('aug_17_2017_54_16_arg_dataset_libs.NEW.get_ligand_decoys')")
         arg_infos = cursor.fetchall()
         arg_dict = {}
         [arg_dict.update({arg_info[1]:arg_info[2]}) for arg_info in arg_infos]
+        print sql_cmd
+        print arg_infos
+        print arg_dict
         col_types = [arg_dict[col_name] for col_name in col_names]
 
         # initialize the columns in the upstream table
