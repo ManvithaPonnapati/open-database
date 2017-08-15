@@ -10,7 +10,7 @@ class FLAGS:
 	def __init__(self):
 		pass
 
-	def convert_pdb_to_mol_init(self, base_dir, max_atom_dif, max_substruct, max_num_decoys):
+	def convert_pdb_to_mol_init(self, base_dir, max_atom_dif, max_substruct, max_num_decoys, num_conformers):
 		# base_dir is the directory in which we'll work in 
 		FLAGS.base_dir = base_dir
 		# lig_path contains our library of ligands
@@ -22,11 +22,12 @@ class FLAGS:
 		FLAGS.mol_path = os.path.join(base_dir, 'mol') 
 
 		# list of all the file paths to the pdb ligand files
-		FLAGS.ligand_files = glob(os.path.join(FLAGS.lig_path + '/**/', '*[_]*.pdb'))[:100]
+		FLAGS.ligand_files = glob(os.path.join(FLAGS.lig_path + '/**/', '*[_]*.pdb'))[:10]
 
 		FLAGS.max_atom_dif = max_atom_dif
 		FLAGS.max_substruct = max_substruct
 		FLAGS.max_num_decoys = max_num_decoys
+		FLAGS.num_conformers = num_conformers
 
 		print 'Number of ligands:', len(FLAGS.ligand_files)
 
@@ -73,9 +74,11 @@ def convert_pdb_to_mol(lig_file):
 	smiles_file = pdb_file.replace('.pdb', '.smi')
 	pdb_to_smiles_cmd = 'obabel ' + lig_file + ' -O ' + smiles_file
 	smiles_to_pdb_cmd = 'obabel ' + smiles_file + ' -O ' + pdb_file + ' -d --gen3d'
-	
+	gen_conformers_cmd = 'obabel ' + pdb_file + ' -O ' + pdb_file + ' --conformer --nconf ' + str(FLAGS.num_conformers) + ' --writeconformers'
+
 	os.system(pdb_to_smiles_cmd)
 	os.system(smiles_to_pdb_cmd)
+	os.system(gen_conformers_cmd)
 	os.remove(smiles_file)
 
 	mol = Chem.MolFromPDBFile(pdb_file)
@@ -106,8 +109,9 @@ def get_ligand_decoys(pdb_file, mol_file, num_atoms):
 	mol = reader[0]
 	decoy_files = []
 
-	shuffle = random.shuffle(range(len(FLAGS.all_mols)))
-	for i in shuffle:
+	iterator = range(len(FLAGS.all_mols))
+	random.shuffle(iterator)
+	for i in iterator:
 		if FLAGS.all_mol_files[i] == mol_file:
 			continue
 		if abs(FLAGS.all_num_atoms[i] - num_atoms) <= FLAGS.max_atom_dif:
