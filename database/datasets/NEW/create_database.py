@@ -9,9 +9,9 @@ from dataset_libs import NEW
 
 flags = NEW.FLAGS()
 flags.convert_pdb_to_mol_init(base_dir='/home/cosmynx/Documents/database',
-							  max_atom_dif=2, 
-							  max_substruct=4,
-							  max_num_decoys=50,
+							  max_atom_dif=3, 
+							  max_substruct=5,
+							  max_num_decoys=20,
 							  num_conformers=20)
 afdb = database.AffinityDB(flags.db_path)
 db_editor = database.DatabaseGardener(flags.db_path)
@@ -22,7 +22,7 @@ afdb.run_multithread(func="NEW.convert_pdb_to_mol",
 	arg_lists=[flags.ligand_files], 
 	out_types=[str, str, int], 
 	out_names=['pdb_file', 'mol_file', 'num_atoms'],
-	num_threads=50, commit_sec=1)
+	num_threads=3, commit_sec=1)
 
 print '\nConverted PDB to MOL in:', str(time.time()-start), 'seconds'
 start = time.time()
@@ -53,7 +53,7 @@ afdb.run_multithread(func="NEW.get_ligand_decoys",
 	arg_lists=[flags.all_pdb_files, flags.all_mol_files, flags.all_num_atoms],
 	out_types=[str],
 	out_names=['decoy_files'],
-	num_threads=50, commit_sec=1)
+	num_threads=3, commit_sec=1)
 
 print '\nDetermined the decoys for each ligand in:', str(time.time()-start), 'seconds\n'
 start = time.time()

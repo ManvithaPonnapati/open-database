@@ -1,9 +1,9 @@
 import os, sqlite3, sys, random
 from glob import glob 
 from rdkit import Chem
-from rdkit.Chem import MCS
+from rdkit.Chem import MCS, AllChem
 from rdkit.Chem.rdchem import Mol
-from rdkit.Chem.rdmolfiles import SDWriter, SDMolSupplier
+from rdkit.Chem.rdmolfiles import SDWriter, SDMolSupplier, PDBWriter
 
 
 class FLAGS:
@@ -69,24 +69,31 @@ def convert_pdb_to_mol(lig_file):
 	if not os.path.isdir(os.path.join(FLAGS.mol_path, rec_name)):
 		os.mkdir(os.path.join(FLAGS.mol_path, rec_name))
 
-	# run obabel commands to perform the conversion
+	# use rdkit to get a mol object from PDB
 	pdb_file = os.path.join(FLAGS.out_lig_path, lig_name)
-	smiles_file = pdb_file.replace('.pdb', '.smi')
-	pdb_to_smiles_cmd = 'obabel ' + lig_file + ' -O ' + smiles_file
-	smiles_to_pdb_cmd = 'obabel ' + smiles_file + ' -O ' + pdb_file + ' -d --gen3d'
-	gen_conformers_cmd = 'obabel ' + pdb_file + ' -O ' + pdb_file + ' --conformer --nconf ' + str(FLAGS.num_conformers) + ' --writeconformers'
-
-	os.system(pdb_to_smiles_cmd)
-	os.system(smiles_to_pdb_cmd)
-	os.remove(smiles_file)
-
-	mol = Chem.MolFromPDBFile(pdb_file)
-	num_atoms = Mol.GetNumAtoms(mol)
-
 	mol_file = os.path.join(FLAGS.mol_path, lig_name).replace('.pdb', '.sdf')
+	
+	# write the mol to a mol file for future use
+	mol = Chem.MolFromPDBFile(lig_file)
 	writer = SDWriter(mol_file)
 	writer.write(mol)
-	os.system(gen_conformers_cmd)
+
+	# generate conformers and get the number of atoms of the molecule
+	mol2 = Chem.AddHs(mol)
+	conf_ids = AllChem.EmbedMultipleConfs(mol2, FLAGS.num_conformers)
+	if len(conf_ids) < FLAGS.num_conformers:
+		raise Exception("Not enough conformers")
+	for cid in conf_ids:
+		_ = AllChem. MMFFOptimizeMolecule(mol2, confId=cid)
+	mol = Chem.RemoveHs(mol2)
+	num_atoms = Mol.GetNumAtoms(mol)
+
+	# write the mol into PDB format (contains mols)
+	pdb_writer = PDBWriter(pdb_file)
+	for cid in conf_ids:
+		pdb_writer.write(mol, confId=cid)
+
+	print 'Progress'
 
 	return [[pdb_file, mol_file, num_atoms]]
 
