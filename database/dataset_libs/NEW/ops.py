@@ -1,4 +1,4 @@
-import os, sqlite3, sys, random
+import os, sqlite3, sys, random, time
 from glob import glob 
 from rdkit import Chem
 from rdkit.Chem import MCS, AllChem
@@ -10,7 +10,10 @@ class FLAGS:
 	def __init__(self):
 		pass
 
-	def convert_pdb_to_mol_init(self, base_dir, max_atom_dif, max_substruct, max_num_decoys, num_conformers):
+	def get_crystal_ligand_conformers_init(self, base_dir, max_atom_dif, 
+		max_substruct, max_num_decoys, decoy_conformers, binding_conformers):
+		"""Initializes all directories and constants needed for crystal ligands"""
+
 		# base_dir is the directory in which we'll work in 
 		FLAGS.base_dir = base_dir
 		# lig_path contains our library of ligands
@@ -18,16 +21,18 @@ class FLAGS:
 		FLAGS.db_path = os.path.join(base_dir, 'labeled_pdb.db')
 		FLAGS.vds_pdb_path = os.path.join(base_dir, 'vds_pdb')
 		FLAGS.out_lig_path = os.path.join(base_dir, 'vds_pdb/binding_ligands')
+		FLAGS.out_decoy_path = os.path.join(base_dir, 'vds_pdb/decoy_ligands')
 		FLAGS.out_receptor_path = os.path.join(base_dir, 'vds_pdb/receptors')
 		FLAGS.mol_path = os.path.join(base_dir, 'mol') 
 
 		# list of all the file paths to the pdb ligand files
-		FLAGS.ligand_files = glob(os.path.join(FLAGS.lig_path + '/**/', '*[_]*.pdb'))[:100]
+		FLAGS.ligand_files = glob(os.path.join(FLAGS.lig_path + '/**/', '*[_]*.pdb'))[:20]
 
 		FLAGS.max_atom_dif = max_atom_dif
 		FLAGS.max_substruct = max_substruct
 		FLAGS.max_num_decoys = max_num_decoys
-		FLAGS.num_conformers = num_conformers
+		FLAGS.decoy_conformers = decoy_conformers
+		FLAGS.binding_conformers = binding_conformers
 
 		print 'Number of ligands:', len(FLAGS.ligand_files)
 
@@ -43,6 +48,7 @@ class FLAGS:
 		os.mkdir('mol')
 		os.chdir('./vds_pdb')
 		os.mkdir('binding_ligands')
+		os.mkdir('decoy_ligands')
 		os.mkdir('receptors')
 
 	def get_ligand_decoys_init(self, all_pdb_files, all_mol_files, all_num_atoms):
@@ -53,21 +59,26 @@ class FLAGS:
 		FLAGS.all_mols = [Chem.MolFromMolFile(all_mol_files[i]) for i in range(len(all_mol_files))]
 
 
-def convert_pdb_to_mol(lig_file):
-	"""Converts the pdb ligand specified by filepath lig_file and appends the
-	converted mol file to m_files. Other procedures:"""
+def get_crystal_ligand_conformers(lig_file):
+	"""Performs the following tasks:
+		> Creates the receptor folders within binding_ligands and decoy_ligands
+		> Converts all PDB crystal ligands into mol for future use
+		> Generates conformers and saves them to crystal_ligands folder"""
 
 	# first check to make sure convert_pdb_to_mol_init() was performed
 	if not hasattr(FLAGS, 'max_substruct'):
 		raise Exception("FLAGS class was not initialized correctly. Please initialize global variables using convert_pdb_to_mol_init()")
 
-	# create the folder to hold the binding ligand files
 	lig_name = lig_file[len(FLAGS.lig_path)+1: ]
 	rec_name = lig_name[0:4]
+
+	# create the receptor folders if it does not exist yet
 	if not os.path.isdir(os.path.join(FLAGS.out_lig_path, rec_name)):
 		os.mkdir(os.path.join(FLAGS.out_lig_path, rec_name))
 	if not os.path.isdir(os.path.join(FLAGS.mol_path, rec_name)):
 		os.mkdir(os.path.join(FLAGS.mol_path, rec_name))
+	if not os.path.isdir(os.path.join(FLAGS.out_decoy_path, rec_name)):
+		os.mkdir(os.path.join(FLAGS.out_decoy_path, rec_name))
 
 	# use rdkit to get a mol object from PDB
 	pdb_file = os.path.join(FLAGS.out_lig_path, lig_name)
@@ -80,9 +91,9 @@ def convert_pdb_to_mol(lig_file):
 
 	# generate conformers and get the number of atoms of the molecule
 	mol2 = Chem.AddHs(mol)
-	conf_ids = AllChem.EmbedMultipleConfs(mol2, FLAGS.num_conformers)
-	if len(conf_ids) < FLAGS.num_conformers:
-		raise Exception("Not enough conformers")
+	conf_ids = AllChem.EmbedMultipleConfs(mol2, FLAGS.binding_conformers)
+	if len(conf_ids) < FLAGS.binding_conformers:
+		raise Exception("Not enough binding conformers")
 	for cid in conf_ids:
 		_ = AllChem. MMFFOptimizeMolecule(mol2, confId=cid)
 	mol = Chem.RemoveHs(mol2)
@@ -93,20 +104,15 @@ def convert_pdb_to_mol(lig_file):
 	for cid in conf_ids:
 		pdb_writer.write(mol, confId=cid)
 
-	print 'Progress'
+	print 'Got conformers for one binding ligand'
 
 	return [[pdb_file, mol_file, num_atoms]]
 
 
 def get_ligand_decoys(pdb_file, mol_file, num_atoms):
-	"""Constructs a 'decoy listing' - for each molecule create a list of other 
-	molecules which fall within the number of atoms bound and MCS. Then copy its
-	decoys to the folder /vds_pdb/decoy_ligands
-		> all_pdb_files: Contains all filenames to pdb files
-		> all_mol_files: Contains all filenames to mol files
-		> all_mols: Contains all mols (not filenames)
-		> all_num_atoms: Contains all the number of atoms of the corresponding mols
-	All three of these lists are ordered correctly since we pull from database"""
+	"""For each binding ligand, gets a list of decoy ligands. We filter by 
+	number of atoms and maximum common substructure (MCS). Then we generate 
+	conformers for each decoy and save them to the decoy_ligands folder"""
 
 	# first check to make sure get_ligand_decoys_init() was performed
 	if not hasattr(FLAGS, 'all_mols'):
@@ -114,7 +120,7 @@ def get_ligand_decoys(pdb_file, mol_file, num_atoms):
 
 	reader = SDMolSupplier(mol_file)
 	mol = reader[0]
-	decoy_files = []
+	output = []
 
 	iterator = range(len(FLAGS.all_mols))
 	random.shuffle(iterator)
@@ -125,8 +131,25 @@ def get_ligand_decoys(pdb_file, mol_file, num_atoms):
 			mcs = MCS.FindMCS([FLAGS.all_mols[i], mol], minNumAtoms=FLAGS.max_substruct,
 				ringMatchesRingOnly=True, completeRingsOnly=True, timeout=1)
 			if mcs.numAtoms == -1:
-				decoy_files.append([FLAGS.all_pdb_files[i]])
-		if len(decoy_files) >= FLAGS.max_num_decoys:
+				# generate the decoy and its conformers
+				decoy2 = Chem.AddHs(FLAGS.all_mols[i])
+				conf_ids = AllChem.EmbedMultipleConfs(decoy2, FLAGS.decoy_conformers)
+				if len(conf_ids) < FLAGS.decoy_conformers:
+					raise Exception("Not enough decoy conformers")
+				for cid in conf_ids:
+					AllChem.MMFFOptimizeMolecule(decoy2, confId=cid)
+				decoy = Chem.RemoveHs(decoy2)
+
+				# save the mol object as a PDB file in decoys folder
+				decoy_file = pdb_file.replace('/binding_ligands/', '/decoy_ligands/').replace('.pdb', str(len(output))+'.pdb')
+				pdb_writer = PDBWriter(decoy_file)
+				pdb_writer.write(decoy)
+				pdb_writer.close()
+
+				output.append([FLAGS.all_pdb_files[i], decoy_file])
+
+		if len(output) >= FLAGS.max_num_decoys:
 			break
 
-	return decoy_files
+	print 'Got the decoys for one ligand'
+	return output
