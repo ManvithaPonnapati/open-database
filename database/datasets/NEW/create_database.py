@@ -8,19 +8,22 @@ from dataset_libs import NEW
 """Convert all the PDB files into mol files--------------------------------------"""
 
 flags = NEW.FLAGS()
-flags.convert_pdb_to_mol_init(base_dir='/home/cosmynx/Documents/database',
-							  max_atom_dif=10, 
-							  max_substruct=10)
+flags.get_crystal_ligand_conformers_init(base_dir='/data/affinity/old/datasets',
+										 max_atom_dif=2, 
+										 max_substruct=4,
+										 max_num_decoys=10,
+										 decoy_conformers=10,
+										 binding_conformers=100)
 afdb = database.AffinityDB(flags.db_path)
 db_editor = database.DatabaseGardener(flags.db_path)
 start = time.time()
 
-afdb.run_multithread(func="NEW.convert_pdb_to_mol", 
+afdb.run_multithread(func="NEW.get_crystal_ligand_conformers", 
 	arg_types=[str], 
 	arg_lists=[flags.ligand_files], 
 	out_types=[str, str, int], 
 	out_names=['pdb_file', 'mol_file', 'num_atoms'],
-	num_threads=10, commit_sec=1)
+	num_threads=200, commit_sec=1)
 
 print '\nConverted PDB to MOL in:', str(time.time()-start), 'seconds'
 start = time.time()
@@ -49,9 +52,9 @@ flags.get_ligand_decoys_init(all_pdb_files=[table_data[0][i].encode('ascii','ign
 afdb.run_multithread(func="NEW.get_ligand_decoys",
 	arg_types=[str, str, int],
 	arg_lists=[flags.all_pdb_files, flags.all_mol_files, flags.all_num_atoms],
-	out_types=[str],
-	out_names=['decoy_files'],
-	num_threads=10, commit_sec=1)
+	out_types=[str, str],
+	out_names=['crystal_files', 'decoy_files'],
+	num_threads=200, commit_sec=1)
 
 print '\nDetermined the decoys for each ligand in:', str(time.time()-start), 'seconds\n'
 start = time.time()
