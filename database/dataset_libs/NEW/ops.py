@@ -22,7 +22,7 @@ class FLAGS:
 		FLAGS.mol_path = os.path.join(base_dir, 'mol') 
 
 		# list of all the file paths to the pdb ligand files
-		FLAGS.ligand_files = glob(os.path.join(FLAGS.lig_path + '/**/', '*[_]*.pdb'))[:10]
+		FLAGS.ligand_files = glob(os.path.join(FLAGS.lig_path + '/**/', '*[_]*.pdb'))[:100]
 
 		FLAGS.max_atom_dif = max_atom_dif
 		FLAGS.max_substruct = max_substruct
@@ -78,7 +78,6 @@ def convert_pdb_to_mol(lig_file):
 
 	os.system(pdb_to_smiles_cmd)
 	os.system(smiles_to_pdb_cmd)
-	os.system(gen_conformers_cmd)
 	os.remove(smiles_file)
 
 	mol = Chem.MolFromPDBFile(pdb_file)
@@ -87,6 +86,7 @@ def convert_pdb_to_mol(lig_file):
 	mol_file = os.path.join(FLAGS.mol_path, lig_name).replace('.pdb', '.sdf')
 	writer = SDWriter(mol_file)
 	writer.write(mol)
+	os.system(gen_conformers_cmd)
 
 	return [[pdb_file, mol_file, num_atoms]]
 
@@ -115,11 +115,11 @@ def get_ligand_decoys(pdb_file, mol_file, num_atoms):
 		if FLAGS.all_mol_files[i] == mol_file:
 			continue
 		if abs(FLAGS.all_num_atoms[i] - num_atoms) <= FLAGS.max_atom_dif:
-			mcs = MCS.FindMCS([FLAGS.all_mols[i], mol], minNumAtoms=FLAGS.max_substruct).__str__()
-			if mcs[4 : mcs.index('has')-1] != 'None':
-				continue
-			decoy_files.append([FLAGS.all_pdb_files[i]])
-		if len(decoy_files) > FLAGS.max_num_decoys:
+			mcs = MCS.FindMCS([FLAGS.all_mols[i], mol], minNumAtoms=FLAGS.max_substruct,
+				ringMatchesRingOnly=True, completeRingsOnly=True, timeout=1)
+			if mcs.numAtoms == -1:
+				decoy_files.append([FLAGS.all_pdb_files[i]])
+		if len(decoy_files) >= FLAGS.max_num_decoys:
 			break
 
 	return decoy_files
