@@ -5,32 +5,31 @@ sys.path.append('../../')
 import database
 from dataset_libs import NEW
 
-"""Convert all the PDB files into mol files--------------------------------------"""
+base_dir = '/data/affinity/old/datasets'
+db_path = os.path.join(base_dir, 'labeled_pdb.db')
+if os.path.isfile(db_path):
+	os.system('rm ' + db_path)
+afdb = database.AffinityDB(db_path)
+db_editor = database.DatabaseGardener(db_path)
 
-flags = NEW.FLAGS()
-flags.get_crystal_ligand_conformers_init(base_dir='/data/affinity/old/datasets',
-										 max_atom_dif=2, 
-										 max_substruct=4,
-										 max_num_decoys=10,
-										 decoy_conformers=10,
-										 binding_conformers=100)
-afdb = database.AffinityDB(flags.db_path)
-db_editor = database.DatabaseGardener(flags.db_path)
+"""Convert all the PDB files into mol files and generate ligand conformers-------"""
+
 start = time.time()
+ligand_files = glob(os.path.join(base_dir, 'labeled_pdb/crystal_ligands' + '/**/', '*[_]*.pdb'))
+NEW.GenerateConformersInit(base_dir=base_dir, num_conformers=100)
 
-afdb.run_multithread(func="NEW.get_crystal_ligand_conformers", 
+afdb.run_multithread(func="NEW.generate_conformers", 
 	arg_types=[str], 
-	arg_lists=[flags.ligand_files], 
+	arg_lists=[ligand_files], 
 	out_types=[str, str, int], 
 	out_names=['pdb_file', 'mol_file', 'num_atoms'],
-	num_threads=200, commit_sec=1)
+	num_threads=100, commit_sec=1)
 
-print '\nConverted PDB to MOL in:', str(time.time()-start), 'seconds'
-start = time.time()
+print '\nGenerated ligand conformers in:', str(time.time()-start), 'seconds'
 
 """Extract filepaths and number of atoms from database---------------------------"""
 
-conn = sqlite3.connect(flags.db_path)
+conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
 arg_table, out_table = cursor.fetchall()
@@ -40,21 +39,21 @@ conn.close()
 
 table_data = db_editor.retrieve(out_table, ['pdb_file','mol_file','num_atoms'], {'num_atoms': '{}<1000'})
 
-print '\nRetrieved data from database in:', str(time.time()-start), 'seconds'
+all_pdb_files = [table_data[0][i].encode('ascii','ignore') for i in range(len(table_data[0]))]
+all_mol_files = [table_data[1][i].encode('ascii','ignore') for i in range(len(table_data[1]))]
+all_num_atoms = table_data[2]
+
+"""Get decoys and generate conformers in decoy_ligands folder--------------------"""
+
 start = time.time()
+NEW.GetDecoysInit(base_dir, all_pdb_files, all_mol_files, all_num_atoms, 
+	max_atom_dif=2, max_substruct=4, max_num_decoys=10, num_conformers=10)
 
-"""Compute and copy decoys into decoy_ligands folder-----------------------------"""
-
-flags.get_ligand_decoys_init(all_pdb_files=[table_data[0][i].encode('ascii','ignore') for i in range(len(table_data[0]))],
-	all_mol_files=[table_data[1][i].encode('ascii','ignore') for i in range(len(table_data[1]))],
-	all_num_atoms=table_data[2])
-
-afdb.run_multithread(func="NEW.get_ligand_decoys",
+afdb.run_multithread(func="NEW.get_decoys",
 	arg_types=[str, str, int],
-	arg_lists=[flags.all_pdb_files, flags.all_mol_files, flags.all_num_atoms],
+	arg_lists=[all_pdb_files, all_mol_files, all_num_atoms],
 	out_types=[str, str],
 	out_names=['crystal_files', 'decoy_files'],
-	num_threads=200, commit_sec=1)
+	num_threads=100, commit_sec=1)
 
-print '\nDetermined the decoys for each ligand in:', str(time.time()-start), 'seconds\n'
-start = time.time()
+print '\nGot decoys for each ligand in:', str(time.time()-start), 'seconds\n'
