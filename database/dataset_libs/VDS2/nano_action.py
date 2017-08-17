@@ -98,7 +98,7 @@ def split(receptor, pdb_path, rec_dir, lig_dir):
         rec = parsed_pdb.select('not (chain {} resnum {})'.format(chain, resnum))
         if lig is None:
             continue
-        resid = lig.getHierView().iterResidues().next().getResindex_path()
+        resid = lig.getHierView().iterResidues().next().getResindex()
         resid = str(resid)
         heavy_lig = lig.select('not hydrogen')
         heavy_atom = heavy_lig.numAtoms()
