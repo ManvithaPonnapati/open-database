@@ -71,14 +71,14 @@ def save_record_tfr(filename,cryst_elem,cryst_coord,binders_elem,binders_coordse
     # reshape all of the coordinates into 1d
     _cryst_elem = cryst_elem
     _cryst_coord = cryst_coord.reshape([-1])
-    binders_nelem = [binders_elem[i].shape[0] for i in range(num_binders)]
-    binders_elemslices = np.concatenate([[0],np.cumsum(binders_nelem)[:-1]])
-    _binders_elemslices = np.stack([binders_elemslices,binders_nelem],axis=1).reshape([-1])
+    _binders_nelem = [binders_elem[i].shape[0] for i in range(num_binders)]
+#    binders_elemslices = np.concatenate([[0],np.cumsum(binders_nelem)[:-1]])
+#    _binders_elemslices = np.stack([binders_elemslices,binders_nelem],axis=1).reshape([-1])
     _binders_elem = np.concatenate([binders_elem[i] for i in range(num_binders)],axis=0)
-    binders_nframes = [binders_coordsets[i].shape[0] for i in range(num_binders)]
-    binders_ncoord = np.array(binders_nelem) * np.array(binders_nframes)
-    binders_coordslices = np.concatenate([[0],np.cumsum(binders_ncoord[:-1])])
-    _binders_coordslices = np.stack([binders_coordslices,binders_ncoord]).reshape([-1])
+    _binders_nframes = [binders_coordsets[i].shape[0] for i in range(num_binders)]
+#    binders_ncoord = np.array(_binders_nelem) * np.array(_binders_nframes) * 3
+#    binders_coordslices = np.concatenate([[0],np.cumsum(binders_ncoord[:-1])])
+#    _binders_coordslices = np.stack([binders_coordslices,binders_ncoord]).reshape([-1])
     _binders_coordsets = np.concatenate([binders_coordsets[i].reshape([-1]) for i in range(num_binders)])
     _cryst_label = np.asarray([cryst_label],dtype=np.float32)
     _binders_labels = np.concatenate([binders_labels[i].reshape([-1]) for i in range(num_binders)],axis=0)
@@ -92,9 +92,11 @@ def save_record_tfr(filename,cryst_elem,cryst_coord,binders_elem,binders_coordse
         feature={
             '_cryst_elem': tf.train.Feature(float_list=tf.train.FloatList(value=_cryst_elem)),
             '_cryst_coord': tf.train.Feature(float_list=tf.train.FloatList(value=_cryst_coord)),
-            '_binders_elemslices': tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_elemslices)),
+            '_binders_nelem':tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_nelem)),
+#            '_binders_elemslices': tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_elemslices)),
             '_binders_elem': tf.train.Feature(float_list=tf.train.FloatList(value=_binders_elem)),
-            '_binders_coordslices': tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_coordslices)),
+            '_binders_nframes': tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_nframes)),
+#            '_binders_coordslices': tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_coordslices)),
             '_binders_coordsets': tf.train.Feature(float_list=tf.train.FloatList(value=_binders_coordsets)),
             '_cryst_label': tf.train.Feature(float_list=tf.train.FloatList(value=_cryst_label)),
             '_binders_labels': tf.train.Feature(float_list=tf.train.FloatList(value=_binders_labels)),
