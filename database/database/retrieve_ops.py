@@ -56,7 +56,7 @@ class DatabaseGardener:
         # insert columns into the upstream table
         sql_tmp = "update \"{}\" set ".format(ups_table)
         sql_tmp += ", ".join([col_names[i]+ "=?" for i in range(num_cols)])
-        sql_tmp += " where out_idx=?;"
+        sql_tmp += " where run_idx=?;"
 
         self.conn.executemany(sql_tmp,transfer_vals)
         self.conn.commit()
