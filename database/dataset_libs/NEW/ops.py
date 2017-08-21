@@ -221,21 +221,31 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 	lig_coordsets = []
 	lig_labels = []
 
+	bind_lig_coordsets = []
+	bind_lig_labels = []
 	for i in range(init.num_bind_confs):
 		bind_lig.setACSIndex(i)
-		lig_atoms = bind_lig.getElements()
-		lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
-		lig_coordsets.append(bind_lig.getCoords())
-		lig_labels.append(np.array(1))
+		if i == 0:
+			lig_atoms = bind_lig.getElements()
+			lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
+		bind_lig_coordsets.append(bind_lig.getCoords())
+		bind_lig_labels.append(np.array([1]))
+	lig_coordsets.append(np.array(bind_lig_coordsets))
+	lig_labels.append(np.array(bind_lig_labels))
 
 	for decoy_file in decoy_files:
 		decoy_lig = parsePDB(decoy_file)
+		decoy_lig_coordsets = []
+		decoy_lig_labels = []
 		for i in range(init.num_decoy_confs):
 			decoy_lig.setACSIndex(i)
-			lig_atoms = decoy_lig.getElements()
-			lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
-			lig_coordsets.append(decoy_lig.getCoords())
-			lig_labels.append(np.array(0))
+			if i == 0:
+				lig_atoms = decoy_lig.getElements()
+				lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
+			decoy_lig_coordsets.append(decoy_lig.getCoords())
+			decoy_lig_labels.append(np.array([0]))
+		lig_coordsets.append(np.array(decoy_lig_coordsets))
+		lig_labels.append(np.array(decoy_lig_labels))
 
 	assert type(cryst_elem) == np.ndarray
 	assert cryst_elem.dtype == np.float32
