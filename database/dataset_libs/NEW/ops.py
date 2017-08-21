@@ -22,7 +22,7 @@ class GenerateConformersInit:
 		self.out_lig_path = os.path.join(base_dir, 'vds_pdb/binding_ligands')
 		self.out_decoy_path = os.path.join(base_dir, 'vds_pdb/decoy_ligands')
 		self.mol_path = os.path.join(base_dir, 'mol')
-		self.ligand_files = glob(os.path.join(self.lig_path + '/**/', '*[_]*.pdb'))[:10]
+		self.ligand_files = glob(os.path.join(self.lig_path + '/**/', '*[_]*.pdb'))[:]
 		print 'Number of ligands:', len(self.ligand_files)
 
 		self.num_conformers = num_conformers
@@ -71,15 +71,14 @@ def generate_conformers(lig_file, init='generate_conformers_init'):
 
 	# generate conformers and get the number of atoms of the molecule
 	mol2 = Chem.AddHs(mol)
+	pdb_writer = PDBWriter(pdb_file)
 	conf_ids = AllChem.EmbedMultipleConfs(mol2, init.num_conformers)
 	for cid in conf_ids:
 		AllChem.MMFFOptimizeMolecule(mol2, confId=cid)
-	mol = Chem.RemoveHs(mol2)
+		mol = Chem.RemoveHs(mol2)
+		pdb_writer.write(mol)
 	num_atoms = Mol.GetNumAtoms(mol)
-
-	# write the mol into PDB format (contains mols)
-	pdb_writer = PDBWriter(pdb_file)
-	pdb_writer.write(mol)
+	pdb_writer.close()
 
 	print 'Generated conformers for one ligand'
 	return [[pdb_file, mol_file, num_atoms]]
@@ -128,19 +127,18 @@ def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
 		mcs = MCS.FindMCS([init.all_mols[i], mol], minNumAtoms=init.max_substruct,
 				ringMatchesRingOnly=True, completeRingsOnly=True, timeout=1)
 		if mcs.numAtoms == -1:
+			#save the mol object as a PDB file in the decoys folder
+			decoy_file = pdb_file.replace('/binding_ligands/', '/decoy_ligands/').replace('.pdb', str(len(output))+'.pdb')
+			pdb_writer = PDBWriter(decoy_file)
 			# generate the decoy and its conformers
 			decoy2 = Chem.AddHs(init.all_mols[i])
 			conf_ids = AllChem.EmbedMultipleConfs(decoy2, init.num_conformers)
 			for cid in conf_ids:
 				AllChem.MMFFOptimizeMolecule(decoy2, confId=cid)
-			decoy = Chem.RemoveHs(decoy2)
+				decoy = Chem.RemoveHs(decoy2)
+				pdb_writer.write(decoy)
 
-			#save the mol object as a PDB file in the decoys folder
-			decoy_file = pdb_file.replace('/binding_ligands/', '/decoy_ligands/').replace('.pdb', str(len(output))+'.pdb')
-			pdb_writer = PDBWriter(decoy_file)
-			pdb_writer.write(decoy)
 			pdb_writer.close()
-
 			output.append([init.all_pdb_files[i], decoy_file])
 
 		if len(output) >= init.max_num_decoys:
@@ -171,8 +169,8 @@ class WriteTFRInit:
 			os.system('rm -r ' + self.out_tfr_path)
 		os.mkdir(self.out_tfr_path)
 
-		mapping = [('H', 1), ('C', 2), ('N', 3), ('O', 4), ('F', 5), ('Cl', 5),
-			('I', 5), ('Br', 5), ('P', 6), ('S', 6)]
+		mapping = [('H', 1.0), ('C', 2.0), ('N', 3.0), ('O', 4.0), 
+			('F', 5.0), ('Cl', 5.0), ('I', 5.0), ('Br', 5.0), ('P', 6.0), ('S', 6.0)]
 		self.atom_dict = defaultdict(lambda: 7)
 		for (k, v) in mapping:
 			self.atom_dict[k] = v
@@ -210,12 +208,11 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 
 	# extract all relevant information
 	rec_atoms = rec.getElements()
-	rec_elem = [init.atom_dict[rec_atoms[i]] for i in range(len(rec_atoms))]
-	rec_coord = rec.getCoords()
+	rec_elem = np.array([init.atom_dict[rec_atoms[i]] for i in range(len(rec_atoms))], dtype=np.float32)
+	rec_coord = rec.getCoords().astype(np.float32)
 	cryst_atoms = crystal_lig.getElements()
-	cryst_elem = [init.atom_dict[cryst_atoms[i]] for i in range(len(cryst_atoms))]
-	cryst_coord = crystal_lig.getCoords()
-	# TODO: get the crystal label
+	cryst_elem = np.array([init.atom_dict[cryst_atoms[i]] for i in range(len(cryst_atoms))], dtype=np.float32)
+	cryst_coord = crystal_lig.getCoords().astype(np.float32)
 
 	lig_elems = []
 	lig_coordsets = []
@@ -227,9 +224,9 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 		bind_lig.setACSIndex(i)
 		if i == 0:
 			lig_atoms = bind_lig.getElements()
-			lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
-		bind_lig_coordsets.append(bind_lig.getCoords())
-		bind_lig_labels.append(np.array([1]))
+			lig_elems.append(np.array([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))], dtype=np.float32))
+		bind_lig_coordsets.append(bind_lig.getCoords().astype(np.float32))
+		bind_lig_labels.append(np.array(1.0, dtype=np.float32))
 	lig_coordsets.append(np.array(bind_lig_coordsets))
 	lig_labels.append(np.array(bind_lig_labels))
 
@@ -241,11 +238,13 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 			decoy_lig.setACSIndex(i)
 			if i == 0:
 				lig_atoms = decoy_lig.getElements()
-				lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
-			decoy_lig_coordsets.append(decoy_lig.getCoords())
-			decoy_lig_labels.append(np.array([0]))
+				lig_elems.append(np.array([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))], dtype=np.float32))
+			decoy_lig_coordsets.append(decoy_lig.getCoords().astype(np.float32))
+			decoy_lig_labels.append(np.array(0.0, dtype=np.float32))
 		lig_coordsets.append(np.array(decoy_lig_coordsets))
 		lig_labels.append(np.array(decoy_lig_labels))
+
+	num_ligs = len(lig_elems)
 
 	assert type(cryst_elem) == np.ndarray
 	assert cryst_elem.dtype == np.float32
@@ -258,7 +257,6 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 	assert cryst_coord.shape[0] == cryst_elem.shape[0]
 
 	assert type(lig_elems) == list
-	num_ligs = len(lig_elems)
 	for i in range(num_ligs):
 		assert type(lig_elems[i]) == np.ndarray
 		assert str(lig_elems[i].dtype) in {'float32', 'np.float32'}
@@ -310,7 +308,6 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 			'_rec_coord': tf.train.Feature(float_list=tf.train.FloatList(value=rec_coord)),
 			'_cryst_elem': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_elem)),
 			'_cryst_coord': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_coord)),
-			# '_cryst_label': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_label)),
 			'_lig_nelems': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nelems)),
 			'_lig_elems': tf.train.Feature(float_list=tf.train.FloatList(value=lig_elems)),
 			'_lig_nframes': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nframes)),
