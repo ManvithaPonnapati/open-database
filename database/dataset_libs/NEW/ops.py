@@ -154,7 +154,7 @@ class WriteTFRInit:
 
 	this_module = sys.modules[__name__]
 
-	def __init__(self, base_dir, num_bind_confs, num_decoy_confs):
+	def __init__(self, base_dir, num_bind_confs, num_decoy_confs, num_decoys):
 		"""Initializes all the directories and filepaths needed to write to TFR"""
 
 		self.base_dir = base_dir
@@ -165,6 +165,7 @@ class WriteTFRInit:
 		self.out_tfr_path = os.path.join(base_dir, 'tfr')
 		self.num_bind_confs = num_bind_confs
 		self.num_decoy_confs = num_decoy_confs
+		self.num_decoys = num_decoys
 
 		if os.path.exists(self.out_tfr_path):
 			os.system('rm -r ' + self.out_tfr_path)
@@ -204,8 +205,8 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 	decoy_files = glob(bind_lig_file.replace('/binding_ligands/', '/decoy_ligands/').replace('.pdb', '*.pdb'))
 
 	# check to make sure that there are enough decoys 
-	if len(decoy_files) < 5:
-		return [[]]
+	if len(decoy_files) < init.num_decoys:
+		raise Exception("Not enough decoys")
 
 	# extract all relevant information
 	rec_atoms = rec.getElements()

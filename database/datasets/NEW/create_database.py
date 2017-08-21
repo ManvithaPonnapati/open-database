@@ -65,7 +65,7 @@ db_editor = database.DatabaseGardener(db_path)
 
 start = time.time()
 
-NEW.WriteTFRInit(base_dir, num_bind_confs=100, num_decoy_confs=10)
+NEW.WriteTFRInit(base_dir, num_bind_confs=100, num_decoy_confs=10, num_decoys=10)
 
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
