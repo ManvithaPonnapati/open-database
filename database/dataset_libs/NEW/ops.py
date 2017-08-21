@@ -1,9 +1,13 @@
 import os, sqlite3, sys, random, time
+import numpy as np
+import tensorflow as tf
+from collections import defaultdict
 from glob import glob 
 from rdkit import Chem
 from rdkit.Chem import MCS, AllChem
 from rdkit.Chem.rdchem import Mol
 from rdkit.Chem.rdmolfiles import SDWriter, SDMolSupplier, PDBWriter
+from prody import *
 
 
 class GenerateConformersInit:
@@ -18,7 +22,7 @@ class GenerateConformersInit:
 		self.out_lig_path = os.path.join(base_dir, 'vds_pdb/binding_ligands')
 		self.out_decoy_path = os.path.join(base_dir, 'vds_pdb/decoy_ligands')
 		self.mol_path = os.path.join(base_dir, 'mol')
-		self.ligand_files = glob(os.path.join(self.lig_path + '/**/', '*[_]*.pdb'))[:20]
+		self.ligand_files = glob(os.path.join(self.lig_path + '/**/', '*[_]*.pdb'))[:10]
 		print 'Number of ligands:', len(self.ligand_files)
 
 		self.num_conformers = num_conformers
@@ -144,3 +148,117 @@ def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
 
 	print 'Got the decoys for one ligand'
 	return output
+
+
+class WriteTFRInit:
+
+	this_module = sys.modules[__name__]
+
+	def __init__(self, base_dir, num_bind_confs, num_decoy_confs):
+		"""Initializes all the directories and filepaths needed to write to TFR"""
+
+		self.base_dir = base_dir
+		self.receptor_path = os.path.join(base_dir, 'labeled_pdb/receptors')
+		self.crystal_lig_path = os.path.join(base_dir, 'labeled_pdb/crystal_ligands')
+		self.conformer_path = os.path.join(base_dir, 'vds_pdb/binding_ligands')
+		self.decoy_path = os.path.join(base_dir, 'vds_pdb/decoy_ligands')
+		self.out_tfr_path = os.path.join(base_dir, 'tfr')
+		self.num_bind_confs = num_bind_confs
+		self.num_decoy_confs = num_decoy_confs
+
+		if os.path.exists(self.out_tfr_path):
+			os.system('rm -r ' + self.out_tfr_path)
+		os.mkdir(self.out_tfr_path)
+
+		mapping = [('H', 1), ('C', 2), ('N', 3), ('O', 4), ('F', 5), ('Cl', 5),
+			('I', 5), ('Br', 5), ('P', 6), ('S', 6)]
+		self.atom_dict = defaultdict(lambda: 7)
+		for (k, v) in mapping:
+			self.atom_dict[k] = v
+
+		self.this_module.write_tfr_init = self
+
+
+def write_tfr(bind_lig_file, init='write_tfr_init'):
+	"""For each protein/ligand crystal pair, write one tfrecord with the following:
+		> rec_elem, rec_coord, cryst_elem, cryst_coord (np.array)
+		> num_confs (int): The number of binding/decoy conformers
+		> filename (str): File path to the output file
+		> cryst_label (float32): Binding affinity of the crystal pose
+		> lig_elems (list of np.array)
+		> lig_coordsets (list of np.array)
+		> lig_labels (list of np.array): 1 if binding ligand and 0 if decoy"""
+
+	init = eval(init)
+
+	# parse the binding ligand
+	bind_lig = parsePDB(bind_lig_file)
+	# parse the receptor
+	rec_name = bind_lig_file[len(init.conformer_path)+1: len(init.conformer_path)+5]
+	rec_file = os.path.join(init.receptor_path, rec_name+'.pdb')
+	rec = parsePDB(rec_file)
+	# parse the crystal ligand
+	crystal_lig_file = bind_lig_file.replace('/vds_pdb/binding_ligands/', '/labeled_pdb/crystal_ligands/')
+	crystal_lig = parsePDB(crystal_lig_file)
+	# get the decoy ligand filepaths
+	decoy_files = glob(bind_lig_file.replace('/binding_ligands/', '/decoy_ligands/').replace('.pdb', '*.pdb'))
+
+	# check to make sure that there are enough decoys 
+	if len(decoy_files) < 5:
+		return [[]]
+
+	# extract all relevant information
+	rec_atoms = rec.getElements()
+	rec_elem = [init.atom_dict[rec_atoms[i]] for i in range(len(rec_atoms))]
+	rec_coord = rec.getCoords()
+	cryst_atoms = crystal_lig.getElements()
+	cryst_elem = [init.atom_dict[cryst_atoms[i]] for i in range(len(cryst_atoms))]
+	cryst_coord = crystal_lig.getCoords()
+	# TODO: get the crystal label
+
+	lig_elems = []
+	lig_coordsets = []
+	lig_labels = []
+
+	print 'There are ' + str(bind_lig.numCoordsets()) + ' coordsets'
+	for i in range(init.num_bind_confs):
+		print i
+		bind_lig.setACSIndex(i)
+		lig_atoms = bind_lig.getElements()
+		lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
+		lig_coordsets.append(bind_lig.getCoords())
+		lig_labels.append(np.array(1))
+
+	print 'got here!'
+
+	for decoy_file in decoy_files:
+		decoy_lig = parsePDB(decoy_file)
+		for i in range(init.num_decoy_confs):
+			decoy_lig.setACSIndex(i)
+			lig_atoms = decoy_lig.getElements()
+			lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
+			lig_coordsets.append(decoy_lig.getCoords())
+			lig_labels.append(np.array(0))
+
+	# TODO: assert the shapes and types of the values to write
+	# TODO: assert the number of conformers for binders and nonbinders
+
+	filename = os.path.join(init.out_tf_path, bind_lig_file[len(init.conformer_path)+6:].replace('.pdb', '.tfr'))
+	writer = tf.python_io.TFRecordWriter(filename)
+	example = tf.train.Example(
+		features=tf.train.Features(
+		feature={
+			'_rec_elem': tf.train.Feature(int64_list=tf.train.Int64List(value=rec_elem)),
+			'_rec_coord': tf.train.Feature(float_list=tf.train.FloatList(value=rec_coord)),
+			'_cryst_elem': tf.train.Feature(int64_list=tf.train.Int64List(value=cryst_elem)),
+			'_cryst_coord': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_coord)),
+			# '_cryst_label': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_label)),
+			'_lig_elems': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_elems)),
+			'_lig_coordsets': tf.train.Feature(float_list=tf.train.FloatList(value=lig_coordsets)),
+			'_lig_labels': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_labels))
+		})
+	)
+	serialized = example.SerializeToString()
+	writer.write(serialized)
+	writer.close()
+	return [[filename]]
