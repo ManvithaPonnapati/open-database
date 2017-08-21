@@ -5,7 +5,7 @@ sys.path.append('../../')
 import database
 from dataset_libs import NEW
 
-base_dir = '/home/cosmynx/Documents/database'
+base_dir = '/data/affinity/old/datasets'
 db_path = os.path.join(base_dir, 'labeled_pdb.db')
 out_db_path = os.path.join(base_dir, 'labeled_pdb_out.db')
 # if os.path.isfile(db_path):

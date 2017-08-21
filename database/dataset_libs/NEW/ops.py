@@ -220,16 +220,12 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 	lig_coordsets = []
 	lig_labels = []
 
-	print 'There are ' + str(bind_lig.numCoordsets()) + ' coordsets'
 	for i in range(init.num_bind_confs):
-		print i
 		bind_lig.setACSIndex(i)
 		lig_atoms = bind_lig.getElements()
 		lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
 		lig_coordsets.append(bind_lig.getCoords())
 		lig_labels.append(np.array(1))
-
-	print 'got here!'
 
 	for decoy_file in decoy_files:
 		decoy_lig = parsePDB(decoy_file)
@@ -243,7 +239,7 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 	# TODO: assert the shapes and types of the values to write
 	# TODO: assert the number of conformers for binders and nonbinders
 
-	filename = os.path.join(init.out_tf_path, bind_lig_file[len(init.conformer_path)+6:].replace('.pdb', '.tfr'))
+	filename = os.path.join(init.out_tfr_path, bind_lig_file[len(init.conformer_path)+6:].replace('.pdb', '.tfr'))
 	writer = tf.python_io.TFRecordWriter(filename)
 	example = tf.train.Example(
 		features=tf.train.Features(
