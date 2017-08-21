@@ -254,12 +254,12 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 		assert len(lig_elems[i].shape) == 1
 
 	assert type(lig_coordsets) == list
-    assert len(lig_coordsets) == num_ligs
-    for i in range(num_ligs):
-        assert type(lig_coordsets[i]) == np.ndarray
-        assert str(lig_coordsets[i].dtype) in {"float32", "np.float32"}
-        assert len(lig_coordsets[i].shape) == 3
-        assert lig_coordsets[i].shape[2] == 3
+	assert len(lig_coordsets) == num_ligs
+	for i in range(num_ligs):
+		assert type(lig_coordsets[i]) == np.ndarray
+		assert str(lig_coordsets[i].dtype) in {"float32", "np.float32"}
+		assert len(lig_coordsets[i].shape) == 3
+		assert lig_coordsets[i].shape[2] == 3
 		assert lig_coordsets[i].shape[1] == lig_elems[i].shape[0]
 
 	assert type(lig_labels) == list
@@ -271,13 +271,13 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 		assert lig_labels[i].shape[0] == lig_coordsets[i].shape[0]
 
 	assert type(rec_elem) == np.ndarray
-    assert rec_elem.dtype == np.float32
+	assert rec_elem.dtype == np.float32
 	assert len(rec_elem.shape) == 1
 
 	assert type(rec_coord) == np.ndarray
-    assert rec_coord.dtype == np.float32
-    assert len(rec_coord.shape) == 2
-    assert rec_coord.shape[1] == 3
+	assert rec_coord.dtype == np.float32
+	assert len(rec_coord.shape) == 2
+	assert rec_coord.shape[1] == 3
 	assert rec_coord.shape[0] == rec_elem.shape[0]
 
 	rec_elem = rec_elem
@@ -304,7 +304,7 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 			'_lig_elems': tf.train.Feature(float_list=tf.train.FloatList(value=lig_elems)),
 			'_lig_nframes': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nframes)),
 			'_lig_coordsets': tf.train.Feature(float_list=tf.train.FloatList(value=lig_coordsets)),
-			'_lig_labels': tf.train.Feature(int64_list=tf.train.FloatList(value=lig_labels))
+			'_lig_labels': tf.train.Feature(float_list=tf.train.FloatList(value=lig_labels))
 		})
 	)
 	serialized = example.SerializeToString()
