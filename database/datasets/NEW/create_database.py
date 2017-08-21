@@ -10,6 +10,8 @@ db_path = os.path.join(base_dir, 'labeled_pdb.db')
 out_db_path = os.path.join(base_dir, 'labeled_pdb_out.db')
 # if os.path.isfile(db_path):
 # 	os.system('rm ' + db_path)
+if os.path.isfile(out_db_path):
+	os.system('rm ' + out_db_path)
 afdb = database.AffinityDB(out_db_path)
 db_editor = database.DatabaseGardener(db_path)
 

@@ -236,22 +236,75 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 			lig_coordsets.append(decoy_lig.getCoords())
 			lig_labels.append(np.array(0))
 
-	# TODO: assert the shapes and types of the values to write
-	# TODO: assert the number of conformers for binders and nonbinders
+	assert type(cryst_elem) == np.ndarray
+	assert cryst_elem.dtype == np.float32
+	assert len(cryst_elem.shape) == 1
+
+	assert type(cryst_coord) == np.ndarray
+	assert cryst_coord.dtype == np.float32
+	assert len(cryst_coord.shape) == 2
+	assert cryst_coord.shape[1] == 3
+	assert cryst_coord.shape[0] == cryst_elem.shape[0]
+
+	assert type(lig_elems) == list
+	num_ligs = len(lig_elems)
+	for i in range(num_ligs):
+		assert type(lig_elems[i]) == np.ndarray
+		assert str(lig_elems[i].dtype) in {'float32', 'np.float32'}
+		assert len(lig_elems[i].shape) == 1
+
+	assert type(lig_coordsets) == list
+    assert len(lig_coordsets) == num_ligs
+    for i in range(num_ligs):
+        assert type(lig_coordsets[i]) == np.ndarray
+        assert str(lig_coordsets[i].dtype) in {"float32", "np.float32"}
+        assert len(lig_coordsets[i].shape) == 3
+        assert lig_coordsets[i].shape[2] == 3
+		assert lig_coordsets[i].shape[1] == lig_elems[i].shape[0]
+
+	assert type(lig_labels) == list
+	assert len(lig_labels) == num_ligs
+	for i in range(num_ligs):
+		assert type(lig_labels[i]) == np.ndarray
+		assert str(lig_labels[i].dtype) in {'float32', 'np.float32'}
+		assert len(lig_labels[i].shape) == 1
+		assert lig_labels[i].shape[0] == lig_coordsets[i].shape[0]
+
+	assert type(rec_elem) == np.ndarray
+    assert rec_elem.dtype == np.float32
+	assert len(rec_elem.shape) == 1
+
+	assert type(rec_coord) == np.ndarray
+    assert rec_coord.dtype == np.float32
+    assert len(rec_coord.shape) == 2
+    assert rec_coord.shape[1] == 3
+	assert rec_coord.shape[0] == rec_elem.shape[0]
+
+	rec_elem = rec_elem
+	rec_coord = rec_coord.reshape([-1])
+	cryst_elem = cryst_elem
+	cryst_coord = cryst_coord.reshape([-1])
+	lig_nelems = [lig_elems[i].shape[0] for i in range(num_ligs)]
+	lig_elems = np.concatenate([lig_elems[i] for i in range(num_ligs)], axis=0)
+	lig_nframes = [lig_coordsets[i].shape[0] for i in range(num_ligs)]
+	lig_coordsets = np.concatenate([lig_coordsets[i].reshape([-1]) for i in range(num_ligs)])
+	lig_labels = np.concatenate([lig_labels[i].reshape([-1]) for i in range(num_ligs)])
 
 	filename = os.path.join(init.out_tfr_path, bind_lig_file[len(init.conformer_path)+6:].replace('.pdb', '.tfr'))
 	writer = tf.python_io.TFRecordWriter(filename)
 	example = tf.train.Example(
 		features=tf.train.Features(
 		feature={
-			'_rec_elem': tf.train.Feature(int64_list=tf.train.Int64List(value=rec_elem)),
+			'_rec_elem': tf.train.Feature(float_list=tf.train.FloatList(value=rec_elem)),
 			'_rec_coord': tf.train.Feature(float_list=tf.train.FloatList(value=rec_coord)),
-			'_cryst_elem': tf.train.Feature(int64_list=tf.train.Int64List(value=cryst_elem)),
+			'_cryst_elem': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_elem)),
 			'_cryst_coord': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_coord)),
 			# '_cryst_label': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_label)),
-			'_lig_elems': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_elems)),
+			'_lig_nelems': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nelems)),
+			'_lig_elems': tf.train.Feature(float_list=tf.train.FloatList(value=lig_elems)),
+			'_lig_nframes': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nframes)),
 			'_lig_coordsets': tf.train.Feature(float_list=tf.train.FloatList(value=lig_coordsets)),
-			'_lig_labels': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_labels))
+			'_lig_labels': tf.train.Feature(int64_list=tf.train.FloatList(value=lig_labels))
 		})
 	)
 	serialized = example.SerializeToString()
