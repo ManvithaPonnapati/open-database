@@ -3,7 +3,7 @@ import scipy as scp
 import prody as pr
 from config import FLAGS
 
-
+a = 200
 
 class Download_pdb_init:
     this_module = sys.modules[__name__]
@@ -13,10 +13,10 @@ class Download_pdb_init:
             os.makedirs(download_path)
         self.db_path = db_path
         self.download_dir = download_dir
-        self.this_module.download_init = self
+        self.this_module.download_pdb_init = self
 
 
-def download_pdb(pdb_id,init="download_init"):
+def download_pdb(pdb_id,init="download_pdb_init"):
     """
 
     :param pdb_id:

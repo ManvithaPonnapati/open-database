@@ -16,6 +16,7 @@ class DatabaseGardener:
         :param col_names: list of strings (names of the columns in the downstream table to merge)
         :return: None
         """
+        # FIXME: add support for the unrelated tables (should become key-merge)
         cursor = self.conn.cursor()
         num_cols = len(col_names)
 

@@ -1,9 +1,5 @@
-import sys,os,sqlite3,time
+import sys,os,sqlite3,time,imp,logging
 import multiprocessing
-sys.path.append('../')
-from dataset_libs import EXMPL1
-from dataset_libs import VDS1
-from dataset_libs import NEW
 
 
 class AffinityDB:
@@ -12,6 +8,13 @@ class AffinityDB:
 
     def __init__(self,db_path):
         self.conn = sqlite3.connect(db_path)
+
+        # create cron table if it has not been created
+        table_names = self.conn.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
+        if "cron" not in [table_name[0] for table_name in table_names]:
+            sql_cmd = "create table \"cron\"(idx integer, time string, init_param string)"
+            self.conn.execute(sql_cmd)
+            logging.info("cron table was not in the database and was created")
 
     def run_multithread(self,func,arg_types,arg_lists,out_types,out_names,num_threads=10,commit_sec=1):
         """ Given set of tasks (any function in python) , breaks the tasks between a given number of processes
@@ -33,8 +36,7 @@ class AffinityDB:
         :return: None
         """
         time_stamp = time.strftime("%h_%y_%Y_%M_%S").lower()
-        arg_table = time_stamp + "_arg_" + func
-        out_table = time_stamp + "_out_" + func
+
         assert type(arg_lists)==list, "list of inputs is expected"
         assert all([type(arg_list)==list for arg_list in arg_lists]),"list of lists of inputs is expected"
         assert(set(arg_types).issubset([int,float,str])), "Expected keywords: int,float,str."
@@ -44,15 +46,41 @@ class AffinityDB:
             "List of arguments should be all of the same length."
         for i in range(len(arg_types)):
             assert all([isinstance(arg,arg_types[i]) for arg in arg_lists[i]]),"Incorrect type in arg_list" + str(i)
-        if eval(func).__defaults__ is not None:
-            req_args = eval(func).__code__.co_argcount - len(eval(func).__defaults__)
+        assert len(func.split("/")) == 1, "relative path to the library should be marked with dots"
+        assert (len(func.split("."))) == 2, "rule to define function in the top level of the lib package enforced"
+        # try importing the function from string into the database module
+        db_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/dataset_libs"
+        lib_name,func_name = func.split(".")
+        fp, path, descr = imp.find_module(lib_name, [db_libs_path])
+        lib_mod = imp.load_module(lib_name, fp, path, descr)
+        func_ref = eval("lib_mod." + func_name)
+        # check the default arguments requirement for the function is satisfied
+        if func_ref.__defaults__ is not None:
+            req_args = func_ref.__code__.co_argcount - len(func_ref.__defaults__)
         else:
-            req_args = eval(func).__code__.co_argcount
+            req_args = func_ref.__code__.co_argcount
         assert req_args >= len(arg_types), "missing arguments" + str(req_args) + "found:" + str(len(arg_types))
+        # if the function has an initializer, check if it is accessible, and record its state
+        func_args = func_ref.__code__.co_varnames[:func_ref.__code__.co_argcount]
+        init_idx = [i for i in range(len(func_args)) if func_args[i]=="init"][0]
+        assert (init_idx > req_args-1), "init function should have a default argument when declared"
+        init_func = func_ref.__defaults__[init_idx-req_args]
+        assert type(init_func) == str, "init function default should be a string"
+        init_state = str(eval("lib_mod." + init_func).__dict__)
+        logging.info("parameter check for run_multithread function successfully passed")
 
+        # write the initial state of the init function to cron
+        sql_cmd = "select idx from cron"
+        cron_idx = len(self.conn.execute(sql_cmd).fetchall())
+        sql_cmd = "insert into cron values({},\"{}\",\"{}\")".format(cron_idx+1,time_stamp,init_state)
+        self.conn.execute(sql_cmd)
+        self.conn.commit()
 
+        # initialize important parameters before running
+        arg_table = "arg_" + str(cron_idx).zfill(3) + "_" + func
+        out_table = "out_" + str(cron_idx).zfill(3) + "_" + func
         num_args = len(arg_types)
-        var_names = list(eval(func).__code__.co_varnames)[:num_args]
+        var_names = list(func_ref.__code__.co_varnames)[:num_args]
         num_outs = len(out_types)
         num_runs = len(arg_lists[0])
 
@@ -89,9 +117,14 @@ class AffinityDB:
         :return: None
         """
         # get constant hardwired parameters
-        time_stamp = arg_table[:17] # first 17 symbols are the time stamp
-        func = arg_table[22:] # function name starts after 17 + 5 letters
-        out_table = time_stamp + "_out_" + func
+        func = arg_table[8:] # function name starts after 8th letter
+        out_table = "out_" + arg_table[4:]
+        # import the corresponding to the function module
+        db_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/dataset_libs"
+        lib_name,func_name = func.split(".")
+        fp, path, descr = imp.find_module(lib_name, [db_libs_path])
+        lib_mod = imp.load_module(lib_name, fp, path, descr)
+        func_ref = eval("lib_mod." + func_name)
 
         # retrieve all sets of parameters to run function with
         cursor = self.conn.cursor()
@@ -118,7 +151,7 @@ class AffinityDB:
         arg_q = m.Queue()
         out_q = m.Queue()
         [task_q.put(arg_set) for arg_set in arg_sets]
-        thrs = [pool.apply_async(_thread_proxie,args=(func,task_q,arg_q,out_q,out_types,i)) for i in range(num_threads)]
+        thrs = [pool.apply_async(_thread_proxie,args=(func_ref,task_q,arg_q,out_q,out_types,i)) for i in range(num_threads)]
 
         # collect the results from the processes in the main thread
         arg_sql_cmd = 'update \"' + arg_table + '\" set run_state=?, run_message=? where run_idx=?'
@@ -154,7 +187,7 @@ class AffinityDB:
         self.conn.commit()
 
 
-def _thread_proxie(func,task_q,arg_q,out_q,out_types,thr_i):
+def _thread_proxie(func_ref,task_q,arg_q,out_q,out_types,thr_i):
     """
     Runs a function func with the set of arguments arg_set. Checks is the output of the function is a nested list.
     Checks if every example in the nested list is has type out_types. Sends status updates of tasks to the arg_q,
@@ -164,15 +197,16 @@ def _thread_proxie(func,task_q,arg_q,out_q,out_types,thr_i):
     :param arg_set: list (set of arguments)
     :param arg_q: multiprocessing.Queue() (which to send task status updates to)
     :param out_q: multiprocessing.Queue() (which to send outputs to)
-    :param out_types: list of [int,flaot,string] (expected kinds of outputs from the function)
+    :param out_types: list of [int,float,string] (expected kinds of outputs from the function)
     :return:
     """
+    func = func_ref
     while task_q.qsize() > thr_i*2:
         arg_set = task_q.get()
         try:
             arg_types = [type(arg) for arg in arg_set]
             num_out = len(out_types)
-            task = func + "(" + ", ".join(
+            task = "func(" + ", ".join(
                 ["\"{}\"" if arg_type == unicode else "{}" for arg_type in arg_types[1:]]) + ")"
             task = task.format(*arg_set[1:])
             outss = eval(task)
@@ -192,4 +226,3 @@ def _thread_proxie(func,task_q,arg_q,out_q,out_types,thr_i):
         except Exception as e:
             # update the argument table with the error message
             arg_q.put([0, str(e), arg_set[0]])
-
