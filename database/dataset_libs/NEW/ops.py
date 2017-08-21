@@ -154,7 +154,7 @@ class WriteTFRInit:
 
 	this_module = sys.modules[__name__]
 
-	def __init__(self, base_dir, num_bind_confs, num_decoy_confs):
+	def __init__(self, base_dir, num_bind_confs, num_decoy_confs, num_decoys):
 		"""Initializes all the directories and filepaths needed to write to TFR"""
 
 		self.base_dir = base_dir
@@ -165,6 +165,7 @@ class WriteTFRInit:
 		self.out_tfr_path = os.path.join(base_dir, 'tfr')
 		self.num_bind_confs = num_bind_confs
 		self.num_decoy_confs = num_decoy_confs
+		self.num_decoys = num_decoys
 
 		if os.path.exists(self.out_tfr_path):
 			os.system('rm -r ' + self.out_tfr_path)
@@ -204,8 +205,8 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 	decoy_files = glob(bind_lig_file.replace('/binding_ligands/', '/decoy_ligands/').replace('.pdb', '*.pdb'))
 
 	# check to make sure that there are enough decoys 
-	if len(decoy_files) < 5:
-		return [[]]
+	if len(decoy_files) < init.num_decoys:
+		raise Exception("Not enough decoys")
 
 	# extract all relevant information
 	rec_atoms = rec.getElements()
@@ -220,38 +221,101 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 	lig_coordsets = []
 	lig_labels = []
 
+	bind_lig_coordsets = []
+	bind_lig_labels = []
 	for i in range(init.num_bind_confs):
 		bind_lig.setACSIndex(i)
-		lig_atoms = bind_lig.getElements()
-		lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
-		lig_coordsets.append(bind_lig.getCoords())
-		lig_labels.append(np.array(1))
+		if i == 0:
+			lig_atoms = bind_lig.getElements()
+			lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
+		bind_lig_coordsets.append(bind_lig.getCoords())
+		bind_lig_labels.append(np.array([1]))
+	lig_coordsets.append(np.array(bind_lig_coordsets))
+	lig_labels.append(np.array(bind_lig_labels))
 
 	for decoy_file in decoy_files:
 		decoy_lig = parsePDB(decoy_file)
+		decoy_lig_coordsets = []
+		decoy_lig_labels = []
 		for i in range(init.num_decoy_confs):
 			decoy_lig.setACSIndex(i)
-			lig_atoms = decoy_lig.getElements()
-			lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
-			lig_coordsets.append(decoy_lig.getCoords())
-			lig_labels.append(np.array(0))
+			if i == 0:
+				lig_atoms = decoy_lig.getElements()
+				lig_elems.append([init.atom_dict[lig_atoms[j]] for j in range(len(lig_atoms))])
+			decoy_lig_coordsets.append(decoy_lig.getCoords())
+			decoy_lig_labels.append(np.array([0]))
+		lig_coordsets.append(np.array(decoy_lig_coordsets))
+		lig_labels.append(np.array(decoy_lig_labels))
 
-	# TODO: assert the shapes and types of the values to write
-	# TODO: assert the number of conformers for binders and nonbinders
+	assert type(cryst_elem) == np.ndarray
+	assert cryst_elem.dtype == np.float32
+	assert len(cryst_elem.shape) == 1
+
+	assert type(cryst_coord) == np.ndarray
+	assert cryst_coord.dtype == np.float32
+	assert len(cryst_coord.shape) == 2
+	assert cryst_coord.shape[1] == 3
+	assert cryst_coord.shape[0] == cryst_elem.shape[0]
+
+	assert type(lig_elems) == list
+	num_ligs = len(lig_elems)
+	for i in range(num_ligs):
+		assert type(lig_elems[i]) == np.ndarray
+		assert str(lig_elems[i].dtype) in {'float32', 'np.float32'}
+		assert len(lig_elems[i].shape) == 1
+
+	assert type(lig_coordsets) == list
+	assert len(lig_coordsets) == num_ligs
+	for i in range(num_ligs):
+		assert type(lig_coordsets[i]) == np.ndarray
+		assert str(lig_coordsets[i].dtype) in {"float32", "np.float32"}
+		assert len(lig_coordsets[i].shape) == 3
+		assert lig_coordsets[i].shape[2] == 3
+		assert lig_coordsets[i].shape[1] == lig_elems[i].shape[0]
+
+	assert type(lig_labels) == list
+	assert len(lig_labels) == num_ligs
+	for i in range(num_ligs):
+		assert type(lig_labels[i]) == np.ndarray
+		assert str(lig_labels[i].dtype) in {'float32', 'np.float32'}
+		assert len(lig_labels[i].shape) == 1
+		assert lig_labels[i].shape[0] == lig_coordsets[i].shape[0]
+
+	assert type(rec_elem) == np.ndarray
+	assert rec_elem.dtype == np.float32
+	assert len(rec_elem.shape) == 1
+
+	assert type(rec_coord) == np.ndarray
+	assert rec_coord.dtype == np.float32
+	assert len(rec_coord.shape) == 2
+	assert rec_coord.shape[1] == 3
+	assert rec_coord.shape[0] == rec_elem.shape[0]
+
+	rec_elem = rec_elem
+	rec_coord = rec_coord.reshape([-1])
+	cryst_elem = cryst_elem
+	cryst_coord = cryst_coord.reshape([-1])
+	lig_nelems = [lig_elems[i].shape[0] for i in range(num_ligs)]
+	lig_elems = np.concatenate([lig_elems[i] for i in range(num_ligs)], axis=0)
+	lig_nframes = [lig_coordsets[i].shape[0] for i in range(num_ligs)]
+	lig_coordsets = np.concatenate([lig_coordsets[i].reshape([-1]) for i in range(num_ligs)])
+	lig_labels = np.concatenate([lig_labels[i].reshape([-1]) for i in range(num_ligs)])
 
 	filename = os.path.join(init.out_tfr_path, bind_lig_file[len(init.conformer_path)+6:].replace('.pdb', '.tfr'))
 	writer = tf.python_io.TFRecordWriter(filename)
 	example = tf.train.Example(
 		features=tf.train.Features(
 		feature={
-			'_rec_elem': tf.train.Feature(int64_list=tf.train.Int64List(value=rec_elem)),
+			'_rec_elem': tf.train.Feature(float_list=tf.train.FloatList(value=rec_elem)),
 			'_rec_coord': tf.train.Feature(float_list=tf.train.FloatList(value=rec_coord)),
-			'_cryst_elem': tf.train.Feature(int64_list=tf.train.Int64List(value=cryst_elem)),
+			'_cryst_elem': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_elem)),
 			'_cryst_coord': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_coord)),
 			# '_cryst_label': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_label)),
-			'_lig_elems': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_elems)),
+			'_lig_nelems': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nelems)),
+			'_lig_elems': tf.train.Feature(float_list=tf.train.FloatList(value=lig_elems)),
+			'_lig_nframes': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nframes)),
 			'_lig_coordsets': tf.train.Feature(float_list=tf.train.FloatList(value=lig_coordsets)),
-			'_lig_labels': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_labels))
+			'_lig_labels': tf.train.Feature(float_list=tf.train.FloatList(value=lig_labels))
 		})
 	)
 	serialized = example.SerializeToString()
