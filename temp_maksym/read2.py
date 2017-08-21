@@ -83,12 +83,9 @@ def adapt_features_tfr(tfr_record,lig_frame):
         # select a random frame
         rand_frame = tf.random_uniform(shape=[], minval=0, maxval=num_frames, dtype=tf.int32)
         label = lig_labels[rand_frame]
-        past_coord = num_elem * rand_frame
+        past_coord = num_elem * rand_frame * 3
         lig_coord = tf.slice(coordset, [tf.reduce_sum(past_coord)], [num_elem*3])
-        lig_coord = tf.reshape(lig_coord,[-1,3])
         return label,lig_elem,lig_coord,rec_elem,rec_coord
-
-
 
 filename_queue = tf.train.string_input_producer(["/home/maksym/Desktop/try_tfr.tfr"], num_epochs=None, shuffle=True)
 tfr_record = read_features_tfr(filename_queue)

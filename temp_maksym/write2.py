@@ -1,3 +1,4 @@
+import time
 import tensorflow as tf
 import numpy as np
 
@@ -12,7 +13,7 @@ def save_record_tfr(filename,cryst_elem,cryst_coord,binders_elem,binders_coordse
     :param cryst_elem: np.array shape=[n_elem] type=float32 (elements of the ligand)
     :param cryst_coord: np.array shape=[n_elem, 3] type=float32 (coordinates of the elements of the ligand)
     :param binders_elem: list of np.array of shape=[n_elem] type=float32 (elements of binders)
-    :param binders_coordsets: list of np.array [n_elem, 3, pos_per_binder] (coordinate sets per each of the bidners)
+    :param binders_coordsets: list of np.array [pos_per_binder, n_elem, 3 ] (coordinate sets per each of the bidners)
     :param cryst_label: float32 (something about the crystal pose, like binding affinity)
     :param binders_labels: list of np.array shape=[pos_per_binder] type=float32
     :param rec_elem: np.array of shape [n_elem] of float32
@@ -72,13 +73,8 @@ def save_record_tfr(filename,cryst_elem,cryst_coord,binders_elem,binders_coordse
     _cryst_elem = cryst_elem
     _cryst_coord = cryst_coord.reshape([-1])
     _binders_nelem = [binders_elem[i].shape[0] for i in range(num_binders)]
-#    binders_elemslices = np.concatenate([[0],np.cumsum(binders_nelem)[:-1]])
-#    _binders_elemslices = np.stack([binders_elemslices,binders_nelem],axis=1).reshape([-1])
     _binders_elem = np.concatenate([binders_elem[i] for i in range(num_binders)],axis=0)
     _binders_nframes = [binders_coordsets[i].shape[0] for i in range(num_binders)]
-#    binders_ncoord = np.array(_binders_nelem) * np.array(_binders_nframes) * 3
-#    binders_coordslices = np.concatenate([[0],np.cumsum(binders_ncoord[:-1])])
-#    _binders_coordslices = np.stack([binders_coordslices,binders_ncoord]).reshape([-1])
     _binders_coordsets = np.concatenate([binders_coordsets[i].reshape([-1]) for i in range(num_binders)])
     _cryst_label = np.asarray([cryst_label],dtype=np.float32)
     _binders_labels = np.concatenate([binders_labels[i].reshape([-1]) for i in range(num_binders)],axis=0)
@@ -93,10 +89,8 @@ def save_record_tfr(filename,cryst_elem,cryst_coord,binders_elem,binders_coordse
             '_cryst_elem': tf.train.Feature(float_list=tf.train.FloatList(value=_cryst_elem)),
             '_cryst_coord': tf.train.Feature(float_list=tf.train.FloatList(value=_cryst_coord)),
             '_binders_nelem':tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_nelem)),
-#            '_binders_elemslices': tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_elemslices)),
             '_binders_elem': tf.train.Feature(float_list=tf.train.FloatList(value=_binders_elem)),
             '_binders_nframes': tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_nframes)),
-#            '_binders_coordslices': tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_coordslices)),
             '_binders_coordsets': tf.train.Feature(float_list=tf.train.FloatList(value=_binders_coordsets)),
             '_cryst_label': tf.train.Feature(float_list=tf.train.FloatList(value=_cryst_label)),
             '_binders_labels': tf.train.Feature(float_list=tf.train.FloatList(value=_binders_labels)),
@@ -128,6 +122,9 @@ binders_coordsets = [np.array([[[1,1,1],[2,2,2]],
                                [[4,4,4],[6,6,6]]],dtype=np.float32),
                      np.array([[[1,1,1],[2,2,2],[4,4,4],[5,5,5]],
                                [[3,3,3],[5,5,5],[6,6,6],[7,7,7]]],dtype=np.float32)]
+print binders_coordsets[1].shape
+#time.sleep(100)
+
 
 cryst_label = 0.99
 binders_labels = [np.array([0,0.2],dtype=np.float32),np.array([0.3,0.4],dtype=np.float32)]
