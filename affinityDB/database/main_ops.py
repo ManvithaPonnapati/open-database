@@ -207,7 +207,7 @@ def _thread_proxie(func_ref,task_q,arg_q,out_q,out_types,thr_i):
             arg_types = [type(arg) for arg in arg_set]
             num_out = len(out_types)
             task = "func(" + ", ".join(
-                ["\"{}\"" if arg_type == unicode else "{}" for arg_type in arg_types[1:]]) + ")"
+                ["\"{}\"" if arg_type in [type(u'str'), type('str')] else "{}" for arg_type in arg_types[1:]]) + ")"
             task = task.format(*arg_set[1:])
             outss = eval(task)
 
