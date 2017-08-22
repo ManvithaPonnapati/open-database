@@ -12,12 +12,12 @@ afdb = database.AffinityDB(flags.db_path)
 db_editor = database.DatabaseGardener(flags.db_path)
 
 
-def get_run_state(table_name):
-    """
-    get run_state from args table and insert into out table
-    """
-
-    db_editor.up_merge(table_name,table_name[:17]+'_arg_'+table_name[22:],["run_state"])
+# def get_run_state(table_name):
+#     """
+#     get run_state from args table and insert into out table
+#     """
+#
+#     db_editor.up_merge(table_name,table_name[:17]+'_arg_'+table_name[22:],["run_state"])
 
 
 flags.download_init('main_pdb_target_list.txt')
@@ -86,7 +86,7 @@ afdb.run_multithread(func='VDS2.dock',
                       num_threads=1, commit_sec=1)
 
 """
-get_run_state('aug_17_2017_46_57_out_VDS2.split')
+# get_run_state('aug_17_2017_46_57_out_VDS2.split')
 inputs = db_editor.retrieve('aug_17_2017_46_57_out_VDS2.split',['receptor','resname','rec_path','lig_path'],{"run_state":"{}==1 or {}==2"})
 receptors = list(map(str,inputs[0]))
 resnames = list(map(str, inputs[1]))

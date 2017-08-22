@@ -2,7 +2,7 @@ import sqlite3,os,re,time
 from itertools import compress
 import numpy as np
 
-class DatabaseGardener:
+class DatabaseMaster:
 
     def __init__(self,db_path):
         self.conn = sqlite3.connect(db_path)

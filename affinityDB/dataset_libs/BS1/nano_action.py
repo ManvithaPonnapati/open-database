@@ -17,23 +17,7 @@ activities = new_client.activity
 
 BLASTDB = '/core/database/dataset_libs/BS1/blastdb/chembl_23_blast.fa'
 
-def _makedir(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
 
-def download(pdb_id,dir_path):
-
-    pdb_id = pdb_id.strip()
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-
-    download_address = 'https://files.rcsb.org/download/{}.pdb'.format(pdb_id)
-    cmd = 'wget --no-check-certificate -P {} {}'.format(dir_path, download_address)
-    print (cmd)
-    os.system(cmd)
-
-    return [[os.path.join(dir_path,pdb_id+'.pdb')]]
-    
 
 def blast(pdb_path):
 
@@ -42,8 +26,6 @@ def blast(pdb_path):
     os.chdir(tdir)
 
     receptor = os.path.basename(os.path.splitext(pdb_path)[0])
-
- 
     pdbHead = prody.parsePDBHeader(pdb_path)
     pdbFile = prody.parsePDB(pdb_path)
 

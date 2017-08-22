@@ -28,11 +28,11 @@ class FLAGS:
         FLAGS.dock_dir = os.path.join(FLAGS.data_dir,'dock')
         FLAGS.db_path = os.path.join(FLAGS.base_dir,'database.db')
     
-    def download_init(self, pdb_id_path):
-
-        d_list = open('main_pdb_target_list.txt').readline().strip().split(', ')
-        d_list = d_list[:2]
-        self.pdb_list = d_list
+    # def download_init(self, pdb_id_path):
+    #
+    #     d_list = open('main_pdb_target_list.txt').readline().strip().split(', ')
+    #     d_list = d_list[:2]
+    #     self.pdb_list = d_list
 
     def split_init(self, receptor,pdb_path):
         FLAGS.receptor = receptor

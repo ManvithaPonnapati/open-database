@@ -11,61 +11,60 @@ db_path = "db/nano.db"
 os.remove(db_path)
 afdb = database.AffinityDB(db_path)
 
-def download():
-    """
-    download pdb file
-    """
-    # parser pdb target list
-    d_list = open('main_pdb_target_list.txt').readline().strip().split(', ')
-    d_list = d_list[:2]
-    d_list = list(map(lambda x:'"'+str(x)+'"', d_list))
-    # dir to store download pdb
-    data_dir = '"db/download"'
-    d_paths = [data_dir]*len(d_list)
-    # downlaod the pdb file and output the path of file
-    afdb.run_multithread("dataset_libs.VDS1.download",
-                        arg_types=[str, str],
-                        arg_lists=[d_list, d_paths],
-                        out_types=[str]*2,
-                        out_names=['receptor','pdb_path'],
-                        num_threads=10,commit_sec=50)
+# def download():
+#     """
+#     download pdb file
+#     """
+#     # parser pdb target list
+#     d_list = open('main_pdb_target_list.txt').readline().strip().split(', ')
+#     d_list = d_list[:2]
+#     d_list = list(map(lambda x:'"'+str(x)+'"', d_list))
+#     # dir to store download pdb
+#     data_dir = '"db/download"'
+#     d_paths = [data_dir]*len(d_list)
+#     # downlaod the pdb file and output the path of file
+#     afdb.run_multithread("dataset_libs.VDS1.download",
+#                         arg_types=[str, str],
+#                         arg_lists=[d_list, d_paths],
+#                         out_types=[str]*2,
+#                         out_names=['receptor','pdb_path'],
+#                         num_threads=10,commit_sec=50)
 
 
-    
-def get_run_state(table_name):
-    """
-    get run_state from args table and insert into out table
-    """
-    my_db = database.DatabaseGardener(db_path)
-    my_db.up_merge(table_name,table_name[:17]+'_arg_'+table_name[22:],["run_state"])
+#
+# def get_run_state(table_name):
+#     """
+#     get run_state from args table and insert into out table
+#     """
+#     my_db = database.DatabaseGardener(db_path)
+#     my_db.up_merge(table_name,table_name[:17]+'_arg_'+table_name[22:],["run_state"])
 
-def split(table_name):
-    """
-    split pdb into ligand and receptor
-    """
-    my_db = database.DatabaseGardener(db_path)
-
-    inputs = my_db.retrieve(table_name,['receptor','pdb_path'],{"run_state":"{}==1 or {}==2"})
-    receptors = inputs[0]
-    rec_paths = inputs[1]
-    receptors = list(map(str, receptors))
-    rec_paths = list(map(str, rec_paths))
-
-    # dir to store ligand
-    lig_dir = '"db/ligands"'
-
-    # dir to store receptor
-    rec_dir = '"db/receptors"'
-    ligs = [lig_dir] * len(receptors)
-    recs = [rec_dir] * len(receptors)
-
-
-    afdb.run_multithread("dataset_libs.VDS2.split",
-                    arg_types = [str, str, str, str],
-                    arg_lists = [receptors,rec_paths, recs, ligs],
-                    out_types = [str]*4,
-                    out_names = ['receptor','resname','rec_path', 'lig_path'],
-                    num_threads=10, commit_sec=50)
+# def split(table_name):
+#     """
+#     split pdb into ligand and receptor
+#     """
+#     my_db = database.DatabaseGardener(db_path)
+#     inputs = my_db.retrieve(table_name,['receptor','pdb_path'],{"run_state":"{}==1 or {}==2"})
+#     receptors = inputs[0]
+#     rec_paths = inputs[1]
+#     receptors = list(map(str, receptors))
+#     rec_paths = list(map(str, rec_paths))
+#
+#     # dir to store ligand
+#     lig_dir = '"db/ligands"'
+#
+#     # dir to store receptor
+#     rec_dir = '"db/receptors"'
+#     ligs = [lig_dir] * len(receptors)
+#     recs = [rec_dir] * len(receptors)
+#
+#
+#     afdb.run_multithread("dataset_libs.VDS2.split",
+#                     arg_types = [str, str, str, str],
+#                     arg_lists = [receptors,rec_paths, recs, ligs],
+#                     out_types = [str]*4,
+#                     out_names = ['receptor','resname','rec_path', 'lig_path'],
+#                     num_threads=10, commit_sec=50)
 
 
 
@@ -91,6 +90,7 @@ def reorder(table_name):
                     out_types = [str]*4,
                     out_names = ['receptor','resname','rec_path', 'reorder_path'],
                     num_threads=10, commit_sec=50)          
+
 
 def dock(table_name):
     """
