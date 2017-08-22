@@ -171,7 +171,7 @@ class WriteTFRInit:
 
 		mapping = [('H', 1.0), ('C', 2.0), ('N', 3.0), ('O', 4.0), 
 			('F', 5.0), ('Cl', 5.0), ('I', 5.0), ('Br', 5.0), ('P', 6.0), ('S', 6.0)]
-		self.atom_dict = defaultdict(lambda: 7)
+		self.atom_dict = defaultdict(lambda: 7.0)
 		for (k, v) in mapping:
 			self.atom_dict[k] = v
 

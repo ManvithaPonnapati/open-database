@@ -38,7 +38,7 @@ class AffinityDB:
         time_stamp = time.strftime("%h_%y_%Y_%M_%S").lower()
 
         assert type(arg_lists)==list, "list of inputs is expected"
-        assert all([type(arg_list)==list for arg_list in arg_lists]),"list of lists of inputs is expected"
+        assert all([type(arg_list)==list for arg_list in arg_lists]), "list of lists of inputs is expected"
         assert(set(arg_types).issubset([int,float,str])), "Expected keywords: int,float,str."
         assert len(arg_types)==len(arg_lists), "Bad number of argument types." + str(len(arg_types))
         assert len(out_types)==len(out_names), "Bad number of output types."
