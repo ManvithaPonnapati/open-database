@@ -3,7 +3,8 @@ from glob import glob
 from rdkit import Chem
 sys.path.append('../../affinityDB')
 import database
-from dataset_libs import NEW
+sys.path.append('../../affinityDB/dataset_libs')
+import NEW
 
 
 base_dir = '/home/cosmynx/Documents/database'
@@ -15,7 +16,7 @@ if os.path.isfile(db_path):
 # 	os.system('rm ' + out_db_path)
 # afdb = database.AffinityDB(out_db_path)
 afdb = database.AffinityDB(db_path)
-db_editor = database.DatabaseGardener(db_path)
+db_editor = database.DatabaseMaster(db_path)
 
 """Convert all the PDB files into mol files and generate ligand conformers-------"""
 
