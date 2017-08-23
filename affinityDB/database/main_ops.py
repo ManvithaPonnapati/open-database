@@ -5,6 +5,7 @@ import multiprocessing
 class AffinityDB:
     python_to_sql = {int: 'integer', float: 'float', str: 'string'}
     sql_to_python = {'integer': int, 'float': float, 'string': str}
+    db_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/db_libs"
 
     def __init__(self,db_path):
         self.conn = sqlite3.connect(db_path)
@@ -46,14 +47,17 @@ class AffinityDB:
             "List of arguments should be all of the same length."
         for i in range(len(arg_types)):
             assert all([isinstance(arg,arg_types[i]) for arg in arg_lists[i]]),"Incorrect type in arg_list" + str(i)
-        assert len(func.split("/")) == 1, "relative path to the library should be marked with dots"
-        assert (len(func.split("."))) == 2, "rule to define function in the top level of the lib package enforced"
+        assert len(func.split("/")) == 1, "function should be in database libs. Append database libs to your pythonpath"
+#        assert (len(func.split("."))) == 2, "rule to define function in the top level of the lib package enforced"
         # try importing the function from string into the database module
-        db_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/dataset_libs"
-        lib_name,func_name = func.split(".")
-        fp, path, descr = imp.find_module(lib_name, [db_libs_path])
+
+#        lib_name,func_name = func.split(".")
+        lib_name = func + "_op"
+
+        fp, path, descr = imp.find_module(lib_name, [self.db_libs_path])
         lib_mod = imp.load_module(lib_name, fp, path, descr)
-        func_ref = eval("lib_mod." + func_name)
+        func_ref = eval("lib_mod." + func)
+
         # check the default arguments requirement for the function is satisfied
         if func_ref.__defaults__ is not None:
             req_args = func_ref.__code__.co_argcount - len(func_ref.__defaults__)
@@ -120,11 +124,12 @@ class AffinityDB:
         func = arg_table[8:] # function name starts after 8th letter
         out_table = "out_" + arg_table[4:]
         # import the corresponding to the function module
-        db_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/dataset_libs"
-        lib_name,func_name = func.split(".")
-        fp, path, descr = imp.find_module(lib_name, [db_libs_path])
+#        db_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/dataset_libs"
+#        lib_name,func_name = func.split(".")
+        lib_name = func + "_op"
+        fp, path, descr = imp.find_module(lib_name, [self.db_libs_path])
         lib_mod = imp.load_module(lib_name, fp, path, descr)
-        func_ref = eval("lib_mod." + func_name)
+        func_ref = eval("lib_mod." + func)
 
         # retrieve all sets of parameters to run function with
         cursor = self.conn.cursor()

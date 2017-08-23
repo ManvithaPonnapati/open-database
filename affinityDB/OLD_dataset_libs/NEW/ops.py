@@ -17,7 +17,7 @@ class GenerateConformersInit:
 		"""Initializes all the directories and filepaths needed for conformers"""
 		
 		self.base_dir = base_dir
-		self.lig_path = os.path.join(base_dir, 'labeled_pdb/crystal_ligands')
+		self.lig_path = os.path.join(base_dir, 'labeled_pdb/crystal_ligands')											# make confomers for a single molecule
 		self.vds_pdb_path = os.path.join(base_dir, 'vds_pdb')
 		self.out_lig_path = os.path.join(base_dir, 'vds_pdb/binding_ligands')
 		self.out_decoy_path = os.path.join(base_dir, 'vds_pdb/decoy_ligands')
@@ -29,7 +29,7 @@ class GenerateConformersInit:
 
 		# initialize the output file structure
 		if os.path.exists(self.vds_pdb_path):
-			os.system('rm -r ' + self.vds_pdb_path)
+			os.system('rm -r ' + self.vds_pdb_path)																		# raise exception
 		if os.path.exists(self.mol_path):
 			os.system('rm -r ' + self.mol_path)
 		os.mkdir(self.vds_pdb_path)
@@ -37,7 +37,7 @@ class GenerateConformersInit:
 		os.mkdir(self.out_lig_path)
 		os.mkdir(self.out_decoy_path)
 
-		for lig_file in self.ligand_files:
+		for lig_file in self.ligand_files:																				# do it when running
 			lig_name = lig_file[len(self.lig_path)+1: ]
 			rec_name = lig_name[0:4]
 			if not os.path.isdir(os.path.join(self.out_lig_path, rec_name)):
@@ -50,7 +50,7 @@ class GenerateConformersInit:
 		self.this_module.generate_conformers_init = self
 
 
-def generate_conformers(lig_file, init='generate_conformers_init'):
+def generate_conformers(lig_file, init='generate_conformers_init'):                                                     # option pdb_mol
 	"""Performs the following tasks:
 		> Creates the receptor folders within binding_ligands and decoy_ligands
 		> Converts all PDB crystal ligands into mol for future use
@@ -70,18 +70,20 @@ def generate_conformers(lig_file, init='generate_conformers_init'):
 	writer.write(mol)
 
 	# generate conformers and get the number of atoms of the molecule
-	mol2 = Chem.AddHs(mol)
+	mol2 = Chem.AddHs(mol)																								# addHs
 	pdb_writer = PDBWriter(pdb_file)
-	conf_ids = AllChem.EmbedMultipleConfs(mol2, init.num_conformers)
+	conf_ids = AllChem.EmbedMultipleConfs(mol2, init.num_conformers)													# PDB has hydrogens
 	for cid in conf_ids:
 		AllChem.MMFFOptimizeMolecule(mol2, confId=cid)
 		mol = Chem.RemoveHs(mol2)
 		pdb_writer.write(mol)
 	num_atoms = Mol.GetNumAtoms(mol)
-	pdb_writer.close()
+	pdb_writer.close()																									# also has hydrogens
 
 	print 'Generated conformers for one ligand'
 	return [[pdb_file, mol_file, num_atoms]]
+
+
 
 
 class GetDecoysInit:
@@ -93,16 +95,16 @@ class GetDecoysInit:
 		"""Initializes all directories and constants needed for getting decoys"""
 
 		self.base_dir = base_dir
-		self.out_decoy_path = os.path.join(base_dir, 'vds_pdb/decoy_ligands')
+		self.out_decoy_path = os.path.join(base_dir, 'vds_pdb/decoy_ligands')											# folder is parameter
 
 		self.all_pdb_files = all_pdb_files
-		self.all_mol_files = all_mol_files
+		self.all_mol_files = all_mol_files																				# should be either either
 		self.all_num_atoms = all_num_atoms
 		self.all_mols = [Chem.MolFromMolFile(all_mol_files[i]) for i in range(len(all_mol_files))]
 		self.max_atom_dif = max_atom_dif
 		self.max_substruct = max_substruct
 		self.max_num_decoys = max_num_decoys
-		self.num_conformers = num_conformers
+		self.num_conformers = num_conformers																			# conformers are not relevant
 
 		self.this_module.get_decoys_init = self
 
@@ -132,7 +134,7 @@ def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
 			pdb_writer = PDBWriter(decoy_file)
 			# generate the decoy and its conformers
 			decoy2 = Chem.AddHs(init.all_mols[i])
-			conf_ids = AllChem.EmbedMultipleConfs(decoy2, init.num_conformers)
+			conf_ids = AllChem.EmbedMultipleConfs(decoy2, init.num_conformers)											# no confomers
 			for cid in conf_ids:
 				AllChem.MMFFOptimizeMolecule(decoy2, confId=cid)
 				decoy = Chem.RemoveHs(decoy2)
@@ -159,14 +161,14 @@ class WriteTFRInit:
 		self.receptor_path = os.path.join(base_dir, 'labeled_pdb/receptors')
 		self.crystal_lig_path = os.path.join(base_dir, 'labeled_pdb/crystal_ligands')
 		self.conformer_path = os.path.join(base_dir, 'vds_pdb/binding_ligands')
-		self.decoy_path = os.path.join(base_dir, 'vds_pdb/decoy_ligands')
+		self.decoy_path = os.path.join(base_dir, 'vds_pdb/decoy_ligands')												# should all be pars
 		self.out_tfr_path = os.path.join(base_dir, 'tfr')
 		self.num_bind_confs = num_bind_confs
 		self.num_decoy_confs = num_decoy_confs
 		self.num_decoys = num_decoys
 
 		if os.path.exists(self.out_tfr_path):
-			os.system('rm -r ' + self.out_tfr_path)
+			os.system('rm -r ' + self.out_tfr_path)																		# never ever remove without asking
 		os.mkdir(self.out_tfr_path)
 
 		mapping = [('H', 1.0), ('C', 2.0), ('N', 3.0), ('O', 4.0), 
@@ -177,8 +179,15 @@ class WriteTFRInit:
 
 		self.this_module.write_tfr_init = self
 
+    def get(self):
+        return self.label_list
+a = WriteTFRInit(___)
+a.all_files = []
+a =
 
-def write_tfr(bind_lig_file, init='write_tfr_init'):
+
+
+def write_tfr(bind_lig_file,crystal_ligand,binding_ligands_multiframe,binding_labels,init='write_tfr_init'):
 	"""For each protein/ligand crystal pair, write one tfrecord with the following:
 		> rec_elem, rec_coord, cryst_elem, cryst_coord (np.array)
 		> num_confs (int): The number of binding/decoy conformers
@@ -197,7 +206,7 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 	rec_file = os.path.join(init.receptor_path, rec_name+'.pdb')
 	rec = parsePDB(rec_file)
 	# parse the crystal ligand
-	crystal_lig_file = bind_lig_file.replace('/vds_pdb/binding_ligands/', '/labeled_pdb/crystal_ligands/')
+	crystal_lig_file = bind_lig_file.replace('/vds_pdb/binding_ligands/', '/labeled_pdb/crystal_ligands/')				# make par
 	crystal_lig = parsePDB(crystal_lig_file)
 	# get the decoy ligand filepaths
 	decoy_files = glob(bind_lig_file.replace('/binding_ligands/', '/decoy_ligands/').replace('.pdb', '*.pdb'))
@@ -244,78 +253,82 @@ def write_tfr(bind_lig_file, init='write_tfr_init'):
 		lig_coordsets.append(np.array(decoy_lig_coordsets))
 		lig_labels.append(np.array(decoy_lig_labels))
 
-	num_ligs = len(lig_elems)
 
-	assert type(cryst_elem) == np.ndarray
-	assert cryst_elem.dtype == np.float32
-	assert len(cryst_elem.shape) == 1
 
-	assert type(cryst_coord) == np.ndarray
-	assert cryst_coord.dtype == np.float32
-	assert len(cryst_coord.shape) == 2
-	assert cryst_coord.shape[1] == 3
-	assert cryst_coord.shape[0] == cryst_elem.shape[0]
-
-	assert type(lig_elems) == list
-	for i in range(num_ligs):
-		assert type(lig_elems[i]) == np.ndarray
-		assert str(lig_elems[i].dtype) in {'float32', 'np.float32'}
-		assert len(lig_elems[i].shape) == 1
-
-	assert type(lig_coordsets) == list
-	assert len(lig_coordsets) == num_ligs
-	for i in range(num_ligs):
-		assert type(lig_coordsets[i]) == np.ndarray
-		assert str(lig_coordsets[i].dtype) in {"float32", "np.float32"}
-		assert len(lig_coordsets[i].shape) == 3
-		assert lig_coordsets[i].shape[2] == 3
-		assert lig_coordsets[i].shape[1] == lig_elems[i].shape[0]
-
-	assert type(lig_labels) == list
-	assert len(lig_labels) == num_ligs
-	for i in range(num_ligs):
-		assert type(lig_labels[i]) == np.ndarray
-		assert str(lig_labels[i].dtype) in {'float32', 'np.float32'}
-		assert len(lig_labels[i].shape) == 1
-		assert lig_labels[i].shape[0] == lig_coordsets[i].shape[0]
-
-	assert type(rec_elem) == np.ndarray
-	assert rec_elem.dtype == np.float32
-	assert len(rec_elem.shape) == 1
-
-	assert type(rec_coord) == np.ndarray
-	assert rec_coord.dtype == np.float32
-	assert len(rec_coord.shape) == 2
-	assert rec_coord.shape[1] == 3
-	assert rec_coord.shape[0] == rec_elem.shape[0]
-
-	rec_elem = rec_elem
-	rec_coord = rec_coord.reshape([-1])
-	cryst_elem = cryst_elem
-	cryst_coord = cryst_coord.reshape([-1])
-	lig_nelems = [lig_elems[i].shape[0] for i in range(num_ligs)]
-	lig_elems = np.concatenate([lig_elems[i] for i in range(num_ligs)], axis=0)
-	lig_nframes = [lig_coordsets[i].shape[0] for i in range(num_ligs)]
-	lig_coordsets = np.concatenate([lig_coordsets[i].reshape([-1]) for i in range(num_ligs)])
-	lig_labels = np.concatenate([lig_labels[i].reshape([-1]) for i in range(num_ligs)])
-
-	filename = os.path.join(init.out_tfr_path, bind_lig_file[len(init.conformer_path)+6:].replace('.pdb', '.tfr'))
-	writer = tf.python_io.TFRecordWriter(filename)
-	example = tf.train.Example(
-		features=tf.train.Features(
-		feature={
-			'_rec_elem': tf.train.Feature(float_list=tf.train.FloatList(value=rec_elem)),
-			'_rec_coord': tf.train.Feature(float_list=tf.train.FloatList(value=rec_coord)),
-			'_cryst_elem': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_elem)),
-			'_cryst_coord': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_coord)),
-			'_lig_nelems': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nelems)),
-			'_lig_elems': tf.train.Feature(float_list=tf.train.FloatList(value=lig_elems)),
-			'_lig_nframes': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nframes)),
-			'_lig_coordsets': tf.train.Feature(float_list=tf.train.FloatList(value=lig_coordsets)),
-			'_lig_labels': tf.train.Feature(float_list=tf.train.FloatList(value=lig_labels))
-		})
-	)
-	serialized = example.SerializeToString()
-	writer.write(serialized)
-	writer.close()
-	return [[filename]]
+																														# absolute NO
+					                                                                                                    # it should call write tfr
+	# num_ligs = len(lig_elems)
+    #
+	# assert type(cryst_elem) == np.ndarray
+	# assert cryst_elem.dtype == np.float32
+	# assert len(cryst_elem.shape) == 1
+    #
+	# assert type(cryst_coord) == np.ndarray
+	# assert cryst_coord.dtype == np.float32
+	# assert len(cryst_coord.shape) == 2
+	# assert cryst_coord.shape[1] == 3
+	# assert cryst_coord.shape[0] == cryst_elem.shape[0]
+    #
+	# assert type(lig_elems) == list
+	# for i in range(num_ligs):
+	# 	assert type(lig_elems[i]) == np.ndarray
+	# 	assert str(lig_elems[i].dtype) in {'float32', 'np.float32'}
+	# 	assert len(lig_elems[i].shape) == 1
+    #
+	# assert type(lig_coordsets) == list
+	# assert len(lig_coordsets) == num_ligs
+	# for i in range(num_ligs):
+	# 	assert type(lig_coordsets[i]) == np.ndarray
+	# 	assert str(lig_coordsets[i].dtype) in {"float32", "np.float32"}
+	# 	assert len(lig_coordsets[i].shape) == 3
+	# 	assert lig_coordsets[i].shape[2] == 3
+	# 	assert lig_coordsets[i].shape[1] == lig_elems[i].shape[0]
+    #
+	# assert type(lig_labels) == list
+	# assert len(lig_labels) == num_ligs
+	# for i in range(num_ligs):
+	# 	assert type(lig_labels[i]) == np.ndarray
+	# 	assert str(lig_labels[i].dtype) in {'float32', 'np.float32'}
+	# 	assert len(lig_labels[i].shape) == 1
+	# 	assert lig_labels[i].shape[0] == lig_coordsets[i].shape[0]
+    #
+	# assert type(rec_elem) == np.ndarray
+	# assert rec_elem.dtype == np.float32
+	# assert len(rec_elem.shape) == 1
+    #
+	# assert type(rec_coord) == np.ndarray
+	# assert rec_coord.dtype == np.float32
+	# assert len(rec_coord.shape) == 2
+	# assert rec_coord.shape[1] == 3
+	# assert rec_coord.shape[0] == rec_elem.shape[0]
+    #
+	# rec_elem = rec_elem
+	# rec_coord = rec_coord.reshape([-1])
+	# cryst_elem = cryst_elem
+	# cryst_coord = cryst_coord.reshape([-1])
+	# lig_nelems = [lig_elems[i].shape[0] for i in range(num_ligs)]
+	# lig_elems = np.concatenate([lig_elems[i] for i in range(num_ligs)], axis=0)
+	# lig_nframes = [lig_coordsets[i].shape[0] for i in range(num_ligs)]
+	# lig_coordsets = np.concatenate([lig_coordsets[i].reshape([-1]) for i in range(num_ligs)])
+	# lig_labels = np.concatenate([lig_labels[i].reshape([-1]) for i in range(num_ligs)])
+    #
+	# filename = os.path.join(init.out_tfr_path, bind_lig_file[len(init.conformer_path)+6:].replace('.pdb', '.tfr'))
+	# writer = tf.python_io.TFRecordWriter(filename)
+	# example = tf.train.Example(
+	# 	features=tf.train.Features(
+	# 	feature={
+	# 		'_rec_elem': tf.train.Feature(float_list=tf.train.FloatList(value=rec_elem)),
+	# 		'_rec_coord': tf.train.Feature(float_list=tf.train.FloatList(value=rec_coord)),
+	# 		'_cryst_elem': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_elem)),
+	# 		'_cryst_coord': tf.train.Feature(float_list=tf.train.FloatList(value=cryst_coord)),
+	# 		'_lig_nelems': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nelems)),
+	# 		'_lig_elems': tf.train.Feature(float_list=tf.train.FloatList(value=lig_elems)),
+	# 		'_lig_nframes': tf.train.Feature(int64_list=tf.train.Int64List(value=lig_nframes)),
+	# 		'_lig_coordsets': tf.train.Feature(float_list=tf.train.FloatList(value=lig_coordsets)),
+	# 		'_lig_labels': tf.train.Feature(float_list=tf.train.FloatList(value=lig_labels))
+	# 	})
+	# )
+	# serialized = example.SerializeToString()
+	# writer.write(serialized)
+	# writer.close()
+	# return [[filename]]

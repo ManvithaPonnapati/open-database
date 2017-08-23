@@ -7,7 +7,7 @@ class DatabaseMaster:
     def __init__(self,db_path):
         self.conn = sqlite3.connect(db_path)
 
-    def up_merge(self,ups_table,downs_table,col_names):
+    def merge(self,into_table,from_table,merge_cols,order):
         """ Moves and add columns either from the argument or from the output table one level up (only to the output
         table). Option when a single argument set yields multiple results in the output table is also supported.
 
@@ -16,51 +16,81 @@ class DatabaseMaster:
         :param col_names: list of strings (names of the columns in the downstream table to merge)
         :return: None
         """
-        # FIXME: add support for the unrelated tables (should become key-merge)
+        assert len(order)==2, "order should contain 2 lists [[into_order],[from_order]]"
         cursor = self.conn.cursor()
-        num_cols = len(col_names)
+        num_cols = len(merge_cols)
 
         # find the data types of the columns to transfer
-        sql_cmd = "pragma table_info(\"{}\")".format(downs_table)
+        sql_cmd = "pragma table_info(\"{}\")".format(from_table)
         cursor.execute("{}".format(sql_cmd))
-        # cursor.execute(sql_cmd)
-        # cursor.execute("pragma table_info('aug_17_2017_54_16_arg_dataset_libs.NEW.get_ligand_decoys')")
+
         arg_infos = cursor.fetchall()
         arg_dict = {}
         [arg_dict.update({arg_info[1]:arg_info[2]}) for arg_info in arg_infos]
-        print (sql_cmd)
-        print (arg_infos)
-        print (arg_dict)
-        col_types = [arg_dict[col_name] for col_name in col_names]
+        col_types = [arg_dict[col_name] for col_name in merge_cols]
 
-        # initialize the columns in the upstream table
-        sql_tmp = "alter table \"{}\" add column ".format(ups_table)
+        # initialize the columns in the table where cols will be added
+        sql_tmp = "alter table \"{}\" add column ".format(into_table)
         for i in range(num_cols):
-            sql_cmd = sql_tmp + ", ".join([" ".join([col_names[i],col_types[i]])]) + ";"
+            sql_cmd = sql_tmp + ", ".join([" ".join([merge_cols[i],col_types[i]])]) + ";"
             cursor.execute(sql_cmd)
         self.conn.commit()
 
         # fetch values to transfer
-        sql_cmd = "select " + ", ".join(col_names) + " from \"{}\"".format(downs_table)
+        sql_cmd = "select " + ", ".join(merge_cols) + " from \"{}\"".format(from_table)
         cursor.execute(sql_cmd)
         transfer_vals = cursor.fetchall()
 
-        # get the run_idx (order of the values) in the upstream table
-        sql_cmd = "select run_idx from \"{}\"".format(ups_table)
-        cursor.execute(sql_cmd)
-        up_order = cursor.fetchall()
-        up_order = [list(idx) for idx in zip(*up_order)][0]
-
         # gather the transfer values from the downstream table with order
-        transfer_vals = map(lambda i: transfer_vals[i] + (i,), up_order)
+        transfer_vals = map(lambda i: transfer_vals[i] + (order[0][i],), order[1])
 
         # insert columns into the upstream table
-        sql_tmp = "update \"{}\" set ".format(ups_table)
-        sql_tmp += ", ".join([col_names[i]+ "=?" for i in range(num_cols)])
-        sql_tmp += " where run_idx=?;"
-
+        sql_tmp = "update \"{}\" set ".format(into_table)
+        sql_tmp += ", ".join([merge_cols[i]+ "=?" for i in range(num_cols)])
+        sql_tmp += " where out_idx=?;"
         self.conn.executemany(sql_tmp,transfer_vals)
         self.conn.commit()
+
+    def merge_order(self, query, target):
+        """
+        Finds what to take from the query to merge
+        :param query: list of str/float/int (look up for a pair for each in the list)
+        :param target: list of str/float/int (list where to look up from)
+        :return:
+        1) list of list of indices of the target len(list) == len(query) len(list[0]) == number of mathes for 0th term
+        2) list of list of values
+        3) 2D list of pairs [[query_idx],[target_idx]] len([query_idx]) == len(target_idx) == num_pairs
+        """
+        query = np.asarray(query)
+        target = np.asarray(target)
+
+        # sort target; select unique indices
+        order_t = np.argsort(target)
+        sorted_t = target[order_t]
+        unique_t, counts_t = np.unique(sorted_t, return_counts=True)
+
+        # search sorted
+        merge_idx = np.searchsorted(unique_t, query)
+        merge_mask = np.in1d(query, unique_t)
+
+        # make a for loop to clunge the things together
+        q_hits_idx = []
+        q_hits_val = []
+        pair_idx = [[], []]
+        for i in range(len(query)):
+            if not merge_mask[i]:
+                q_hits_idx.append([])
+                q_hits_val.append([])
+            else:
+                # one matches many form of output
+                q_hit_idx = [order_t[j + merge_idx[i]] for j in range(counts_t[i])]
+                q_hits_idx.append(q_hit_idx)
+                q_hit_val = list(target[q_hit_idx])
+                q_hits_val.append(q_hit_val)
+                # one mathes one form of output
+                [[pair_idx[0].append(i), pair_idx[1].append(idx)] for idx in q_hit_idx]
+        return q_hits_idx, q_hits_val, pair_idx
+
 
     def retrieve(self, table, cols, col_rules):
         """ Retrieves column values from a single table based on a given filtering rule.
@@ -71,7 +101,7 @@ class DatabaseMaster:
         named "sum" of which would be less than 200. All columns are combined with an "AND" statement.
         :param table: string (name of the table to retrieve from)
         :param columns: list of strings (names of the columns to retrieve)
-        :param column_rules: dictionary of rules that will be eveluated
+        :param column_rules: dictionary of rules that will be evaluated
         :return: nested list in which is entry in a list a a column with filtered requested values
         """
         # todo: add string comp support
