@@ -78,3 +78,10 @@ afdb.run_multithread(func='dock',
                      arg_lists = [rec_outpaths, reorder_outpaths],
                      out_types = [str,str,str],
                      out_names=['rec_outpath','reorder_outpath','dock_outpath'])
+
+
+afdb.run_multithread(func='binding_affinity',
+                    arg_types=[str, str],
+                    arg_lists = [['bindingmoad'],[os.path.abspath('./data/nr.csv')]],
+                    out_types = [str, str, float, float, str, str],
+                    out_names = ['pdb_id','lig_name','log_affinity','norm_affinity','state','comment'])
