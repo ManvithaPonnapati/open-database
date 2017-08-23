@@ -1,10 +1,10 @@
 import sys
-class Sum_diff_init:
+class Test_sum_init:
     this_module = sys.modules[__name__]
     def __init__(self):
-        self.this_module.sum_diff_init = self
+        self.this_module.test_sum_init = self
 
-def sum_diff(num1,num2,init="sum_diff_init"):
+def test_sum(num1,num2,init="test_sum_init"):
     my_sum = num1 + num2
     my_diff = num1 - num2
     return [[my_sum,my_diff]]

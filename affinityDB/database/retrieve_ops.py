@@ -8,15 +8,21 @@ class DatabaseMaster:
         self.conn = sqlite3.connect(db_path)
 
     def merge(self,into_table,from_table,merge_cols,order):
-        """ Moves and add columns either from the argument or from the output table one level up (only to the output
-        table). Option when a single argument set yields multiple results in the output table is also supported.
+        """
+        Merges any table into the output table
+        :param into_table: string (table to merge into)
+        :param from_table: string (table to merge from)
+        :param merge_cols: list of strings (names of the columns in merge_from to merge)
+        :param order: Two lists of the same length. into_table_idx <-- from_table_idx
+        First list: idx of the "into_table",  second list: idx of the "from table" to merge.
 
-        :param ups_table: string (name of the upstream output table)
-        :param downs_table: string (name of the downstream argument or output table)
-        :param col_names: list of strings (names of the columns in the downstream table to merge)
+        Suggestion:
+        When prowiding order, please, use run_idx for the argument table, and out_idx for the output table
+
         :return: None
         """
-        assert len(order)==2, "order should contain 2 lists [[into_order],[from_order]]"
+
+        assert len(order)==2, "order should contain 2 lists [[idx_to_update(into_table)],[idx_of_updates(from_table)]]"
         cursor = self.conn.cursor()
         num_cols = len(merge_cols)
 
@@ -42,7 +48,7 @@ class DatabaseMaster:
         transfer_vals = cursor.fetchall()
 
         # gather the transfer values from the downstream table with order
-        transfer_vals = map(lambda i: transfer_vals[i] + (order[0][i],), order[1])
+        transfer_vals = map(lambda i: transfer_vals[order[1][i]] + (order[0][i],), order[0])
 
         # insert columns into the upstream table
         sql_tmp = "update \"{}\" set ".format(into_table)
@@ -51,45 +57,50 @@ class DatabaseMaster:
         self.conn.executemany(sql_tmp,transfer_vals)
         self.conn.commit()
 
-    def merge_order(self, query, target):
-        """
-        Finds what to take from the query to merge
-        :param query: list of str/float/int (look up for a pair for each in the list)
-        :param target: list of str/float/int (list where to look up from)
-        :return:
-        1) list of list of indices of the target len(list) == len(query) len(list[0]) == number of mathes for 0th term
-        2) list of list of values
-        3) 2D list of pairs [[query_idx],[target_idx]] len([query_idx]) == len(target_idx) == num_pairs
-        """
-        query = np.asarray(query)
-        target = np.asarray(target)
+    def list_search(self, search_with, search_in):
+        """ Search with each element of the "search_with" in the list "search_in".
 
-        # sort target; select unique indices
-        order_t = np.argsort(target)
-        sorted_t = target[order_t]
-        unique_t, counts_t = np.unique(sorted_t, return_counts=True)
+        :param search_with: list of [str/float/int]
+        :param search_in: list of [str/float/int]
+        :return:
+        hits_idx:
+        A list of length len(search_with) of lists. Internal list is indexes [j1,j2,j3,j4] such that values
+        search_with[i] == search_in[j1], search_with[i] == search_in[j2], ...
+        hits_val:
+        Same as hits_idx but lists with values instead of indexes
+        pairs_idx:
+        Two lists of the same length. search_with[pairs_idx[0][i]] == search_in[pairs_idx[1][i]]
+        """
+        sw = np.asarray(search_with)
+        si = np.asarray(search_in)
+
+        # sort search_in, count every element
+        order_si = np.argsort(si)
+        sorted_si = si[order_si]
+        unique_si, counts_si = np.unique(sorted_si, return_counts=True)
 
         # search sorted
-        merge_idx = np.searchsorted(unique_t, query)
-        merge_mask = np.in1d(query, unique_t)
+        hits_unq_idx = np.searchsorted(unique_si, sw)
+        hits_mask = np.in1d(sw, unique_si)
 
-        # make a for loop to clunge the things together
-        q_hits_idx = []
-        q_hits_val = []
+        # loop through every query and add all of its examples to the answer list
+        hits_idx = []
+        hits_val = []
         pair_idx = [[], []]
-        for i in range(len(query)):
-            if not merge_mask[i]:
-                q_hits_idx.append([])
-                q_hits_val.append([])
+
+        for i in range(len(sw)):
+            if not hits_mask[i]:
+                hits_idx.append([])
+                hits_val.append([])
             else:
                 # one matches many form of output
-                q_hit_idx = [order_t[j + merge_idx[i]] for j in range(counts_t[i])]
-                q_hits_idx.append(q_hit_idx)
-                q_hit_val = list(target[q_hit_idx])
-                q_hits_val.append(q_hit_val)
-                # one mathes one form of output
-                [[pair_idx[0].append(i), pair_idx[1].append(idx)] for idx in q_hit_idx]
-        return q_hits_idx, q_hits_val, pair_idx
+                hit_idx = [order_si[j + hits_unq_idx[i]] for j in range(counts_si[hits_unq_idx[i]])]
+                hits_idx.append(hit_idx)
+                q_hit_val = list(si[hit_idx])
+                hits_val.append(q_hit_val)
+                # one matches one form of output
+                [[pair_idx[0].append(i), pair_idx[1].append(idx)] for idx in hit_idx]
+        return hits_idx, hits_val, pair_idx
 
 
     def retrieve(self, table, cols, col_rules):

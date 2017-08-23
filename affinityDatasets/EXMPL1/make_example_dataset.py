@@ -1,109 +1,75 @@
 import os,sys,time
 import numpy as np
-sys.path.append('../../')
+sys.path.append('../../affinityDB')
+sys.path.append('../../affinityDB/dataset_libs')
+sys.path.append('../../affinityDB/db_libs')
 #from dataset_libs import EXMPL1
 import database,sqlite3
-
-#print EXMPL1.sum_diff(1,2)
+from test_sum_op import Test_sum_init,test_sum
+from test_multout_op import Test_multout_init,test_multout
 
 db_path = "/home/maksym/Projects/new_data/nano.db"
-#os.remove(db_path)
+os.remove(db_path)
 afdb = database.AffinityDB(db_path)
 
-arg_ones = list(np.arange(100000) +7)
-arg_twos = list(np.arange(100000) + 15)
+arg_ones = list(np.arange(10000) +7)
+arg_twos = list(np.arange(10000) + 15)
+
 start = time.time()
-
-
-# import exmpl1 here
-# run init of the exmpl1_here
-# give it as a reference
-# init may need all filenames in the table (pass explicitly)
-# init may need meta information
-
-afdb.run_multithread("EXMPL1.sum_diff",
+Test_sum_init()
+afdb.run_multithread("test_sum",
                      arg_types=[int,int],
                      arg_lists=[arg_ones,arg_twos],
                      out_types=[int,int],
                      out_names=['sum','difference'],
                      num_threads=20,commit_sec=1)
-
-
 print "sum test took: ", time.time() - start, "seconds"
 
 
-
-# afdb.run_multithread("dataset_libs.EXMPL1.string_test",
-#                       arg_types=[int],
-#                       arg_lists=[arg_twos],
-#                       out_types=[str],
-#                       out_names=['test_string'],
-#                       num_threads=10,commit_freq=500)
-#
-# afdb.run_multithread("dataset_libs.EXMPL1.multi_out",ys.path.append('../../')
-#from dataset_libs import EXMPL1
-#import database,sqlite3
-
-
-#print EXMPL1.sum_diff(1,2)
-
-# db_path = "/home/maksym/Projects/new_data/nano.db"
-# os.remove(db_path)
-# afdb = database.AffinityDB(db_path)
-#
-# arg_ones = list(np.arange(100000) +7)
-# arg_twos = list(np.arange(100000) + 15)
-#
-# start = time.time()
-
-#                      arg_types=[int],
-#                      arg_lists=[arg_ones],
-#                      out_types=[int],
-#                      out_names=['multi_remainder'],
-#                      num_threads=10,commit_freq=500)
+Test_multout_init()
+afdb.run_multithread("test_multout",
+                     arg_types=[int],
+                     arg_lists=[arg_ones],
+                     out_types=[int],
+                     out_names=['remainder'],
+                     num_threads=20,commit_sec=1)
+print "multout test took: ", time.time() - start, "seconds"
 
 
 
-# # # Merge and Retrieve examples
-# db_path = "/home/maksym/Projects/new_data/nano.db"
-# conn = sqlite3.connect(db_path)
-# cursor = conn.cursor()
-# cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-# downs_table,ups_table = cursor.fetchall()
-# downs_table = downs_table[0]
-# ups_table = ups_table[0]
-# # conn.close()
-# #
-# #
-# my_db = database.DatabaseGardener(db_path)
-# start = time.time()
-# my_db.up_merge(ups_table,downs_table,["num1","num2","run_state"])
-# print "merge test took: ", time.time() - start, "seconds"
-# start = time.time()
-# sel_vals = my_db.retrieve(ups_table,["num1","num2"],{"run_state":"{}==1 or {}==2",
-#                                           "sum":"{}>200"})
-# print "retrieve test took: ", time.time() - start, "seconds"
-# # Merge and Retrieve examples
-# db_path = "/home/cosmynx/Documents/database/test.db"
-# conn = sqlite3.connect(db_path)
-# cursor = conn.cursor()
-# cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-# downs_table,ups_table = cursor.fetchall()
-# downs_table = downs_table[0]
-# ups_table = ups_table[0]
-# # conn.close()
-# #
-# #
-# my_db = database.DatabaseGardener(db_path)
-# start = time.time()
-# my_db.up_merge(ups_table,downs_table,["num1","num2","run_state"])
-# print "merge test took: ", time.time() - start, "seconds"
-# start = time.time()
-# sel_vals = my_db.retrieve(ups_table,["num1","num2"],{"run_state":"{}==1 or {}==2",
-#                                           "sum":"{}>200"})
-# print "retrieve test took: ", time.time() - start, "seconds"
+my_db = database.DatabaseMaster(db_path)
+start = time.time()
+run_idx = my_db.retrieve("arg_001_test_multout",
+                         ["run_idx"],
+                         {"run_idx":"{}<100000"})[0]
 
-# --- version 2 (current)
+print "len run idx:", len(run_idx)
+out_idx = my_db.retrieve("out_001_test_multout",
+                         ["run_idx"],
+                         {"run_idx":"{}<100000"})[0]
+
+print "eln out idx", len(out_idx)
+
+idx,val,order = my_db.list_search(out_idx,run_idx)
+
+print idx
+print val
+print "len order", len(order), len(order[0]),len(order[1])
+my_db.merge(into_table="out_001_test_multout",
+            from_table="arg_001_test_multout",
+            merge_cols=["num","run_state"],
+            order=order)
+print "merge test took: ", time.time() - start, "seconds"
+
+
+
+
+# version 3 (current)
+#100K universal
+#sum test took:  18.5235991478 seconds
+#merge test took:  2.69516015053 seconds
+
+# --- version 2
 #@100K
 # sum test took:  24.2396450043 seconds
 # merge test took:  0.730545043945 seconds
