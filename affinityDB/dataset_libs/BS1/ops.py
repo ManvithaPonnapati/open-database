@@ -29,9 +29,9 @@ class Download_pdb_init:
 def download_pdb(receptor, init='download_pdb_init'):
 
     init = eval(init)
-    download_link = 'https://files.rcsb.org/download/{}.pdb'.format(receptor)
-    download_path = os.path.join(init.data_dir,init.download_folder)
-    cmd = 'wget --no-check-certificate -P {} {}'.format(download_path, download_link)
+    download_address = 'https://files.rcsb.org/download/{}.pdb'.format(receptor)
+    download_dir = os.path.join(init.data_dir,init.download_folder)
+    cmd = 'wget --no-check-certificate -P {} {}'.format(download_dir, download_address)
     os.system(cmd)
     output_file = os.path.join(init.download_folder, receptor+'.pdb')
     return [[output_file]]

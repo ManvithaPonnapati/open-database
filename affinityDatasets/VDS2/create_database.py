@@ -1,96 +1,87 @@
-import os,sys
-import numpy as np
-sys.path.append('../../')
-from dataset_libs import VDS2
-import database,sqlite3
-import dataset_libs
+import os,sys,time 
+import numpy as np 
+sys.path.append('../../affinityDB')
+sys.path.append('../../affinityDB/dataset_libs')
+import database, sqlite3
+import VDS2
 
 
-flags = VDS2.FLAGS(os.path.join(os.getcwd(),'data'))
+db_dir = os.path.abspath(os.path.join(os.getcwd(),'database'))
+data_dir = os.path.join(db_dir, 'data')
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
 
-afdb = database.AffinityDB(flags.db_path)
-db_editor = database.DatabaseGardener(flags.db_path)
+db_path = os.path.join(db_dir, 'database.db')
 
+afdb = database.AffinityDB(db_path)
+db_editor = database.DatabaseMaster(db_path)
 
-# def get_run_state(table_name):
-#     """
-#     get run_state from args table and insert into out table
-#     """
-#
-#     db_editor.up_merge(table_name,table_name[:17]+'_arg_'+table_name[22:],["run_state"])
+with open('../VDS1/data/main_pdb_target_list.txt') as f: pdb_list = f.readline().strip().split(', ')
+pdb_list = pdb_list[:2]
+pdb_list = [str(p) for p in pdb_list]
 
+VDS2.Download_init(data_dir,'download')
 
-flags.download_init('main_pdb_target_list.txt')
-"""
 afdb.run_multithread(func='VDS2.download',
                      arg_types=[str],
-                     arg_lists=[flags.pdb_list],
+                     arg_lists=[pdb_list],
                      out_types=[str, str],
-                     out_names = ['receptor','pdb_path'],
+                     out_names = ['receptor','pdb_outpath'],
                      num_threads=1, commit_sec=1)
 
 
-get_run_state('aug_17_2017_27_36_out_VDS2.download')
 
-inputs = db_editor.retrieve('aug_17_2017_27_36_out_VDS2.download',['receptor','pdb_path'],{"run_state":"{}==1 or {}==2"})
+inputs = db_editor.retrieve('out_000_VDS2.download',['receptor','pdb_outpath'],{"run_idx":"{}>=0"})
 
-receptors = inputs[0]
-rec_paths = inputs[1]
-receptors = list(map(str, receptors))
-rec_paths = list(map(str, rec_paths))
+receptors = list(map(str, inputs[0]))
+pdb_paths = list(map(str,inputs[1]))
 
-flags.split_init(receptors, rec_paths)
+
+VDS2.Split_init(data_dir,'receptor','ligand')
+
 
 afdb.run_multithread(func='VDS2.split',
                      arg_types=[str, str],
-                     arg_lists = [flags.receptor, flags.pdb_path],
+                     arg_lists = [receptors, pdb_paths],
                      out_types=[str,str,str,str],
-                     out_names = ['receptor','resname','rec_path','lig_path'],
+                     out_names = ['receptor','resname','rec_outpath','lig_outpath'],
                      num_threads=1, commit_sec=1)
 
-get_run_state('aug_17_2017_46_57_out_VDS2.split')
 
-
-inputs = db_editor.retrieve('aug_17_2017_46_57_out_VDS2.split',['receptor','resname','rec_path','lig_path'],{"run_state":"{}==1 or {}==2"})
+inputs = db_editor.retrieve('out_001_VDS2.split',['receptor','resname','rec_outpath','lig_outpath'],{"run_idx":"{}>=0"})
 receptors = list(map(str,inputs[0]))
 resnames = list(map(str, inputs[1]))
 rec_paths = list(map(str,inputs[2]))
 lig_paths = list(map(str,inputs[3]))
 
-flags.reorder_init(receptors, resnames, rec_paths, lig_paths)
+VDS2.Reorder_init(data_dir,'reorder')
 
 afdb.run_multithread(func='VDS2.reorder',
                      arg_types=[str, str,str,str],
-                     arg_lists=[flags.receptor, flags.resname, flags.rec_path, flags.lig_path],
+                     arg_lists=[receptors, resnames, rec_paths, lig_paths],
                      out_types = [str, str,str,str],
-                     out_names = ['receptor','resname','rec_path','reorder_path'],
+                     out_names = ['receptor','resname','rec_outpath','reorder_outpath'],
                      num_threads=1, commit_sec=1)
 
 
-get_run_state('aug_17_2017_55_15_out_VDS2.reorder')
 
-inputs = db_editor.retrieve('aug_17_2017_55_15_out_VDS2.reorder',['receptor','resname','rec_path','reorder_path'],{"run_state":"{}==1 or {}==2"})
+
+inputs = db_editor.retrieve('out_002_VDS2.reorder',['receptor','resname','rec_outpath','reorder_outpath'],{"run_idx":"{}>=0"})
 
 receptors = list(map(str,inputs[0]))
 resnames = list(map(str, inputs[1]))
 rec_paths = list(map(str,inputs[2]))
 reorder_paths = list(map(str,inputs[3]))
 
-flags.dock_init(receptors, resnames, rec_paths, reorder_paths,'vinardo')
+VDS2.Dock_init(data_dir, 'dock','vinardo')
+
 
 afdb.run_multithread(func='VDS2.dock',
                      arg_types=[str,str,str,str],
-                     arg_lists = [flags.receptor, flags.resname, flags.rec_path, flags.reorder_path],
+                     arg_lists = [receptors, resnames, rec_paths, reorder_paths],
                      out_types = [str,str,str,str,str],
-                     out_names=['receptor','resname','rec_path','reorder_path','dock_path'],
+                     out_names=['receptor','resname','rec_outpath','reorder_outpath','dock_outpath'],
                       num_threads=1, commit_sec=1)
 
-"""
-# get_run_state('aug_17_2017_46_57_out_VDS2.split')
-inputs = db_editor.retrieve('aug_17_2017_46_57_out_VDS2.split',['receptor','resname','rec_path','lig_path'],{"run_state":"{}==1 or {}==2"})
-receptors = list(map(str,inputs[0]))
-resnames = list(map(str, inputs[1]))
-rec_paths = list(map(str,inputs[2]))
-lig_paths = list(map(str,inputs[3]))
 
-print (inputs)
+
