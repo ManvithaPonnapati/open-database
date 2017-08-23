@@ -6,7 +6,7 @@ import database,sqlite3
 import VDS1
 
 
-db_path = "/home/maksym/Desktop/vds1/vds1_ex.db"
+db_path = "/home/cosmynx/Documents/database/test.db"
 #os.remove(db_path)
 afdb = database.AffinityDB(db_path)
 
@@ -23,7 +23,7 @@ pdb_list = pdb_list[:100]
 
 
 
-VDS1.Download_pdb_init(db_path="/home/maksym/Desktop/vds1", download_dir="download_pdbs1")
+VDS1.Download_pdb_init(db_path="/home/cosmynx/Documents/database", download_dir="download_pdbs1")
 # afdb.run_multithread("VDS1.download_pdb",
 #                      arg_types=[str],
 #                      arg_lists=[pdb_list],
@@ -37,7 +37,7 @@ disk_pdbs = disk_pdbs[0]
 # FIXME: unicode
 disk_pdbs = [str(disk_pdb) for disk_pdb in disk_pdbs]
 print "downloaded:", disk_pdbs
-VDS1.Split_pdb_init(db_path="/home/maksym/Desktop/vds1", split_dir="split_pdbs1")
+VDS1.Split_pdb_init(db_path="/home/cosmynx/Documents/database", split_dir="split_pdbs1")
 afdb.run_multithread("VDS1.split_pdb",
                      arg_types=[str],
                      arg_lists=[disk_pdbs],
