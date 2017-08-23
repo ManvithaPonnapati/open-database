@@ -1,5 +1,5 @@
 import os,sys
-
+import prody as pr
 class Split_pdb_init:
     this_module = sys.modules[__name__]
     def __init__(self,db_path,split_dir):
