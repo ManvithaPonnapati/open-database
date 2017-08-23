@@ -41,7 +41,7 @@ my_db = database.DatabaseMaster(db_path)
 start = time.time()
 run_idx = my_db.retrieve("arg_001_test_multout",
                          ["run_idx"],
-                         {"run_idx":"{}<100000"})[0]
+                         {"run_state":"{}==1"})[0]
 
 print "len run idx:", len(run_idx)
 out_idx = my_db.retrieve("out_001_test_multout",

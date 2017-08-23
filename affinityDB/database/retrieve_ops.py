@@ -17,7 +17,8 @@ class DatabaseMaster:
         First list: idx of the "into_table",  second list: idx of the "from table" to merge.
 
         Suggestion:
-        When prowiding order, please, use run_idx for the argument table, and out_idx for the output table
+        When providing order, please, use run_idx for the argument table, and out_idx for the output table.
+        Also, it the arg_table it is a good idea to select run_idx ==1
 
         :return: None
         """
