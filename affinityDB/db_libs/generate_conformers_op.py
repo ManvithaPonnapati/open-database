@@ -27,8 +27,8 @@ def generate_conformers(cryst_lig_file, out_pdb_path, init='generate_conformers_
 		AllChem.MMFFOptimizeMolecule(mol, confId=cid)
 		if not keepHs: 
 			mol = Chem.RemoveHs(mol)
-		pdb_writer.write(mol)
+		pdb_writer.write(mol, confId=cid)
 	pdb_writer.close()
 
 	print 'Generated conformers for one ligand'
-return [[out_pdb_path]]
+	return [[out_pdb_path]]

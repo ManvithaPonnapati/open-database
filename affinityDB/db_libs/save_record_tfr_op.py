@@ -2,15 +2,8 @@ import time
 import tensorflow as tf
 import numpy as np
 
-
-class SaveRecordTFRInit:
-    this_module = sys.modules[__name__]
-    def __init__(self):
-        self.this_module.save_record_tfr_init = self
-
 def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem, 
-    binders_coordsets, cryst_label, binders_labels, rec_elem, rec_coord, 
-    init='save_record_tfr_init'):
+    binders_coordsets, cryst_label, binders_labels, rec_elem, rec_coord):
     """
     Params:
         filename: string (file path to the output file)
@@ -25,7 +18,6 @@ def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem,
         rec_coord: np.array of shape [n_elem, 3]
     Returns: None
     """
-    init = eval(init)
     # filename
     assert type(filename) == str
     # crystal ligand elements
@@ -103,7 +95,7 @@ def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem,
             '_rec_elem': tf.train.Feature(float_list=tf.train.FloatList(value=_rec_elem)),
             '_rec_coord': tf.train.Feature(float_list=tf.train.FloatList(value=_rec_coord)),
              }
-         )
+        )
     )
     # write the record to disk
     serialized = example.SerializeToString()
