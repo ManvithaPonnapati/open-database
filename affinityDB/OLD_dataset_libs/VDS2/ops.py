@@ -17,68 +17,92 @@ from smina_param import smina_param
 from parse_bind_affinity import parse_bind_func
 from atom_dict import atom_dictionary
 
-class FLAGS:
-    def __init__(self, base_dir):
-        FLAGS.base_dir = base_dir
-        FLAGS.data_dir = os.path.join(FLAGS.base_dir, 'data')
-        FLAGS.download_dir = os.path.join(FLAGS.data_dir ,'download')
-        FLAGS.rec_dir = os.path.join(FLAGS.data_dir, 'receptor')
-        FLAGS.lig_dir = os.path.join(FLAGS.data_dir, 'ligand')
-        FLAGS.reorder_dir = os.path.join(FLAGS.data_dir, 'reorder')
-        FLAGS.dock_dir = os.path.join(FLAGS.data_dir,'dock')
-        FLAGS.db_path = os.path.join(FLAGS.base_dir,'database.db')
+
+
+class Download_init:
+    this_module = sys.modules[__name__]
+    def __init__(self, data_dir, download_folder):
+        download_dir = os.path.join(data_dir, download_folder)
+        if not os.path.exists(download_dir):
+            os.makedirs(download_dir)
+
+        self.data_dir = data_dir 
+        self.download_folder = download_folder
+        self.this_module.download_init = self
+
+class Split_init:
+    this_module = sys.modules[__name__]
+    def __init__(self, data_dir, rec_folder, lig_folder):
+        rec_dir = os.path.join(data_dir, rec_folder)
+        if not os.path.exists(rec_dir):
+            os.makedirs(rec_dir)
+
+        lig_dir = os.path.join(data_dir, lig_folder)
+        if not os.path.exists(lig_dir):
+            os.makedirs(lig_dir)
+
+        self.data_dir = data_dir 
+        self.rec_folder = rec_folder
+        self.lig_folder = lig_folder 
+        self.this_module.split_init = self
+
+class Reorder_init:
+    this_module = sys.modules[__name__]
+    def __init__(self, data_dir, reorder_folder):
+        reorder_dir = os.path.join(data_dir, reorder_folder)
+        if not os.path.exists(reorder_dir):
+            os.makedirs(reorder_dir)
+
+        self.data_dir = data_dir
+        self.reorder_folder = reorder_folder
+        self.this_module.reorder_init = self
+
+
+class Dock_init:
+    this_module = sys.modules[__name__]
+    def __init__(self, data_dir, dock_folder, dock_pm):
+
+        dock_dir = os.path.join(data_dir, dock_folder)
+        if not os.path.exists(dock_dir):
+            os.makedirs(dock_dir)
+
+        self.data_dir = data_dir
+        self.dock_folder = dock_folder
+        self.dock_pm = dock_pm
+        self.this_module.dock_init = self 
+        
+
+
+class Rmsd_init:
+    this_module = sys.modules[__name__]
+    def __init__(self, data_dir):
+        self.data_dir = data_dir
+        self.this_module.rmsd_init = self
+
+
+class Overlap_init:
+    this_module = sys.modules[__name__]
+    def __init__(self, data_dir,clash_cutoff_A=4.0):
+        self.data_dir = data_dir
+        self.clash_cutoff_A = clash_cutoff_A
+        self.this_module.overlap_init = self   
+
+
+class Native_contact_init:
+    this_module = sys.modules[__name__]
+    def __init__(self, data_dir,distance_threshold=1.0):
+        self.data_dir = data_dir
+        self.distance_threshold = distance_threshold
+        self.this_module.native_contact_init = self
+
+
+
     
-    # def download_init(self, pdb_id_path):
-    #
-    #     d_list = open('main_pdb_target_list.txt').readline().strip().split(', ')
-    #     d_list = d_list[:2]
-    #     self.pdb_list = d_list
+def download(receptor, init='download_init'):
 
-    def split_init(self, receptor,pdb_path):
-        FLAGS.receptor = receptor
-        FLAGS.pdb_path = pdb_path
-
-    def reorder_init(self,receptor, resname, rec_path, lig_path):
-        FLAGS.receptor = receptor
-        FLAGS.resname = resname
-        FLAGS.rec_path = rec_path
-        FLAGS.lig_path = lig_path
-
-    def dock_init(self,receptor, resname, rec_path, reorder_path, dock_pm):
-        FLAGS.receptor = receptor
-        FLAGS.resname = resname
-        FLAGS.rec_path = rec_path
-        FLAGS.reorder_path = reorder_path
-        FLAGS.dock_pm = dock_pm
-
-
-    def rmsd_init(self,receptor, resname, reorder_path, dock_path):
-        FLAGS.receptor = receptor
-        FLAGS.resname = resname        
-        FLAGS.reorder_path = reorder_path
-        FLAGS.dock_path = dock_path
-
-    def overlap_init(self,receptor, resname, reorder_path, dock_path, clash_cutoff_A=4.0):
-        FLAGS.receptor = receptor
-        FLAGS.resname = resname
-        FLAGS.reorder_path = reorder_path
-        FLAGS.dock_path = dock_path
-        FLAGS.clash_cutoff_A = clash_cutoff_A
-
-    def native_contact_init(self,receptor, resname, rec_path, reorder_path, dock_path, distance_threshold=1.0):
-        FLAGS.receptor = receptor
-        FLAGS.resname = resname
-        FLAGS.rec_path = rec_path
-        FLAGS.reorder_path = reorder_path
-        FLAGS.dock_path = dock_path
-
-
-
-    
-def download(receptor):
-
+    init = eval(init)
     receptor = receptor.strip()
-    dir_path = FLAGS.download_dir
+    dir_path = os.path.join(init.data_dir, init.download_folder)
 
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
@@ -91,11 +115,13 @@ def download(receptor):
     return [[receptor,os.path.join(dir_path,receptor+'.pdb')]]
 
 
-def split(receptor, pdb_path):
+def split(receptor, pdb_outpath, init='split_init'):
 
-    rec_dir = FLAGS.rec_dir
-    lig_dir = FLAGS.lig_dir
+    init = eval(init)
+    rec_dir = os.path.join(init.data_dir,init.rec_folder)
+    lig_dir = os.path.join(init.data_dir,init.lig_folder)
 
+    pdb_path = os.path.join(init.data_dir, pdb_outpath)
     parsed_pdb = prody.parsePDB(pdb_path)
     parsed_header = prody.parsePDBHeader(pdb_path)
 
@@ -129,14 +155,16 @@ def split(receptor, pdb_path):
             os.makedirs(os.path.join(rec_dir,receptor))
         prody.writePDB(os.path.join(rec_dir,receptor, rec_name), rec)
 
-        splited.append([receptor, str(resname), os.path.join(rec_dir, receptor, rec_name), os.path.join(lig_dir, receptor, lig_name)])
+        splited.append([receptor, str(resname), os.path.join(init.rec_folder, receptor, rec_name), os.path.join(init.lig_folder, receptor, lig_name)])
 
     return splited
 
-def reorder(receptor, resname, rec_path, lig_path):
+def reorder(receptor, resname, rec_outpath, lig_outpath, init='reorder_init'):
 
-    
-    reorder_dir = FLAGS.reorder_dir 
+    init = eval(init)
+    reorder_dir = os.path.join(init.data_dir, init.reorder_folder) 
+    rec_path = os.path.join(init.data_dir, rec_outpath)
+    lig_path = os.path.join(init.data_dir, lig_outpath)
 
     reo_name = os.path.basename(rec_path).replace('receptor','reorder')
     receptor = os.path.basename(os.path.dirname(rec_path))
@@ -158,15 +186,17 @@ def reorder(receptor, resname, rec_path, lig_path):
     cl = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     cl.wait()
 
-    return [[receptor, resname, rec_path, out_path]]
+    return [[receptor, resname, rec_outpath, os.path.join(init.reorder_folder, receptor, reo_name)]]
 
-def dock(receptor, resname, rec_path, reorder_path):
+def dock(receptor, resname, rec_outpath, reorder_outpath, init='dock_init'):
 
-    dock_pm = FLAGS.dock_pm 
-    dock_dir = FLAGS.dock_dir 
+    init = eval(init)
+    dock_pm = init.dock_pm 
+    dock_dir = os.path.join(init.data_dir, init.dock_folder) 
+    rec_path = os.path.join(init.data_dir, rec_outpath)
+    reorder_path = os.path.join(init.data_dir, reorder_outpath)
 
     dock_name = os.path.basename(rec_path).replace('receptor','dock')
-    receptor = os.path.basename(os.path.dirname(rec_path))
     out_path = os.path.join(dock_dir, receptor, dock_name)
 
     smina_pm = smina_param()
@@ -186,9 +216,13 @@ def dock(receptor, resname, rec_path, reorder_path):
     cl = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     cl.wait()
 
-    return [[receptor, resname, rec_path, reorder_path, out_path]]
+    return [[receptor, resname, rec_outpath, reorder_outpath, os.path.join(init.dock_folder, receptor, dock_name)]]
 
-def rmsd(reorder_path, dock_path):
+def rmsd(reorder_outpath, dock_outpath, init='rmsd_init'):
+
+    init = eval(init)
+    reorder_path = os.path.join(init.data_dir, reorder_outpath)
+    dock_path = os.path.join(init.data_dir, dock_outpath)
 
     docked_coords = prody.parsePDB(dock_path).getCoordsets()
     crystal_coords = prody.parsePDB(reorder_path).getCoords()
@@ -197,9 +231,13 @@ def rmsd(reorder_path, dock_path):
 
     return [list(rmsd)]
 
-def overlap(reorder_path, dock_path):
+def overlap(reorder_outpath, dock_outpath, init='overlap_init'):
 
-    clash_cutoff_A = FLAGS.clash_cutoff_A
+    init = eval(init)
+    reorder_path = os.path.join(init.data_dir, reorder_outpath)
+    dock_path = os.path.join(init.data_dir, dock_outpath)
+
+    clash_cutoff_A = init.clash_cutoff_A
 
     docked_coords = prody.parsePDB(dock_path).getCoordsets()
     crystal_coords = prody.parsePDB(reorder_path).getCoords()
@@ -214,9 +252,13 @@ def overlap(reorder_path, dock_path):
 
     return [list(position_clash_ratio)]
 
-def native_contact(rec_path, reorder_path, dock_path):
+def native_contact(rec_outpath, reorder_outpath, dock_outpath, init='native_contact_init'):
 
-    distance_threshold = FLAGS.distance_threshold
+    init = eval(init)
+    rec_path = os.path.join(init.data_dir, rec_outpath)
+    reorder_path = os.path.join(init.data_dir, reorder_outpath)
+    dock_path = os.path.join(init.data_dir, dock_outpath)
+    distance_threshold = init.distance_threshold
 
     parsed_docked =  prody.parsePDB(dock_path).select('not hydrogen')
     parsed_crystal = prody.parsePDB(reorder_path).select('not hydrogen')
