@@ -4,15 +4,31 @@ import prody
 import subprocess
 import xml.dom.minidom
 
+# FIXME explanations
+# what is blastdb
+# why is input receptor file named out_path ?
+
 class Blast_init:
     this_module = sys.modules[__name__]
     def __init__(self, data_dir, blast_db):
-        self.data_dir = data_dir 
+        """
+
+        :param data_dir:
+        :param blast_db:
+        """
+        self.data_dir = data_dir
         self.blast_db = blast_db
         self.this_module.blast_init = self 
 
-def blast(rec_outpath, lig_outpath,min_qseq_len = 100, init = 'blast_init'):
+def blast(rec_file, lig_file ,min_qseq_len = 100, init = 'blast_init'):
+    """
 
+    :param rec_outpath:
+    :param lig_outpath:
+    :param min_qseq_len:
+    :param init:
+    :return:
+    """
     
     cdir = os.getcwd()
     tdir = tempfile.mkdtemp()
@@ -31,7 +47,7 @@ def blast(rec_outpath, lig_outpath,min_qseq_len = 100, init = 'blast_init'):
     lig_coords = pr_lig.getCoords()
 
     if rec_size < min_qseq_len:
-        raise Exception("Receptor's seq len {} smaller than the smallest qurey seq len {}".format(rec_size, min_qseq_len))
+        raise Exception("Receptor's seq len {} smaller than the smallest query seq len {}".format(rec_size, min_qseq_len))
 
     sequence = ''
     r = 4 

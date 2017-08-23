@@ -11,14 +11,22 @@ class GenerateConformersInit:
 		self.this_module.generate_conformers_init = self
 
 def generate_conformers(lig_file, out_pdb_path, init='generate_conformers_init', keepHs=False):
-	"""Performs the following tasks:
+	"""
+		Performs the following tasks:
 		> Converts the PDB molecule in lig_file into a mol object
 		> (Optional) Save single-frame file in Mol format for future use
 		> Generates conformers for this mol object
-		> Save multi-frame ligand to out_pdb_path in PDB format"""
+		> Save multi-frame ligand to out_pdb_path in PDB format
+	:param lig_file:
+	:param out_pdb_path:
+	:param init:
+	:param keepHs:
+	:return:
+
+
+	"""
 
 	init = eval(init)
-
 	mol = Chem.MolFromPDBFile(lig_file)
 	pdb_writer = PDBWriter(out_pdb_path)
 	mol = Chem.AddHs(mol)

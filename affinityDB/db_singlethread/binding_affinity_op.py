@@ -5,8 +5,17 @@ import re,math
 import csv
 from collections import Counter
 
-def binding_affinity(index_path, source):
 
+# FIXME: add parameter explanations
+# FIXME: add inline explanations
+
+def binding_affinity(index_path, source):
+    """
+
+    :param index_path:
+    :param source:
+    :return:
+    """
     parser = parse_bind_func[source]
     bind = parser(index_path)
 
@@ -22,6 +31,11 @@ def binding_affinity(index_path, source):
 
 
 def read_binding_moad(binding_moad_index):
+    """
+
+    :param binding_moad_index:
+    :return:
+    """
     class PDB_moad:
         num_records = 0
         num_exception = 0
@@ -36,6 +50,11 @@ def read_binding_moad(binding_moad_index):
 
 
     def parse_entry(entry):
+        """
+
+        :param entry:
+        :return:
+        """
         receptor, res, attr, measure, op, value, unit = entry
         if not attr == 'valid':
             return
@@ -115,8 +134,8 @@ def read_binding_moad(binding_moad_index):
                     PDB_moad.exceptions.append(e)
                 PDB_moad.num_records +=1
 
-    max_log_affinity = np.log(10.**0)
-    min_log_affinity = np.log(10.**-18)
+#    max_log_affinity = np.log(10.**0)
+#    min_log_affinity = np.log(10.**-18)
 
     PDB_moad.normalized_affinities = (PDB_moad.log_affinities - min_log_affinity)\
     /(max_log_affinity - min_log_affinity)
@@ -126,7 +145,12 @@ def read_binding_moad(binding_moad_index):
 
     return PDB_moad
 
-def read_PDB_bind(pdb_bind_index = "/home/maksym/PyCharmProjects/datasets/pdbbind/INDEX_general_PL.2016"):
+def read_PDB_bind(pdb_bind_index):
+    """
+
+    :param pdb_bind_index:
+    :return:
+    """
     class PDB_bind:
         num_records = 0
         num_exceptions = 0
@@ -161,7 +185,6 @@ def read_PDB_bind(pdb_bind_index = "/home/maksym/PyCharmProjects/datasets/pdbbin
             if re.compile(".*Nonstandard assay.*").match(line):
                 raise Exception('not standard assay')
 
-            
 
             if not re.compile("^[a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9][a-zA-Z0-9]$").match(pdb_name):
                 raise Exception('PDB name in the record is impossible')
@@ -232,6 +255,11 @@ def read_PDB_bind(pdb_bind_index = "/home/maksym/PyCharmProjects/datasets/pdbbin
 
 
 def read_binding_db(binding_db_index):
+    """
+
+    :param binding_db_index:
+    :return:
+    """
     class binding_db:
         num_records = 0
         num_exceptions = 0
