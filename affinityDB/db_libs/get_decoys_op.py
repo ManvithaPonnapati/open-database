@@ -5,12 +5,12 @@ from rdkit.Chem.rdmolfiles import SDMolSupplier
 
 class GetDecoysInit:
 	this_module = sys.modules[__name__]
-	def __init__(self, all_pdb_files, all_mol_files, all_num_atoms, 
+	def __init__(self, all_pdb_files, all_mol_files, all_mols, all_num_atoms, 
 		max_atom_dif, max_substruct, max_num_decoys):
 		self.all_pdb_files = all_pdb_files
 		self.all_mol_files = all_mol_files
+		self.all_mols = all_mols
 		self.all_num_atoms = all_num_atoms
-		self.all_mols = [Chem.MolFromMolFile(all_mol_files[i]) for i in range(len(all_mol_files))]
 		self.max_atom_dif = max_atom_dif
 		self.max_substruct = max_substruct
 		self.max_num_decoys = max_num_decoys
@@ -24,7 +24,8 @@ def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
 	init = eval(init)
 	reader = SDMolSupplier(mol_file)
 	mol = reader[0]
-	output = []
+	output = ""
+	counter = 0
 
 	# Shuffle which ligands we sample to avoid biases in decoy ligands
 	iterator = range(len(init.all_mols))
@@ -36,14 +37,16 @@ def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
 		mcs = MCS.FindMCS([init.all_mols[i], mol], minNumAtoms=init.max_substruct,
 				ringMatchesRingOnly=True, completeRingsOnly=True, timeout=1)
 		if mcs.numAtoms == -1:
-			output.append([pdb_file, all_pdb_files[i]])
-
-		if len(output) >= init.max_num_decoys:
-			break
+			if counter == init.max_num_decoys -1:
+				output += init.all_pdb_files[i]
+				counter += 1
+				break
+			output += init.all_pdb_files[i] + ','
+			counter += 1
 
 	# Check to make sure there are enough decoys
-	if len(output) < init.max_num_decoys:
+	if counter < init.max_num_decoys:
 		raise Exception("Not enough decoys for ligand " + pdb_file)
 
 	print 'Got the decoys for one ligand'
-	return output
+	return [[pdb_file, output]]

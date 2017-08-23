@@ -10,7 +10,7 @@ class GenerateConformersInit:
 		self.num_conformers = num_conformers
 		self.this_module.generate_conformers_init = self
 
-def generate_conformers(lig_file, out_pdb_path, init='generate_conformers_init', keepHs=False):
+def generate_conformers(cryst_lig_file, out_pdb_path, init='generate_conformers_init', keepHs=False):
 	"""Performs the following tasks:
 		> Converts the PDB molecule in lig_file into a mol object
 		> (Optional) Save single-frame file in Mol format for future use
@@ -19,7 +19,7 @@ def generate_conformers(lig_file, out_pdb_path, init='generate_conformers_init',
 
 	init = eval(init)
 
-	mol = Chem.MolFromPDBFile(lig_file)
+	mol = Chem.MolFromPDBFile(cryst_lig_file)
 	pdb_writer = PDBWriter(out_pdb_path)
 	mol = Chem.AddHs(mol)
 	conf_ids = AllChem.EmbedMultipleConfs(mol, init.num_conformers)
