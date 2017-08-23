@@ -3,23 +3,29 @@ import tensorflow as tf
 import numpy as np
 
 
+class SaveRecordTFRInit:
+    this_module = sys.modules[__name__]
+    def __init__(self):
+        self.this_module.save_record_tfr_init = self
 
-def save_record_tfr(filename,cryst_elem,cryst_coord,binders_elem,binders_coordsets,
-                    cryst_label,binders_labels,rec_elem,rec_coord):
+def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem, 
+    binders_coordsets, cryst_label, binders_labels, rec_elem, rec_coord, 
+    init='save_record_tfr_init'):
     """
-
-    :param filename: string (file path to the output file)
-    :param pos_per_binder:  integer (number of positions per binder)
-    :param cryst_elem: np.array shape=[n_elem] type=float32 (elements of the ligand)
-    :param cryst_coord: np.array shape=[n_elem, 3] type=float32 (coordinates of the elements of the ligand)
-    :param binders_elem: list of np.array of shape=[n_elem] type=float32 (elements of binders)
-    :param binders_coordsets: list of np.array [pos_per_binder, n_elem, 3 ] (coordinate sets per each of the bidners)
-    :param cryst_label: float32 (something about the crystal pose, like binding affinity)
-    :param binders_labels: list of np.array shape=[pos_per_binder] type=float32
-    :param rec_elem: np.array of shape [n_elem] of float32
-    :param rec_coord: np.array of shape [n_elem, 3]
-    :return: None
+    Params:
+        filename: string (file path to the output file)
+        pos_per_binder:  integer (number of positions per binder)
+        cryst_elem: np.array shape=[n_elem] type=float32 (elements of the ligand)
+        cryst_coord: np.array shape=[n_elem, 3] type=float32 (coordinates of the elements of the ligand)
+        binders_elem: list of np.array of shape=[n_elem] type=float32 (elements of binders)
+        binders_coordsets: list of np.array [pos_per_binder, n_elem, 3 ] (coordinate sets per each of the bidners)
+        cryst_label: float32 (something about the crystal pose, like binding affinity)
+        binders_labels: list of np.array shape=[pos_per_binder] type=float32
+        rec_elem: np.array of shape [n_elem] of float32
+        rec_coord: np.array of shape [n_elem, 3]
+    Returns: None
     """
+    init = eval(init)
     # filename
     assert type(filename) == str
     # crystal ligand elements
@@ -104,48 +110,3 @@ def save_record_tfr(filename,cryst_elem,cryst_coord,binders_elem,binders_coordse
     writer.write(serialized)
     writer.close()
     return None
-
-
-
-filename = "/home/maksym/Desktop/try_tfr.tfr"
-
-cryst_elem = np.array([1,2,3],dtype=np.float32)
-
-cryst_coord = np.array([[1,1,1],
-                        [2,2,2],
-                        [3,3,3]],dtype=np.float32)
-
-binders_elem = [np.array([1,1],dtype=np.float32),
-                np.array([1,2,3,4],dtype=np.float32)]
-
-binders_coordsets = [np.array([[[1,1,1],[2,2,2]],
-                               [[4,4,4],[6,6,6]]],dtype=np.float32),
-                     np.array([[[1,1,1],[2,2,2],[4,4,4],[5,5,5]],
-                               [[3,3,3],[5,5,5],[6,6,6],[7,7,7]]],dtype=np.float32)]
-print binders_coordsets[1].shape
-#time.sleep(100)
-
-
-cryst_label = 0.99
-binders_labels = [np.array([0,0.2],dtype=np.float32),np.array([0.3,0.4],dtype=np.float32)]
-rec_elem = np.array([1,1,2,5],dtype=np.float32)
-rec_coord = np.array([[1,1,1],
-                      [2,2,2],
-                      [3,3,3],
-                      [4,4,4]],dtype=np.float32)
-
-answer = save_record_tfr(filename,cryst_elem,cryst_coord,binders_elem,binders_coordsets,
-                cryst_label,binders_labels,rec_elem,rec_coord)
-
-sess = tf.Session()
-print answer
-#print sess.run(answer)
-
-
-
-
-
-
-
-
-
