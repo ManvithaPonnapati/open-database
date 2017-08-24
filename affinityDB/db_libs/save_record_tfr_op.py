@@ -79,6 +79,8 @@ def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem,
     _rec_elem = rec_elem
     _rec_coord = rec_coord.reshape([-1])
 
+    print _binders_nelem
+
     # parse the record
     writer = tf.python_io.TFRecordWriter(filename)
     example = tf.train.Example(

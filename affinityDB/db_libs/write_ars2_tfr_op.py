@@ -78,14 +78,6 @@ def write_ars2_tfr(rec_file, cryst_lig_file, bind_lig_file, decoy_files, out_tfr
 		lig_coordsets.append(np.array(decoy_lig_coordsets))
 		lig_labels.append(np.array(decoy_lig_labels))
 
-	print 'out_tfr_file:', out_tfr_file
-	print 'cryst_elem:', cryst_elem
-	print 'cryst_coord:', cryst_coord
-	print 'lig_elems:', lig_elems
-	print 'lig_coordsets:', lig_coordsets
-	print 'lig_labels:', lig_labels
-	print 'rec_elem:', rec_elem
-	print 'rec_coord:', rec_coord
 	save_record_tfr(out_tfr_file, cryst_elem, cryst_coord, lig_elems, 
 		lig_coordsets, 0.0, lig_labels, rec_elem, rec_coord)
 
