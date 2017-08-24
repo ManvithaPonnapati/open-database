@@ -20,7 +20,7 @@ class Blast_init:
         self.blast_db = blast_db
         self.this_module.blast_init = self 
 
-def blast(rec_file, lig_file ,min_qseq_len = 100, init = 'blast_init'):
+def blast(rec_outpath, lig_outpath ,min_qseq_len = 100, init = 'blast_init'):
     """
 
     :param rec_outpath:
@@ -43,26 +43,29 @@ def blast(rec_file, lig_file ,min_qseq_len = 100, init = 'blast_init'):
     pr_rec = prody.parsePDB(rec_path)
     pr_lig = prody.parsePDB(lig_path)
 
-    rec_size = pr_rec.numAtoms()
-    lig_coords = pr_lig.getCoords()
+#    rec_size = pr_rec.numAtoms()
+#    lig_coords = pr_lig.getCoords()
 
-    if rec_size < min_qseq_len:
-        raise Exception("Receptor's seq len {} smaller than the smallest query seq len {}".format(rec_size, min_qseq_len))
+#    if rec_size < min_qseq_len:
+#        raise Exception("Receptor's seq len {} smaller than the smallest query seq len {}".format(rec_size, min_qseq_len))
 
-    sequence = ''
-    r = 4 
-    while len(sequence) < min_qseq_len:
-        res_coll = []
-        for center in lig_coords:
-            around_atoms = pr_rec.select('same residue as within {} of center'.format(r), center = center)
-            if around_atoms is None:
-                continue
-            res_coll.append(around_atoms)
+#    sequence = ''
+#    r = 4 
+#    while len(sequence) < min_qseq_len:
+#        res_coll = []
+#        for center in lig_coords:
+#            around_atoms = pr_rec.select('same residue as within {} of center'.format(r), center = center)
+#            if around_atoms is None:
+#                continue
+#            res_coll.append(around_atoms)
 
-        resindices = reduce(lambda x,y : x|y, res_coll)
-        sequence = resindices.getHierView()['A'].getSequence()
-        print('sequence ', r, len(sequence))
-        r +=1 
+#        resindices = reduce(lambda x,y : x|y, res_coll)
+#        sequence = resindices.getHierView()['A'].getSequence()
+#        print('sequence ', r, len(sequence))
+#        r +=1 
+
+    sequence = pr_rec.getHierView()['A'].getSequence()
+    
 
     with open('sequence.fasta','w') as fout: fout.write(">receptor\n" + sequence + '\n')
 

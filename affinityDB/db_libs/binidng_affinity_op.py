@@ -278,6 +278,7 @@ def binding_affinity(index_path, init='binding_affinity_init'):
 
     :param index_path: record file 
     :param init:
+    
     """
     init = eval(init)
 

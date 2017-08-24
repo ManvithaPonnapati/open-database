@@ -57,7 +57,7 @@ def split_pdb(split_pdb, cuttoff_dist = 8, min_rec_atom_num=100, min_lig_atom_nu
         if lig_atom_num < min_lig_atom_num:
             raise Exception("Ligand atom num {} smaller than {} ".format(lig_atom_num, min_lig_atom_num))
 
-        rec_atom_num = lig.numAtoms()
+        rec_atom_num = rec.numAtoms()
         if rec_atom_num < min_rec_atom_num:
             raise Exception("Receptor atom num {} smaller than {}".format(rec_atom_num, min_rec_atom_num))
 
@@ -66,7 +66,7 @@ def split_pdb(split_pdb, cuttoff_dist = 8, min_rec_atom_num=100, min_lig_atom_nu
         while True:
             res_coll = []
             for center in lig_coords:
-                around_atoms = rec.select('within {} of center'.format(cuttoff_dist), center=center)
+                around_atoms = rec.select('same residue as within {} of center'.format(cuttoff_dist), center=center)
                 if around_atoms is None:
                     continue
                 res_coll.append(around_atoms)

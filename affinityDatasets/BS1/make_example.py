@@ -43,7 +43,7 @@ pdb_paths = list(map(str,inputs[0]))
 
 fp, path, descr = imp.find_module('split_pdb_op')
 lib_mod = imp.load_module('split_pdb_op', fp, path, descr)
-lib_mod.Split_pdb_init(db_path=data_dir, split_dir='split')
+lib_mod.Split_pdb_init(db_root=data_dir, split_dir='split')
 
 afdb.run_multithread(func='split_pdb',
                      arg_types=[str],
