@@ -40,7 +40,7 @@ pdb_paths = list(map(str,inputs[0]))
 
 fp, path, descr = imp.find_module('split_pdb_op')
 lib_mod = imp.load_module('split_pdb_op', fp, path, descr)
-lib_mod.Split_pdb_init(db_path=data_dir, split_dir='split')
+lib_mod.Split_pdb_init(db_root=data_dir, split_dir='split')
 
 afdb.run_multithread(func='split_pdb',
                      arg_types=[str],
@@ -49,14 +49,18 @@ afdb.run_multithread(func='split_pdb',
                      out_names = ['lig_outpath','rec_outpath'])
 
 
+
+
 inputs = database_master.retrieve('out_001_split_pdb',['rec_outpath','lig_outpath'],{"run_idx":"{}>=0"})
+print ('inputs', inputs)
+
 rec_outpaths = list(map(str,inputs[0]))
 lig_outpaths = list(map(str,inputs[1]))
 
 smina_path = '/Users/Will/projects/smina/smina.osx'
 fp, path, descr = imp.find_module('reorder_op')
 lib_mod = imp.load_module('reorder_op', fp, path, descr)
-lib_mod.Reorder_init(data_dir=data_dir, reorder_folder = 'reorder', smina_path=smina_path)
+lib_mod.Reorder_init(data_dir=data_dir, reorder_folder = 'reorder', smina_path=smina_path, dock_param={'args':['score_only'],'kwargs':{}})
 
 afdb.run_multithread(func='reorder',
                      arg_types=[str,str],
@@ -64,14 +68,23 @@ afdb.run_multithread(func='reorder',
                      out_types = [str,str],
                      out_names = ['rec_outpath','reorder_outpath'])
 
-inputs = db_editor.retrieve('out_002_reorder',['rec_outpath','reorder_outpath'],{"run_idx":"{}>=0"})
+inputs = database_master.retrieve('out_002_reorder',['rec_outpath','reorder_outpath'],{"run_idx":"{}>=0"})
 
 
 rec_outpaths = list(map(str,inputs[0]))
 reorder_outpaths = list(map(str,inputs[1]))
 fp, path, descr = imp.find_module('dock_op')
 lib_mod = imp.load_module('dock_op', fp, path, descr)
-lib_mod.Dock_init(data_dir=data_dir, dock_folder = 'dock', smina_path=smina_path)
+lib_mod.Dock_init(data_dir=data_dir, dock_folder = 'dock', smina_path=smina_path, dock_param={
+                                                                                                'args': [],
+                                                                                                'kwargs' : {
+                                                                                                    'autobox_add':12,
+                                                                                                    'num_modes':400,
+                                                                                                    'exhaustiveness':64,
+                                                                                                    'scoring':'vinardo',
+                                                                                                    'cpu':1
+                                                                                                }
+                                                                                            })
 
 afdb.run_multithread(func='dock',
                      arg_types=[str,str],

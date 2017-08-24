@@ -24,6 +24,8 @@ class Activity_init:
 
 def activity(pair_name, target_id, init='activity_init'):
     """
+    Getting bioactivity result from chbmel 
+    query by the target_chembl_id
 
     :param pair_name:
     :param target_id:
@@ -31,7 +33,11 @@ def activity(pair_name, target_id, init='activity_init'):
     :return:
     """
     activities = new_client.activity
+    assay = new_client.assay
+
     init = eval(init)
+    
+    # Get all activitvities for a specific target
     res = activities.filter(target_chembl_id=target_id, pchembl_value__isnull=False)
 
     res_size = len(res)
@@ -41,9 +47,18 @@ def activity(pair_name, target_id, init='activity_init'):
         aid = str(result['assay_chembl_id'])
         smile= str(result['canonical_smiles'])
         mid = str(result['molecule_chembl_id'])
-        measure = str(result['published_type'])
-        op = str(result['published_relation'])
-        value = float(result['published_value'])
+        measure = str(result['standard_type'])
+        op = str(result['standard_relation'])
+        value = float(result['standard_value'])
         unit = str(result['standard_units'])
-        activity_records.append([pair_name, target_id, aid, mid, smile, measure, op, value, unit])
+
+        # Get confidence score for a specific assay    
+        resp = assay.filter(assay_chembl_id=aid)
+        if not len(resp) == 1:
+            continue
+        else:
+            confidence_score = int(resp[0]['confidence_score'])
+
+        activity_records.append([pair_name, target_id, aid, mid, smile, measure, op, value, unit, confidence_score])
+
     return activity_records

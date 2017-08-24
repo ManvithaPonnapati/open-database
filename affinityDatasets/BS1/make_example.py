@@ -43,7 +43,7 @@ pdb_paths = list(map(str,inputs[0]))
 
 fp, path, descr = imp.find_module('split_pdb_op')
 lib_mod = imp.load_module('split_pdb_op', fp, path, descr)
-lib_mod.Split_pdb_init(db_path=data_dir, split_dir='split')
+lib_mod.Split_pdb_init(db_root=data_dir, split_dir='split')
 
 afdb.run_multithread(func='split_pdb',
                      arg_types=[str],
@@ -85,5 +85,5 @@ lib_mod.Activity_init(data_dir=data_dir, activity_folder = 'activity')
 afdb.run_multithread("activity",
                     arg_types=[str, str],
                     arg_lists=[pair_names, target_idx],
-                    out_types=[str, str, str, str, str, str, str, float, str],
-                    out_names=['pair_name','target_id','aid','mid','smile','measure','op','value','unit'])
+                    out_types=[str, str, str, str, str, str, str, float, str, int],
+                    out_names=['pair_name','target_id','aid','mid','smile','measure','op','value','unit', 'confidence'])
