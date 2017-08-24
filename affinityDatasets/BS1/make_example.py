@@ -85,5 +85,5 @@ lib_mod.Activity_init(data_dir=data_dir, activity_folder = 'activity')
 afdb.run_multithread("activity",
                     arg_types=[str, str],
                     arg_lists=[pair_names, target_idx],
-                    out_types=[str, str, str, str, str, str, str, float, str],
-                    out_names=['pair_name','target_id','aid','mid','smile','measure','op','value','unit'])
+                    out_types=[str, str, str, str, str, str, str, float, str, int],
+                    out_names=['pair_name','target_id','aid','mid','smile','measure','op','value','unit', 'confidence'])
