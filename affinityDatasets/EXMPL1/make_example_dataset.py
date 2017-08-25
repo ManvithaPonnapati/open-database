@@ -23,9 +23,10 @@ afdb.run_multithread("test_sum",
                      out_types=[int,int],
                      out_names=['sum','difference'],
                      num_threads=20,commit_sec=1)
-print "sum test took: ", time.time() - start, "seconds"
+print "sum test took: ", time.time(
 
 
+    
 Test_multout_init()
 afdb.run_multithread("test_multout",
                      arg_types=[int],

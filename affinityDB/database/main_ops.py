@@ -17,6 +17,93 @@ class AffinityDB:
             self.conn.execute(sql_cmd)
             logging.info("cron table was not in the database and was created")
 
+    def open_table_with_queue(self,table_name,col_names,col_types,commit_sec=1):
+        """ Creates an output table, and a queue to feed this table. Creates a background thread to take results
+        from the queue and insert into the table.
+
+        :param table_name: string (name of the table prefix out_xxx_ will be appended)
+        :param col_names: list of strings (names of the columns)
+        :param col_types: list of python types (column types)
+        :return: multiprocessing queue, event to close the table and terminate thread.
+
+        Exaple usage:
+        out_q,stop_event = afdb.open_table_with_queue(table_name="some_table",col_names=["num"],col_types=[int])
+        for i in range(1000):
+            out_q.put([i])
+        stop_event.set()
+        """
+        time_stamp = time.strftime("%h_%y_%Y_%M_%S").lower()
+        assert type(table_name)==str, "arg table_name should be a string"
+        assert type(col_names)==list and type(col_names[0])==str, "arg col_names should be a list of strings"
+        assert type(col_types)==list and type(col_types[0])==type, "arg col_names should be a list of types"
+        assert len(col_names)==len(col_types), "mismatch between the number of column names and types"
+
+        # write the initial state of the init function to cron
+        sql_cmd = "select cron_idx from cron"
+        cron_idx = len(self.conn.execute(sql_cmd).fetchall())
+        sql_cmd = "insert into cron values({},\"{}\",\"{}\")".format(cron_idx+1,time_stamp,None)
+        self.conn.execute(sql_cmd)
+        self.conn.commit()
+        out_table = "out_" + str(cron_idx).zfill(3) + "_" + table_name
+        num_args = len(col_types)
+
+        # create empty sqlite3 table for outputs
+        col_types = [self.python_to_sql[col_type] for col_type in col_types]
+        sql_cmd = 'create table \"' + out_table + '\" (out_idx integer not null, '
+        sql_cmd += ", ".join([str(col_names[i])+" "+str(col_types[i]) for i in range(num_args)])
+        sql_cmd += ", primary key(out_idx));"
+        self.conn.execute(str(sql_cmd))
+
+        # assemble the insert into the database command
+        out_sql_cmd = "insert into \"" + out_table + "\" values (?,"
+        out_sql_cmd += ", ".join(["?" for col_type in col_types]) + ");"
+        self._out_q = multiprocessing.Queue()
+
+        def autocommit(quit):
+            out_idx = 0
+            out_q_sets = []
+            commit_clock = time.time()
+            commit_exceptions = []
+            while not quit.is_set():
+                # put the results from the argument queue to the sqlite database
+                while self._out_q.qsize() > 0:
+                    print self._out_q.qsize()
+                    out_q_set = self._out_q.get()
+                    out_q_set = [out_idx] + out_q_set
+                    out_q_sets.append(out_q_set)
+                    out_idx += 1
+                if time.time() - commit_clock > commit_sec:
+                    try:
+                        self.conn.executemany(out_sql_cmd, out_q_sets)
+                    except Exception as e:
+                        commit_exceptions.append(e)
+                    out_q_sets = []
+                    self.conn.commit()
+                    commit_clock = time.time()
+
+            # performing final actions to close table with the queue
+            while self._out_q.qsize() > 0:
+                print self._out_q.qsize()
+                out_q_set = self._out_q.get()
+                out_q_set = [out_idx] + out_q_set
+                out_q_sets.append(out_q_set)
+                out_idx += 1
+            try:
+                self.conn.executemany(out_sql_cmd, out_q_sets)
+            except Exception as e:
+                commit_exceptions.append(e)
+            # update the cron table
+            self.conn.commit()
+            mssg = "Number of autocommit exceptions:" + str(len(commit_exceptions)) + str(commit_exceptions)[:3000]
+            logging.warning("autocommit exceptions:"+ str(len(commit_exceptions)))
+            sql_cmd = "update cron set init_param=\"{}\" where cron_idx={};".format(mssg,cron_idx+1)
+            self.conn.execute(sql_cmd)
+            self.conn.execute(sql_cmd)
+            self.conn.commit()
+        close_event = multiprocessing.Event()
+        multiprocessing.Process(target=autocommit,args=(close_event,)).start()
+        return self._out_q,close_event
+
     def run_multithread(self,func,arg_types,arg_lists,out_types,out_names,num_threads=10,commit_sec=1):
         """ Given set of tasks (any function in python) , breaks the tasks between a given number of processes
         to execute. Writes inputs into arg_ sqlite table and outputs into _out sqlite table.
