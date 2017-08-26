@@ -13,7 +13,7 @@ class AffinityDB:
         # create cron table if it has not been created
         table_names = self.conn.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
         if "cron" not in [table_name[0] for table_name in table_names]:
-            sql_cmd = "create table \"cron\"(idx integer, time string, init_param string)"
+            sql_cmd = "create table \"cron\"(cron_idx integer, time string, init_param string)"
             self.conn.execute(sql_cmd)
             logging.info("cron table was not in the database and was created")
 
