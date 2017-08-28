@@ -67,7 +67,7 @@ class AffinityDB:
             while not quit.is_set():
                 # put the results from the argument queue to the sqlite database
                 while self._out_q.qsize() > 0:
-                    print self._out_q.qsize()
+                    print (self._out_q.qsize())
                     out_q_set = self._out_q.get()
                     out_q_set = [out_idx] + out_q_set
                     out_q_sets.append(out_q_set)
@@ -83,7 +83,7 @@ class AffinityDB:
 
             # performing final actions to close table with the queue
             while self._out_q.qsize() > 0:
-                print self._out_q.qsize()
+                print (self._out_q.qsize())
                 out_q_set = self._out_q.get()
                 out_q_set = [out_idx] + out_q_set
                 out_q_sets.append(out_q_set)
@@ -159,7 +159,7 @@ class AffinityDB:
         logging.info("parameter check for run_multithread function successfully passed")
 
         # write the initial state of the init function to cron
-        sql_cmd = "select idx from cron"
+        sql_cmd = "select cron_idx from cron"
         cron_idx = len(self.conn.execute(sql_cmd).fetchall())
         sql_cmd = "insert into cron values({},\"{}\",\"{}\")".format(cron_idx+1,time_stamp,init_state)
         self.conn.execute(sql_cmd)
