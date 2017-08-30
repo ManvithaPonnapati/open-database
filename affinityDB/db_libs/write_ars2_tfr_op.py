@@ -6,19 +6,19 @@ from prody import *
 from save_record_tfr_op import save_record_tfr
 
 class WriteARS2TFRInit:
-	this_module = sys.modules[__name__]
-	def __init__(self, num_bind_confs, num_decoy_confs, num_decoys):
-		self.num_bind_confs = num_bind_confs
-		self.num_decoy_confs = num_decoy_confs
-		self.num_decoys = num_decoys
+    this_module = sys.modules[__name__]
+    def __init__(self, num_bind_confs, num_decoy_confs, num_decoys):
+        self.num_bind_confs = num_bind_confs
+        self.num_decoy_confs = num_decoy_confs
+        self.num_decoys = num_decoys
 
-		atom_mapping = [('H', 1.0), ('C', 2.0), ('N', 3.0), ('O', 4.0), ('F', 5.0),
-			('Cl', 5.0), ('I', 5.0), ('Br', 5.0), ('P', 6.0), ('S', 6.0)]
-		self.atom_dict = defaultdict(lambda: 7.0)
-		for (k, v) in atom_mapping:
-			self.atom_dict[k] = v
+        atom_mapping = [('H', 1.0), ('C', 2.0), ('N', 3.0), ('O', 4.0), ('F', 5.0),
+                        ('Cl', 5.0), ('I', 5.0), ('Br', 5.0), ('P', 6.0), ('S', 6.0)]
+        self.atom_dict = defaultdict(lambda: 7.0)
+        for (k, v) in atom_mapping:
+            self.atom_dict[k] = v
 
-		self.this_module.write_ars2_tfr_init = self
+        self.this_module.write_ars2_tfr_init = self
 
 def write_ars2_tfr(rec_file, cryst_lig_file, bind_lig_file, decoy_files, out_tfr_file, init='write_ars2_tfr_init'):
 	"""For each protein/ligand crystal pair, write one tfrecord with the following:

@@ -13,6 +13,7 @@ class Download_pdb_init:
 
 def download_pdb(pdb_id,init="download_pdb_init"):
     """
+    Download PDB protein structure from the Protein Data Bank.
 
     :param pdb_id:
     :param dir_path:

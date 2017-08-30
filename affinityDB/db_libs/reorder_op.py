@@ -84,7 +84,7 @@ class Reorder_init:
 
     def param_load(self, param):
         if type(param).__name__ in ['unicode','str']:
-            param = json.loads(param)
+            param = json.loads(param)                                                                                   # FIXME: I don't like json here
 
         self.args = param['args']
         self.kwargs = param['kwargs']
