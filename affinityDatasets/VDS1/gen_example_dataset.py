@@ -13,38 +13,25 @@ db_path = "/home/maksym/Desktop/vds1/test.db"
 afdb = database.AffinityDB(db_path)
 database_master = database.DatabaseMaster(db_path)
 
-
-#Download_pdb_init(db_path="/home/maksym/Desktop/vds1split_pdbs1", download_dir="download_pdbs1")
-#print download_pdb("1QGT")
-
-
-
 with open("./data/main_pdb_target_list.txt") as f: raw_pdb_list = f.readlines()
 pdb_list = raw_pdb_list[0].split(", ")
 print "number of pdbs to download:", len(pdb_list)
 print "will download only 100 in this experiment"
-pdb_list = pdb_list[:100]
+pdb_list = pdb_list[:20]
 
 
-Download_pdb_init(db_path="/home/maksym/Desktop/vds1/split_pdbs1", download_dir="download_pdbs1")
+Download_pdb_init(db_root="/home/maksym/Desktop/vds1/", download_dir="download_pdbs1")
 afdb.run_multithread("download_pdb",
                      arg_types=[str],
                      arg_lists=[pdb_list],
                      out_types=[str],
                      out_names=["filename"])
 
+disk_pdbs = database_master.retrieve("out_000_download_pdb",["filename"],{})
+disk_pdbs = [disk_pdb[0] for disk_pdb in disk_pdbs]
+Split_pdb_init(db_root="/home/maksym/Desktop/vds1/", split_dir="split_pdbs1")
 
-
-#time.sleep(1000)
-# FIXME:needs empty rules
-# FIXME: assert table name is string
-disk_pdbs = database_master.retrieve("out_000_VDS1.download_pdb",["filename"],{"run_idx":"{}<100"})
-disk_pdbs = disk_pdbs[0]
-# FIXME: unicode
-disk_pdbs = [str(disk_pdb) for disk_pdb in disk_pdbs]
-print "downloaded:", disk_pdbs
-Split_pdb_init(db_path="/home/cosmynx/Documents/database", split_dir="split_pdbs1")
-afdb.run_multithread("VDS1.split_pdb",
+afdb.run_multithread("split_pdb",
                      arg_types=[str],
                      arg_lists=[disk_pdbs],
                      out_types=[str,str],

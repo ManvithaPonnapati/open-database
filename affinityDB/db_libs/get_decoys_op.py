@@ -8,7 +8,17 @@ from rdkit.Chem.rdmolfiles import SDMolSupplier
 class GetDecoysInit:
     this_module = sys.modules[__name__]
     def __init__(self, all_pdb_files, all_mol_files, all_mols, all_num_atoms,
-                 max_atom_dif, max_substruct, max_num_decoys):
+                 max_atom_dif, max_substruct, max_num_decoys):                                                          # fixme
+        """
+
+        :param all_pdb_files:
+        :param all_mol_files:
+        :param all_mols:
+        :param all_num_atoms:
+        :param max_atom_dif:
+        :param max_substruct:
+        :param max_num_decoys:
+        """
         self.all_pdb_files = all_pdb_files
         self.all_mol_files = all_mol_files
         self.all_mols = all_mols
@@ -20,9 +30,15 @@ class GetDecoysInit:
 
 
 def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
-    """For each binding ligand, get a list of decoy ligands. We filter by number
-    of atoms and maximum common substructure (MCS). Returns filepaths to all
-    binding ligand - decoy pair.
+    """
+    For each binding ligand, get a list of decoy ligands. We filter by number of atoms and maximum common
+    substructure (MCS). Returns filepaths to all binding ligand - decoy pair.
+
+    :param pdb_file:
+    :param mol_file:
+    :param num_atoms:
+    :param init:
+    :return:
     """
 
     init = eval(init)
@@ -36,7 +52,7 @@ def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
     random.shuffle(iterator)
     for i in iterator:
         if (init.all_mol_files[i] == mol_file or abs(init.all_num_atoms[i] - num_atoms) > init.max_atom_dif):
-            continue
+            continue                                                                                                    # FIXME
         mcs = MCS.FindMCS([init.all_mols[i], mol],
                           minNumAtoms=init.max_substruct,
                           ringMatchesRingOnly=True,
@@ -46,10 +62,9 @@ def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
             if counter == init.max_num_decoys -1:
                 output += init.all_pdb_files[i]
                 counter += 1
-                break
+                break                                                                                                   # FIXME
         output += init.all_pdb_files[i] + ','
         counter += 1
-
     # Check to make sure there are enough decoys
     if counter < init.max_num_decoys:
         raise Exception("Not enough decoys for ligand " + pdb_file)

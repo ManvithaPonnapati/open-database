@@ -133,7 +133,9 @@ class AffinityDB:
         assert all([len(arg_list) == len(arg_lists[0]) for arg_list in arg_lists]), \
             "List of arguments should be all of the same length."
         for i in range(len(arg_types)):
-            assert all([isinstance(arg,arg_types[i]) for arg in arg_lists[i]]),"Incorrect type in arg_list" + str(i)
+            for arg in arg_lists[i]:
+                assert(type(arg) in [str, unicode] if arg_types[i]==str else isinstance(arg,arg_types[i])),\
+                    "arg set:" + str(i) + "incorrect arg type:" + str(type(arg)) + "expected:" + str(arg_types[i])
         assert len(func.split("/")) == 1, "Functions should be defined in database libs and should not need prefix"
         assert (len(func.split("."))) == 1, "Functions should be defined in database libs and should not need prefix"
         # try importing the function from string into the database module

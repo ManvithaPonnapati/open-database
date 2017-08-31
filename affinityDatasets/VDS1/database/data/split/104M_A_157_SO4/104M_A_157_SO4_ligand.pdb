@@ -1,0 +1,6 @@
+REMARK Selection 'noh chain A and resnum 157'
+HETATM    1  S   SO4 A 157      32.948  29.549   4.282  0.88  8.18           S
+HETATM    2  O1  SO4 A 157      32.186  30.097   5.328  0.88  7.92           O
+HETATM    3  O2  SO4 A 157      33.731  30.552   3.651  0.88  8.89           O
+HETATM    4  O3  SO4 A 157      32.104  28.977   3.264  0.88  9.36           O
+HETATM    5  O4  SO4 A 157      33.898  28.582   4.820  0.88  9.24           O

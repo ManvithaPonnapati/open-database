@@ -2,22 +2,26 @@ import os,sys
 
 class Download_pdb_init:
     this_module = sys.modules[__name__]
-    def __init__(self,db_path,download_dir):
-        download_path = os.path.join(db_path,download_dir)
+    def __init__(self,db_root,download_dir):
+        """
+
+        :param db_root:
+        :param download_dir:
+        """
+        download_path = os.path.join(db_root,download_dir)
         if not os.path.exists(download_path):
             os.makedirs(download_path)
-        self.db_path = db_path
+        self.db_path = db_root
         self.download_dir = download_dir
         self.this_module.download_pdb_init = self
 
 
 def download_pdb(pdb_id,init="download_pdb_init"):
-    """
-    Download PDB protein structure from the Protein Data Bank.
+    """ Download PDB protein structure from the Protein Data Bank.
 
-    :param pdb_id:
-    :param dir_path:
-    :return:
+    :param pdb_id: string (4-letter PDB ID IE: 1QGT)
+    :param dir_path: string (folder in which to save the pdb file)
+    :return: nested list (it is always 1x1xstring where string is the relative path to the output file)
     """
     init = eval(init)
     download_link = 'https://files.rcsb.org/download/{}.pdb'.format(pdb_id)

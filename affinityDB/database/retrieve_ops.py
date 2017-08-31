@@ -118,33 +118,35 @@ class DatabaseMaster:
         """
         # todo: add string comp support
         cursor = self.conn.cursor()
-        num_cols = len(col_rules)
-
-        # from the table select all the columns to filter for
-        sql_cmd = "select " + ", ".join([key for key in col_rules]) + " from \"" + table + "\""
-        cursor.execute(sql_cmd)
-        filter_sets = cursor.fetchall()
-
-        # repeat every argument number of times it appears in the selection
-        mult = [len(re.findall("{}", col_rules[key])) for key in col_rules]
-
-        def _repeat_vals(vals, repeats):
-            rep_vals = []
-            [[rep_vals.append(vals[i]) for _ in range(repeats[i])] for i in range(num_cols)]
-            return rep_vals
-
-        filter_sets = [_repeat_vals(set, mult) for set in filter_sets]
-
-        # evaluate every row to get a boolean mask of examples
-        rule_tmp = "(" + ") and (".join([col_rules[key] for key in col_rules]) + ")"
-        sel_mask = [eval(rule_tmp.format(*val_set)) for val_set in filter_sets]
 
         # from the table get all the columns to retrieve
         sql_cmd = "select " + " ,".join(cols) + " from \"" + table + "\""
         cursor.execute(sql_cmd)
         sel_sets = cursor.fetchall()
 
-        # apply a boolean mask to take only entries that fit the selection rule
-        sel_sets = list(compress(sel_sets, sel_mask))
-        sel_vals = [list(x) for x in zip(*sel_sets)]
+        if len(col_rules)==0:
+            sel_vals = sel_sets
+        else:
+            # from the table select all the columns to filter for
+            sql_cmd = "select " + ", ".join([key for key in col_rules]) + " from \"" + table + "\""
+            cursor.execute(sql_cmd)
+            filter_sets = cursor.fetchall()
+
+            # repeat every argument number of times it appears in the selection
+            mult = [len(re.findall("{}", col_rules[key])) for key in col_rules]
+
+            def _repeat_vals(vals, repeats):
+                rep_vals = []
+                [[rep_vals.append(vals[i]) for _ in range(repeats[i])] for i in range(len(col_rules))]
+                return rep_vals
+            filter_sets = [_repeat_vals(set, mult) for set in filter_sets]
+
+            # evaluate every row to get a boolean mask of examples
+            rule_tmp = "(" + ") and (".join([col_rules[key] for key in col_rules]) + ")"
+            sel_mask = [eval(rule_tmp.format(*val_set)) for val_set in filter_sets]
+
+            # apply a boolean mask to take only entries that fit the selection rule
+            sel_sets = list(compress(sel_sets, sel_mask))
+            sel_vals = [list(x) for x in zip(*sel_sets)]
+        print "returning va;s", sel_vals
         return sel_vals
