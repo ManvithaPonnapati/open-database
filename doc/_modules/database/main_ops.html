@@ -1,0 +1,406 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>database.main_ops &#8212; Affinity 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Affinity 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for database.main_ops</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span><span class="nn">os</span><span class="o">,</span><span class="nn">sqlite3</span><span class="o">,</span><span class="nn">time</span><span class="o">,</span><span class="nn">imp</span><span class="o">,</span><span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+
+
+<div class="viewcode-block" id="AffinityDB"><a class="viewcode-back" href="../../database.html#database.main_ops.AffinityDB">[docs]</a><span class="k">class</span> <span class="nc">AffinityDB</span><span class="p">:</span>
+    <span class="n">python_to_sql</span> <span class="o">=</span> <span class="p">{</span><span class="nb">int</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">:</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">}</span>
+    <span class="n">sql_to_python</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;integer&#39;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="s1">&#39;string&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">}</span>
+    <span class="n">db_libs_path</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;/db_libs&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">db_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">db_path</span><span class="p">)</span>
+
+        <span class="c1"># create cron table if it has not been created</span>
+        <span class="n">table_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;SELECT name FROM sqlite_master WHERE type=&#39;table&#39;;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;cron&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">table_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">table_name</span> <span class="ow">in</span> <span class="n">table_names</span><span class="p">]:</span>
+            <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s2">&quot;create table </span><span class="se">\&quot;</span><span class="s2">cron</span><span class="se">\&quot;</span><span class="s2">(cron_idx integer, time string, init_param string)&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;cron table was not in the database and was created&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AffinityDB.open_table_with_queue"><a class="viewcode-back" href="../../database.html#database.main_ops.AffinityDB.open_table_with_queue">[docs]</a>    <span class="k">def</span> <span class="nf">open_table_with_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">table_name</span><span class="p">,</span><span class="n">col_names</span><span class="p">,</span><span class="n">col_types</span><span class="p">,</span><span class="n">commit_sec</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Creates an output table, and a queue to feed this table. Creates a background thread to take results</span>
+<span class="sd">        from the queue and insert into the table.</span>
+
+<span class="sd">        :param table_name: string (name of the table prefix out_xxx_ will be appended)</span>
+<span class="sd">        :param col_names: list of strings (names of the columns)</span>
+<span class="sd">        :param col_types: list of python types (column types)</span>
+<span class="sd">        :return: multiprocessing queue, event to close the table and terminate thread.</span>
+
+<span class="sd">        Exaple usage:</span>
+<span class="sd">        out_q,stop_event = afdb.open_table_with_queue(table_name=&quot;some_table&quot;,col_names=[&quot;num&quot;],col_types=[int])</span>
+<span class="sd">        for i in range(1000):</span>
+<span class="sd">            out_q.put([i])</span>
+<span class="sd">        stop_event.set()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_stamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%h_%y_%Y_%M_%S&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">==</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;arg table_name should be a string&quot;</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">col_names</span><span class="p">)</span><span class="o">==</span><span class="nb">list</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">col_names</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">==</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;arg col_names should be a list of strings&quot;</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">col_types</span><span class="p">)</span><span class="o">==</span><span class="nb">list</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">col_types</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">==</span><span class="nb">type</span><span class="p">,</span> <span class="s2">&quot;arg col_names should be a list of types&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">col_names</span><span class="p">)</span><span class="o">==</span><span class="nb">len</span><span class="p">(</span><span class="n">col_types</span><span class="p">),</span> <span class="s2">&quot;mismatch between the number of column names and types&quot;</span>
+
+        <span class="c1"># write the initial state of the init function to cron</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s2">&quot;select cron_idx from cron&quot;</span>
+        <span class="n">cron_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">())</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s2">&quot;insert into cron values(</span><span class="si">{}</span><span class="s2">,</span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cron_idx</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">time_stamp</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">out_table</span> <span class="o">=</span> <span class="s2">&quot;out_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cron_idx</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">table_name</span>
+        <span class="n">num_args</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">col_types</span><span class="p">)</span>
+
+        <span class="c1"># create empty sqlite3 table for outputs</span>
+        <span class="n">col_types</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">python_to_sql</span><span class="p">[</span><span class="n">col_type</span><span class="p">]</span> <span class="k">for</span> <span class="n">col_type</span> <span class="ow">in</span> <span class="n">col_types</span><span class="p">]</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s1">&#39;create table </span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">out_table</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1"> (out_idx integer not null, &#39;</span>
+        <span class="n">sql_cmd</span> <span class="o">+=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">col_names</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">col_types</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_args</span><span class="p">)])</span>
+        <span class="n">sql_cmd</span> <span class="o">+=</span> <span class="s2">&quot;, primary key(out_idx));&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">))</span>
+
+        <span class="c1"># assemble the insert into the database command</span>
+        <span class="n">out_sql_cmd</span> <span class="o">=</span> <span class="s2">&quot;insert into </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">out_table</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2"> values (?,&quot;</span>
+        <span class="n">out_sql_cmd</span> <span class="o">+=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;?&quot;</span> <span class="k">for</span> <span class="n">col_type</span> <span class="ow">in</span> <span class="n">col_types</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;);&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_out_q</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">autocommit</span><span class="p">(</span><span class="n">quit</span><span class="p">):</span>
+            <span class="n">out_idx</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">out_q_sets</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">commit_clock</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">commit_exceptions</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">quit</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+                <span class="c1"># put the results from the argument queue to the sqlite database</span>
+                <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out_q</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="nb">print</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_out_q</span><span class="o">.</span><span class="n">qsize</span><span class="p">())</span>
+                    <span class="n">out_q_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out_q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                    <span class="n">out_q_set</span> <span class="o">=</span> <span class="p">[</span><span class="n">out_idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">out_q_set</span>
+                    <span class="n">out_q_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out_q_set</span><span class="p">)</span>
+                    <span class="n">out_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">commit_clock</span> <span class="o">&gt;</span> <span class="n">commit_sec</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">out_sql_cmd</span><span class="p">,</span> <span class="n">out_q_sets</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="n">commit_exceptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="n">out_q_sets</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="n">commit_clock</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+            <span class="c1"># performing final actions to close table with the queue</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out_q</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_out_q</span><span class="o">.</span><span class="n">qsize</span><span class="p">())</span>
+                <span class="n">out_q_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out_q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="n">out_q_set</span> <span class="o">=</span> <span class="p">[</span><span class="n">out_idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">out_q_set</span>
+                <span class="n">out_q_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out_q_set</span><span class="p">)</span>
+                <span class="n">out_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">out_sql_cmd</span><span class="p">,</span> <span class="n">out_q_sets</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">commit_exceptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="c1"># update the cron table</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="n">mssg</span> <span class="o">=</span> <span class="s2">&quot;Number of autocommit exceptions:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">commit_exceptions</span><span class="p">))</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">commit_exceptions</span><span class="p">)[:</span><span class="mi">3000</span><span class="p">]</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;autocommit exceptions:&quot;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">commit_exceptions</span><span class="p">)))</span>
+            <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s2">&quot;update cron set init_param=</span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2"> where cron_idx=</span><span class="si">{}</span><span class="s2">;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mssg</span><span class="p">,</span><span class="n">cron_idx</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">close_event</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">autocommit</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">close_event</span><span class="p">,))</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out_q</span><span class="p">,</span><span class="n">close_event</span></div>
+
+<div class="viewcode-block" id="AffinityDB.run_multithread"><a class="viewcode-back" href="../../database.html#database.main_ops.AffinityDB.run_multithread">[docs]</a>    <span class="k">def</span> <span class="nf">run_multithread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">func</span><span class="p">,</span><span class="n">arg_types</span><span class="p">,</span><span class="n">arg_lists</span><span class="p">,</span><span class="n">out_types</span><span class="p">,</span><span class="n">out_names</span><span class="p">,</span><span class="n">num_threads</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span><span class="n">commit_sec</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Given set of tasks (any function in python) , breaks the tasks between a given number of processes</span>
+<span class="sd">        to execute. Writes inputs into arg_ sqlite table and outputs into _out sqlite table.</span>
+
+<span class="sd">        Important:</span>
+<span class="sd">        Function should take a single set of arguments IE: find_roots(a_x2,b_x,c)</span>
+<span class="sd">        and output 1/many sets of outputs as a nested list: IE: [[-0.5]] for find_root(0,6,3),</span>
+<span class="sd">        [[-5][5]] for find_root(25,0,0)</span>
+
+<span class="sd">        If the task is interrupted in the process of execution, it is possible to resume with AffinityDB.continue(*)</span>
+
+<span class="sd">        :param func: string (a name of the function to execute)</span>
+<span class="sd">        :param arg_types: list of [int,float,str] (python argument types)</span>
+<span class="sd">        :param arg_lists: nested list: ([arg1,arg1,arg1],[arg2,arg2,arg2],[arg3,arg3,arg3]])</span>
+<span class="sd">        :param out_types: list of [int,float,str]</span>
+<span class="sd">        :param out_names: list of strings (what are the names of the outputs of the function)</span>
+<span class="sd">        :param num_threads: integer number (number of independent processes)</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_stamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%h_%y_%Y_%M_%S&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">arg_lists</span><span class="p">)</span><span class="o">==</span><span class="nb">list</span><span class="p">,</span> <span class="s2">&quot;list of inputs is expected&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="nb">type</span><span class="p">(</span><span class="n">arg_list</span><span class="p">)</span><span class="o">==</span><span class="nb">list</span> <span class="k">for</span> <span class="n">arg_list</span> <span class="ow">in</span> <span class="n">arg_lists</span><span class="p">]),</span> <span class="s2">&quot;list of lists of inputs is expected&quot;</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">arg_types</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">([</span><span class="nb">int</span><span class="p">,</span><span class="nb">float</span><span class="p">,</span><span class="nb">str</span><span class="p">])),</span> <span class="s2">&quot;Expected keywords: int,float,str.&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg_types</span><span class="p">)</span><span class="o">==</span><span class="nb">len</span><span class="p">(</span><span class="n">arg_lists</span><span class="p">),</span> <span class="s2">&quot;Bad number of argument types.&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arg_types</span><span class="p">))</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_types</span><span class="p">)</span><span class="o">==</span><span class="nb">len</span><span class="p">(</span><span class="n">out_names</span><span class="p">),</span> <span class="s2">&quot;Bad number of output types.&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">arg_list</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg_lists</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">arg_list</span> <span class="ow">in</span> <span class="n">arg_lists</span><span class="p">]),</span> \
+            <span class="s2">&quot;List of arguments should be all of the same length.&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arg_types</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">arg_lists</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="k">assert</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">unicode</span><span class="p">]</span> <span class="k">if</span> <span class="n">arg_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span><span class="nb">str</span> <span class="k">else</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span><span class="n">arg_types</span><span class="p">[</span><span class="n">i</span><span class="p">])),</span>\
+                    <span class="s2">&quot;arg set:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;incorrect arg type:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;expected:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">arg_types</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Functions should be defined in database libs and should not need prefix&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Functions should be defined in database libs and should not need prefix&quot;</span>
+        <span class="c1"># try importing the function from string into the database module</span>
+        <span class="n">lib_name</span> <span class="o">=</span> <span class="n">func</span> <span class="o">+</span> <span class="s2">&quot;_op&quot;</span>
+
+        <span class="n">fp</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">descr</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">find_module</span><span class="p">(</span><span class="n">lib_name</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">db_libs_path</span><span class="p">])</span>
+        <span class="n">lib_mod</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="n">lib_name</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">descr</span><span class="p">)</span>
+        <span class="n">func_ref</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="s2">&quot;lib_mod.&quot;</span> <span class="o">+</span> <span class="n">func</span><span class="p">)</span>
+
+        <span class="c1"># check the default arguments requirement for the function is satisfied</span>
+        <span class="k">if</span> <span class="n">func_ref</span><span class="o">.</span><span class="n">__defaults__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">req_args</span> <span class="o">=</span> <span class="n">func_ref</span><span class="o">.</span><span class="n">__code__</span><span class="o">.</span><span class="n">co_argcount</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">func_ref</span><span class="o">.</span><span class="n">__defaults__</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">req_args</span> <span class="o">=</span> <span class="n">func_ref</span><span class="o">.</span><span class="n">__code__</span><span class="o">.</span><span class="n">co_argcount</span>
+        <span class="k">assert</span> <span class="n">req_args</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg_types</span><span class="p">),</span> <span class="s2">&quot;missing arguments&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">req_args</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;found:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">arg_types</span><span class="p">))</span>
+        <span class="c1"># if the function has an initializer, check if it is accessible, and record its state</span>
+        <span class="n">func_args</span> <span class="o">=</span> <span class="n">func_ref</span><span class="o">.</span><span class="n">__code__</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">[:</span><span class="n">func_ref</span><span class="o">.</span><span class="n">__code__</span><span class="o">.</span><span class="n">co_argcount</span><span class="p">]</span>
+        <span class="n">init_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">func_args</span><span class="p">))</span> <span class="k">if</span> <span class="n">func_args</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span><span class="s2">&quot;init&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">init_idx</span> <span class="o">&gt;</span> <span class="n">req_args</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;init function should have a default argument when declared&quot;</span>
+        <span class="n">init_func</span> <span class="o">=</span> <span class="n">func_ref</span><span class="o">.</span><span class="n">__defaults__</span><span class="p">[</span><span class="n">init_idx</span><span class="o">-</span><span class="n">req_args</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">init_func</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;init function default should be a string&quot;</span>
+        <span class="n">init_state</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">eval</span><span class="p">(</span><span class="s2">&quot;lib_mod.&quot;</span> <span class="o">+</span> <span class="n">init_func</span><span class="p">)</span><span class="o">.</span><span class="n">__dict__</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;parameter check for run_multithread function successfully passed&quot;</span><span class="p">)</span>
+
+        <span class="c1"># write the initial state of the init function to cron</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s2">&quot;select cron_idx from cron&quot;</span>
+        <span class="n">cron_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">())</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s2">&quot;insert into cron values(</span><span class="si">{}</span><span class="s2">,</span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cron_idx</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">time_stamp</span><span class="p">,</span><span class="n">init_state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+        <span class="c1"># initialize important parameters before running</span>
+        <span class="n">arg_table</span> <span class="o">=</span> <span class="s2">&quot;arg_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cron_idx</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">func</span>
+        <span class="n">out_table</span> <span class="o">=</span> <span class="s2">&quot;out_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cron_idx</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">func</span>
+        <span class="n">num_args</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg_types</span><span class="p">)</span>
+        <span class="n">var_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">func_ref</span><span class="o">.</span><span class="n">__code__</span><span class="o">.</span><span class="n">co_varnames</span><span class="p">)[:</span><span class="n">num_args</span><span class="p">]</span>
+        <span class="n">num_outs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_types</span><span class="p">)</span>
+        <span class="n">num_runs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg_lists</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># create empty sqlite3 table for commands</span>
+        <span class="n">arg_types</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">python_to_sql</span><span class="p">[</span><span class="n">arg_type</span><span class="p">]</span> <span class="k">for</span> <span class="n">arg_type</span> <span class="ow">in</span> <span class="n">arg_types</span><span class="p">]</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s1">&#39;create table </span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">arg_table</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1"> (run_idx integer not null, &#39;</span>
+        <span class="n">sql_cmd</span> <span class="o">+=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">var_names</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">arg_types</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_args</span><span class="p">)])</span>
+        <span class="n">sql_cmd</span> <span class="o">+=</span> <span class="s2">&quot;, run_state integer, run_message text, primary key(run_idx));&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">))</span>
+
+        <span class="c1"># fill sqlite3 table with single commands that python threads will execute</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s2">&quot;insert into </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">arg_table</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2"> values (?,&quot;</span>
+        <span class="n">sql_cmd</span> <span class="o">+=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;?&quot;</span> <span class="k">for</span> <span class="n">arg_type</span> <span class="ow">in</span> <span class="n">arg_types</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;,?,?);&quot;</span>
+        <span class="n">arg_lists</span> <span class="o">=</span> <span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="n">num_runs</span><span class="p">)]</span> <span class="o">+</span> <span class="n">arg_lists</span>  <span class="c1"># one column is used for run_index</span>
+        <span class="n">arg_sets</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">arg_lists</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">,</span><span class="n">arg_sets</span><span class="p">)</span>
+
+        <span class="c1"># create empty sqlite3 table for the outputs</span>
+        <span class="n">out_types</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">python_to_sql</span><span class="p">[</span><span class="n">out_type</span><span class="p">]</span> <span class="k">for</span> <span class="n">out_type</span> <span class="ow">in</span> <span class="n">out_types</span><span class="p">]</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s1">&#39;create table </span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">out_table</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1"> (out_idx integer not null, run_idx integer not null, &#39;</span>
+        <span class="n">sql_cmd</span> <span class="o">+=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">out_names</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">+</span><span class="s2">&quot; &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">out_types</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_outs</span><span class="p">)])</span>
+        <span class="n">sql_cmd</span> <span class="o">+=</span> <span class="s2">&quot;, primary key(out_idx));&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">))</span>
+        <span class="c1"># run a regular continue command with the threads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coninue</span><span class="p">(</span><span class="n">arg_table</span><span class="p">,</span><span class="n">num_threads</span><span class="o">=</span><span class="n">num_threads</span><span class="p">,</span><span class="n">commit_sec</span><span class="o">=</span><span class="n">commit_sec</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AffinityDB.coninue"><a class="viewcode-back" href="../../database.html#database.main_ops.AffinityDB.coninue">[docs]</a>    <span class="k">def</span> <span class="nf">coninue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">arg_table</span><span class="p">,</span><span class="n">num_threads</span><span class="p">,</span><span class="n">commit_sec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Continue the interrupted run_multithread function.</span>
+<span class="sd">        :param arg_table: string (name of the sqlite table with arguments of the function to run)</span>
+<span class="sd">        :param num_threads: integer (number of processes)</span>
+<span class="sd">        :param commit_freq: integer (write outputs to the database every number of tasks - has a dramatic effect on</span>
+<span class="sd">        speed)</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get constant hardwired parameters</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">arg_table</span><span class="p">[</span><span class="mi">8</span><span class="p">:]</span> <span class="c1"># function name starts after 8th letter</span>
+        <span class="n">out_table</span> <span class="o">=</span> <span class="s2">&quot;out_&quot;</span> <span class="o">+</span> <span class="n">arg_table</span><span class="p">[</span><span class="mi">4</span><span class="p">:]</span>
+        <span class="c1"># import the corresponding to the function module</span>
+        <span class="n">lib_name</span> <span class="o">=</span> <span class="n">func</span> <span class="o">+</span> <span class="s2">&quot;_op&quot;</span>
+        <span class="n">fp</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">descr</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">find_module</span><span class="p">(</span><span class="n">lib_name</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">db_libs_path</span><span class="p">])</span>
+        <span class="n">lib_mod</span> <span class="o">=</span> <span class="n">imp</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="n">lib_name</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">descr</span><span class="p">)</span>
+        <span class="n">func_ref</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="s2">&quot;lib_mod.&quot;</span> <span class="o">+</span> <span class="n">func</span><span class="p">)</span>
+
+        <span class="c1"># retrieve all sets of parameters to run function with</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s1">&#39;pragma table_info(</span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arg_table</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">)</span>
+        <span class="n">arg_infos</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">arg_names</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">arg_info</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">arg_info</span> <span class="ow">in</span> <span class="n">arg_infos</span><span class="p">][:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s1">&#39;select &#39;</span> <span class="o">+</span> <span class="s2">&quot; ,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">arg_names</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; from </span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">arg_table</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1"> where run_state is NULL;&#39;</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">)</span>
+        <span class="n">arg_sets</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">num_tasks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg_sets</span><span class="p">)</span>
+
+        <span class="c1"># retrieve the information about the output data types of the function</span>
+        <span class="n">sql_cmd</span> <span class="o">=</span> <span class="s1">&#39;pragma table_info(</span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">out_table</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_cmd</span><span class="p">)</span>
+        <span class="n">out_infos</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">out_types</span> <span class="o">=</span> <span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">out_info</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">out_info</span> <span class="ow">in</span> <span class="n">out_infos</span><span class="p">[</span><span class="mi">2</span><span class="p">:]])</span>
+        <span class="n">out_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">AffinityDB</span><span class="o">.</span><span class="n">sql_to_python</span><span class="p">[</span><span class="n">out_type</span><span class="p">]</span> <span class="k">for</span> <span class="n">out_type</span> <span class="ow">in</span> <span class="n">out_types</span><span class="p">]</span>
+
+        <span class="c1"># run tasks with the multiprocessing pool (on the background)</span>
+        <span class="n">pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">num_threads</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Manager</span><span class="p">()</span>
+        <span class="n">task_q</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="n">arg_q</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="n">out_q</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="p">[</span><span class="n">task_q</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">arg_set</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg_set</span> <span class="ow">in</span> <span class="n">arg_sets</span><span class="p">]</span>
+        <span class="n">thrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">_thread_proxie</span><span class="p">,</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">func_ref</span><span class="p">,</span><span class="n">task_q</span><span class="p">,</span><span class="n">arg_q</span><span class="p">,</span><span class="n">out_q</span><span class="p">,</span><span class="n">out_types</span><span class="p">,</span><span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_threads</span><span class="p">)]</span>
+
+        <span class="c1"># collect the results from the processes in the main thread</span>
+        <span class="n">arg_sql_cmd</span> <span class="o">=</span> <span class="s1">&#39;update </span><span class="se">\&quot;</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">arg_table</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1"> set run_state=?, run_message=? where run_idx=?&#39;</span>
+        <span class="n">out_sql_cmd</span> <span class="o">=</span> <span class="s2">&quot;insert into </span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">out_table</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2"> values (?,?,&quot;</span>
+        <span class="n">out_sql_cmd</span> <span class="o">+=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;?&quot;</span> <span class="k">for</span> <span class="n">out_type</span> <span class="ow">in</span> <span class="n">out_types</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;);&quot;</span>
+
+        <span class="n">out_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">arg_q_sets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">out_q_sets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">commit_clock</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_tasks</span><span class="p">):</span>
+            <span class="c1"># put the results from the argument queue to the sqlite database</span>
+            <span class="n">arg_q_set</span> <span class="o">=</span> <span class="n">arg_q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">arg_q_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg_q_set</span><span class="p">)</span>
+            <span class="c1"># put the results from the outputs queue to the database</span>
+            <span class="k">while</span> <span class="n">out_q</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">out_q_set</span> <span class="o">=</span> <span class="n">out_q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+                <span class="n">out_q_set</span> <span class="o">=</span> <span class="p">[</span><span class="n">out_idx</span><span class="p">]</span> <span class="o">+</span> <span class="n">out_q_set</span>
+                <span class="n">out_q_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">out_q_set</span><span class="p">)</span>
+                <span class="n">out_idx</span><span class="o">+=</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">commit_clock</span> <span class="o">&gt;</span> <span class="n">commit_sec</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">arg_sql_cmd</span><span class="p">,</span><span class="n">arg_q_sets</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">out_sql_cmd</span><span class="p">,</span><span class="n">out_q_sets</span><span class="p">)</span>
+                <span class="n">out_q_sets</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">arg_q_sets</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                <span class="n">commit_clock</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="c1"># wait for all tasks to complete, report error messages caught by pool threads</span>
+        <span class="p">[</span><span class="n">thr</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">for</span> <span class="n">thr</span> <span class="ow">in</span> <span class="n">thrs</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">arg_sql_cmd</span><span class="p">,</span> <span class="n">arg_q_sets</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="n">out_sql_cmd</span><span class="p">,</span> <span class="n">out_q_sets</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_thread_proxie</span><span class="p">(</span><span class="n">func_ref</span><span class="p">,</span><span class="n">task_q</span><span class="p">,</span><span class="n">arg_q</span><span class="p">,</span><span class="n">out_q</span><span class="p">,</span><span class="n">out_types</span><span class="p">,</span><span class="n">thr_i</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Runs a function func with the set of arguments arg_set. Checks is the output of the function is a nested list.</span>
+<span class="sd">    Checks if every example in the nested list is has type out_types. Sends status updates of tasks to the arg_q,</span>
+<span class="sd">    sends output updates of the task to the out_q.</span>
+
+<span class="sd">    :param func: string (a name of the function to run)</span>
+<span class="sd">    :param arg_set: list (set of arguments)</span>
+<span class="sd">    :param arg_q: multiprocessing.Queue() (which to send task status updates to)</span>
+<span class="sd">    :param out_q: multiprocessing.Queue() (which to send outputs to)</span>
+<span class="sd">    :param out_types: list of [int,float,string] (expected kinds of outputs from the function)</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="n">func_ref</span>
+    <span class="k">while</span> <span class="n">task_q</span><span class="o">.</span><span class="n">qsize</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">thr_i</span><span class="o">*</span><span class="mi">2</span><span class="p">:</span>
+        <span class="n">arg_set</span> <span class="o">=</span> <span class="n">task_q</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">arg_types</span> <span class="o">=</span> <span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">arg_set</span><span class="p">]</span>
+            <span class="n">num_out</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_types</span><span class="p">)</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="s2">&quot;func(&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">arg_type</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="s1">u&#39;str&#39;</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)]</span> <span class="k">else</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">arg_type</span> <span class="ow">in</span> <span class="n">arg_types</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">arg_set</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="n">outss</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+
+            <span class="k">assert</span> <span class="nb">type</span><span class="p">(</span><span class="n">outss</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">,</span> <span class="s2">&quot;list of outputs is expected&quot;</span>
+            <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="nb">type</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span> <span class="k">for</span> <span class="n">outs</span> <span class="ow">in</span> <span class="n">outss</span><span class="p">]),</span> <span class="s2">&quot;list of lists of outputs expected&quot;</span>
+            <span class="k">for</span> <span class="n">outs</span> <span class="ow">in</span> <span class="n">outss</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">out_types</span><span class="p">),</span> <span class="s2">&quot;incorrect number of outputs:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">outs</span><span class="p">))</span>
+                <span class="n">got_out_types</span> <span class="o">=</span> <span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">outs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_out</span><span class="p">)]</span>
+                <span class="k">assert</span> <span class="nb">all</span><span class="p">([</span><span class="n">got_out_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">out_types</span><span class="p">[</span><span class="n">i</span><span class="p">]]),</span> <span class="s2">&quot;incorrect outputs type:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">got_out_types</span><span class="p">)</span>
+
+            <span class="c1"># update the argument table with the success message</span>
+            <span class="n">arg_q</span><span class="o">.</span><span class="n">put</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;success&#39;</span><span class="p">,</span> <span class="n">arg_set</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+            <span class="c1"># update the results table with the results</span>
+            <span class="k">for</span> <span class="n">outs</span> <span class="ow">in</span> <span class="n">outss</span><span class="p">:</span>
+                <span class="n">out_q</span><span class="o">.</span><span class="n">put</span><span class="p">([</span><span class="n">arg_set</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="n">outs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># update the argument table with the error message</span>
+            <span class="n">arg_q</span><span class="o">.</span><span class="n">put</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">arg_set</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Affinity 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, Affinity Team.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.3.
+    </div>
+  </body>
+</html>

@@ -66,10 +66,10 @@ class Dock_init:
     def __init__(self, data_dir, dock_folder, smina_path, dock_param):
         """
 
-        :param data_dir:
-        :param dock_folder: 
-        :param smina_path: 
-        :param dock_param: dict for docking parameter {'args':[], 'kwargs':{}}
+        :param data_dir: str:: dir for the folder to save data
+        :param dock_folder: str:: name of the folder to save reorder output
+        :param smina_path: str:: path for teh executable smina program
+        :param dock_param: dict::   docking parameter {'args':[...], 'kwargs':{...}}
         """
         dock_dir = os.path.join(data_dir, dock_folder)
         if not os.path.exists(dock_dir):
@@ -120,10 +120,10 @@ def dock(rec_outpath, reorder_outpath, init='dock_init'):
     """
     Docking the ligand by smina
 
-    :param rec_outpath:
-    :param reorder_outpath:
-    :param init:
-    :return:
+    :param rec_outpath: str:: relative path for receptor
+    :param reorder_outpath: str:: relative path for reorder ligand
+    :param init: str:: init func naem
+    :return: nested list:: docking result contains the relative path for receptor, reorder ligand and docked ligand
     """
     init = eval(init)
     receptor = os.path.basename(rec_outpath).split('_')[0]
