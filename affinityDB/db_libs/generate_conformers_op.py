@@ -7,8 +7,13 @@ from rdkit.Chem.rdmolfiles import PDBWriter
 class GenerateConformersInit:
     this_module = sys.modules[__name__]
     def __init__(self, num_conformers):
+        """
+
+        :param num_conformers:
+        """
         self.num_conformers = num_conformers
         self.this_module.generate_conformers_init = self
+
 
 def generate_conformers(cryst_lig_file, out_pdb_path, init='generate_conformers_init', keepHs=False):
     """
@@ -24,9 +29,7 @@ def generate_conformers(cryst_lig_file, out_pdb_path, init='generate_conformers_
     :param keepHs:
     :return:
     """
-
     init = eval(init)
-
     mol = Chem.MolFromPDBFile(cryst_lig_file)
     pdb_writer = PDBWriter(out_pdb_path)
     mol = Chem.AddHs(mol)
@@ -37,6 +40,5 @@ def generate_conformers(cryst_lig_file, out_pdb_path, init='generate_conformers_
             mol = Chem.RemoveHs(mol)
         pdb_writer.write(mol, confId=cid)
     pdb_writer.close()
-
     print 'Generated conformers for one ligand'
     return [[out_pdb_path]]

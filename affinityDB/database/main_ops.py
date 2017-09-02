@@ -67,7 +67,6 @@ class AffinityDB:
             while not quit.is_set():
                 # put the results from the argument queue to the sqlite database
                 while self._out_q.qsize() > 0:
-                    print (self._out_q.qsize())
                     out_q_set = self._out_q.get()
                     out_q_set = [out_idx] + out_q_set
                     out_q_sets.append(out_q_set)
@@ -83,7 +82,6 @@ class AffinityDB:
 
             # performing final actions to close table with the queue
             while self._out_q.qsize() > 0:
-                print (self._out_q.qsize())
                 out_q_set = self._out_q.get()
                 out_q_set = [out_idx] + out_q_set
                 out_q_sets.append(out_q_set)
@@ -300,9 +298,9 @@ def _thread_proxie(func_ref,task_q,arg_q,out_q,out_types,thr_i):
                 ["\"{}\"" if arg_type in [type(u'str'), type('str')] else "{}" for arg_type in arg_types[1:]]) + ")"
             task = task.format(*arg_set[1:])
             outss = eval(task)
-
             assert type(outss) == list, "list of outputs is expected"
             assert all([type(outs) == list for outs in outss]), "list of lists of outputs expected"
+            assert len(outss) > 0, "function returned 0 output sets"
             for outs in outss:
                 assert len(outs) == len(out_types), "incorrect number of outputs:" + str(len(outs))
                 got_out_types = [type(outs[i]) for i in range(num_out)]
