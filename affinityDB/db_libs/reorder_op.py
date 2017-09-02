@@ -67,10 +67,10 @@ class Reorder_init:
         """
 
 
-        :param data_dir:
-        :param reorder_folder:
-        :param smina_path:
-        :param dock_param
+        :param data_dir: str:: dir for the folder to save data
+        :param reorder_folder: str:: name of the folder to save reorder output
+        :param smina_path: str:: path for teh executable smina program
+        :param dock_param: dict:: docking parameter {'args':[...], 'kwargs':{...}}
         """
         reorder_dir = os.path.join(data_dir, reorder_folder)
         if not os.path.exists(reorder_dir):
@@ -116,12 +116,12 @@ class Reorder_init:
 
 def reorder(rec_outpath, lig_outpath, init='reorder_init'):
     """
-    Read the ligand by smina and then write to new file
+    Parse the ligand by smina, and then output it. So the order of the atom keeps the same as the docking result
 
-    :param rec_outpath:
-    :param lig_outpath:
-    :param init:
-    :return:
+    :param rec_outpath: str:: relative path for receptor
+    :param lig_outpath: str:: relative path for ligand
+    :param init: str:: initialize module 
+    :return: nested list:: reorder result contains the relative path for receptor and relative path for reorder ligand
     """
 
     init = eval(init)

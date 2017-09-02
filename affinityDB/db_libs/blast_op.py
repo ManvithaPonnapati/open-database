@@ -13,21 +13,23 @@ class Blast_init:
     def __init__(self, data_dir, blast_db):
         """
 
-        :param data_dir:
-        :param blast_db:
+        :param data_dir: str:: dir for the data
+        :param blast_db: str:: path of the blast database
         """
         self.data_dir = data_dir
         self.blast_db = blast_db
         self.this_module.blast_init = self 
 
-def blast(rec_outpath, lig_outpath ,min_qseq_len = 100, init = 'blast_init'):
+def blast(rec_outpath, lig_outpath, init = 'blast_init'):
     """
+    Applying protein sequence blast on the receptor
 
-    :param rec_outpath:
-    :param lig_outpath:
-    :param min_qseq_len:
-    :param init:
-    :return:
+    :param rec_outpath: str:: relative path of receptor
+    :param lig_outpath: str:: relative path of ligand
+    :param init: str:: init func name
+    :return: nested list:: blast result contain  pair_name with receptor id and ligand name, 
+    chembl_target_id for similar sequence in database,  ideitity number as num_match/align_length and
+    the sequence of selected receptor
     """
     
     cdir = os.getcwd()
@@ -43,30 +45,8 @@ def blast(rec_outpath, lig_outpath ,min_qseq_len = 100, init = 'blast_init'):
     pr_rec = prody.parsePDB(rec_path)
     pr_lig = prody.parsePDB(lig_path)
 
-#    rec_size = pr_rec.numAtoms()
-#    lig_coords = pr_lig.getCoords()
-
-#    if rec_size < min_qseq_len:
-#        raise Exception("Receptor's seq len {} smaller than the smallest query seq len {}".format(rec_size, min_qseq_len))
-
-#    sequence = ''
-#    r = 4 
-#    while len(sequence) < min_qseq_len:
-#        res_coll = []
-#        for center in lig_coords:
-#            around_atoms = pr_rec.select('same residue as within {} of center'.format(r), center = center)
-#            if around_atoms is None:
-#                continue
-#            res_coll.append(around_atoms)
-
-#        resindices = reduce(lambda x,y : x|y, res_coll)
-#        sequence = resindices.getHierView()['A'].getSequence()
-#        print('sequence ', r, len(sequence))
-#        r +=1 
-
     sequence = pr_rec.getHierView()['A'].getSequence()
     
-
     with open('sequence.fasta','w') as fout: fout.write(">receptor\n" + sequence + '\n')
 
     cmd = 'blastp -db {} -query sequence.fasta -outfmt 5 -out result'.format(init.blast_db)
