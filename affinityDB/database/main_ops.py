@@ -5,7 +5,7 @@ import multiprocessing
 class AffinityDB:
     python_to_sql = {int: 'integer', float: 'float', str: 'string'}
     sql_to_python = {'integer': int, 'float': float, 'string': str}
-    db_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/db_libs"
+    multithread_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/lib_multithread"
 
     def __init__(self,db_root,db_name):
         db_path = os.path.join(db_root,db_name+".db")
@@ -140,7 +140,7 @@ class AffinityDB:
         # try importing the function from string into the database module
         lib_name = func + "_op"
 
-        fp, path, descr = imp.find_module(lib_name, [self.db_libs_path])
+        fp, path, descr = imp.find_module(lib_name, [self.multithread_libs_path])
         lib_mod = imp.load_module(lib_name, fp, path, descr)
         func_ref = eval("lib_mod." + func)
 
@@ -211,7 +211,7 @@ class AffinityDB:
         out_table = "out_" + arg_table[4:]
         # import the corresponding to the function module
         lib_name = func + "_op"
-        fp, path, descr = imp.find_module(lib_name, [self.db_libs_path])
+        fp, path, descr = imp.find_module(lib_name, [self.multithread_libs_path])
         lib_mod = imp.load_module(lib_name, fp, path, descr)
         func_ref = eval("lib_mod." + func)
 

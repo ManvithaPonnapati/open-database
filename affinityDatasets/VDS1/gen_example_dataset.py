@@ -1,13 +1,13 @@
 import os,sys,time
 import numpy as np
 sys.path.append('../../affinityDB')
-sys.path.append('../../affinityDB/dataset_libs')
-sys.path.append('../../affinityDB/db_libs')
+sys.path.append('../../affinityDB/lib_multithread')
 import database,sqlite3
 #import VDS1
 from download_pdb_op import Download_pdb_init,download_pdb
 from split_pdb_op import Split_pdb_init,split_pdb
 from generate_conformers_op import Generate_conformers_init,generate_conformers
+from pdb2mol_op import Pdb2mol_init,pdb2mol
 
 
 db_root = "/home/maksym/Desktop/vds1/"
@@ -45,18 +45,24 @@ afdb.run_multithread("split_pdb",
 disk_ligs = database_master.retrieve("out_001_split_pdb",["lig_file"],{})
 disk_ligs = ["/home/maksym/Desktop/vds1/" + disk_lig[0] for disk_lig in disk_ligs]
 
-
-#def __init__(self,db_root,conformers_dir,num_conformers,out_H):
 Generate_conformers_init(db_root="/home/maksym/Desktop/vds1",
                          conformers_dir="gen_conformers",
                          num_conformers=10,
                          out_H=False)
 
-#conf_ligs = [disk_lig.split(".")[0]+"conf.pdb" for disk_lig in disk_ligs]
 afdb.run_multithread("generate_conformers",
                      arg_types=[str],
                      arg_lists=[disk_ligs],
                      out_types=[str],
                      out_names=["conformers_file"])
 
-#def generate_conformers(cryst_lig_file, out_pdb_path, init='generate_conformers_init', keepHs=False):
+# convert all 20 ligands to mol files
+disk_ligs = database_master.retrieve("out_001_split_pdb",["lig_file"],{})
+disk_ligs = ["/home/maksym/Desktop/vds1/" + disk_lig[0] for disk_lig in disk_ligs]
+
+Pdb2mol_init(db_root=db_root,molfile_dir="lig_molf")
+afdb.run_multithread("pdb2mol",
+                     arg_types=[str],
+                     arg_lists=[disk_ligs],
+                     out_types=[str],
+                     out_names=["mol_file"])

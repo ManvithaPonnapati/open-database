@@ -60,7 +60,7 @@ def split_pdb(pdb_file, cuttoff_dist = 8, min_rec_atoms=10,
         lig_atom_num = lig.numAtoms()
 
         # escape the loop without writing anything if the number of ligand atoms is too small
-        if lig_atom_num > min_lig_atoms:
+        if lig_atom_num < min_lig_atoms:
             continue
 
         # select residues of the binding site
@@ -73,8 +73,8 @@ def split_pdb(pdb_file, cuttoff_dist = 8, min_rec_atoms=10,
 
         # proofcheck that ligand and receptor residues do not overlap
         lig_resnums = np.unique(np.asarray(lig.getResnums()))
-        assert len(
-            np.intersect1d(lig_resnums, bindsite_resnums)) == 0, "broken selection: binding site and ligand overlap"
+        assert len(np.intersect1d(lig_resnums, bindsite_resnums)) == 0, \
+            "broken selection: binding site and ligand overlap"
 
         # select the receptor atoms to save
         prody_cmd = "resnum " + " ".join([str(resnum) for resnum in bindsite_resnums])
