@@ -7,7 +7,8 @@ class AffinityDB:
     sql_to_python = {'integer': int, 'float': float, 'string': str}
     db_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/db_libs"
 
-    def __init__(self,db_path):
+    def __init__(self,db_root,db_name):
+        db_path = os.path.join(db_root,db_name+".db")
         self.conn = sqlite3.connect(db_path)
 
         # create cron table if it has not been created

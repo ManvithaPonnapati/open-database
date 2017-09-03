@@ -1,44 +1,54 @@
-import sys
+import os,sys
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit.Chem.rdmolfiles import PDBWriter
 
 
-class GenerateConformersInit:
+class Generate_conformers_init:
     this_module = sys.modules[__name__]
-    def __init__(self, num_conformers):
+    def __init__(self,db_root,conformers_dir,num_conformers,out_H):
         """
 
-        :param num_conformers:
+        :param db_root: string (database root)
+        :param conformers_dir: string (name of the directory where to put generated conformers)
+        :param num_conformers: int (number of the conformers to output)
+        :param out_H: bool T/F (Add hydrogen atoms to the output. All input hydorogen atoms are always lost.)
         """
+        self.db_root = db_root
+        self.conformers_dir = conformers_dir
+        conformers_path = os.path.join(db_root,conformers_dir)
+        if not os.path.exists(conformers_path):
+            os.makedirs(conformers_path)
+        self.conformers_path = conformers_path
         self.num_conformers = num_conformers
+        self.out_H = out_H
         self.this_module.generate_conformers_init = self
 
 
-def generate_conformers(cryst_lig_file, out_pdb_path, init='generate_conformers_init', keepHs=False):
+def generate_conformers(lig_file,init='generate_conformers_init'):
     """
-    Performs the following tasks:
-    > Converts the PDB molecule in lig_file into a mol object
-    > (Optional) Save single-frame file in Mol format for future use
-    > Generates conformers for this mol object
-    > Save multi-frame ligand to out_pdb_path in PDB format
-
-    :param cryst_lig_file:
-    :param out_pdb_path:
-    :param init:
-    :param keepHs:
-    :return:
+    Forgets the initial coordinates of the molecule. Looses all hydrogens. Adds all hydrogens.
+    Generates random conformers. Optimizes conformers with MMFF94 Force Field.
+    Saves multiframe PDB file of the ligand with new coordinates.
+    :param lig_file: string (path to the ligand file in the PDB format to read)
+    :param init: string (init function)
+    :return: nested list of dimension 1x1xstring. String is the relative path to the output file.
     """
+    # TODO: test if shape if forgotten (give an option to optimize only?)
     init = eval(init)
-    mol = Chem.MolFromPDBFile(cryst_lig_file)
-    pdb_writer = PDBWriter(out_pdb_path)
+    lig_name = lig_file.split("/")[-1]
+    conf_outpath = os.path.join(init.conformers_path,lig_name)
+    mol = Chem.MolFromPDBFile(lig_file)
+    mol = Chem.RemoveHs(mol)
     mol = Chem.AddHs(mol)
-    conf_ids = AllChem.EmbedMultipleConfs(mol, init.num_conformers)
+    conf_ids = AllChem.EmbedMultipleConfs(mol,
+                                          clearConfs=True,
+                                          numConfs=init.num_conformers)
+    pdb_writer = PDBWriter(conf_outpath)
     for cid in conf_ids:
         AllChem.MMFFOptimizeMolecule(mol, confId=cid)
-        if not keepHs:
+        if not init.out_H:
             mol = Chem.RemoveHs(mol)
         pdb_writer.write(mol, confId=cid)
     pdb_writer.close()
-    print 'Generated conformers for one ligand'
-    return [[out_pdb_path]]
+    return [[os.path.join(init.conformers_dir,lig_name)]]
