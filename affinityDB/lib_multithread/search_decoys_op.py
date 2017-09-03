@@ -1,32 +1,62 @@
-import sys, random
+import os,sys, random
 from rdkit import Chem
 from rdkit.Chem import MCS
 from rdkit.Chem.rdmolfiles import SDMolSupplier
 
 
 
-class GetDecoysInit:
-    this_module = sys.modules[__name__]
-    def __init__(self, all_pdb_files, all_mol_files, all_mols, all_num_atoms,
-                 max_atom_dif, max_substruct, max_num_decoys):                                                          # fixme
-        """
 
-        :param all_pdb_files:
-        :param all_mol_files:
-        :param all_mols:
-        :param all_num_atoms:
-        :param max_atom_dif:
-        :param max_substruct:
-        :param max_num_decoys:
-        """
-        self.all_pdb_files = all_pdb_files
-        self.all_mol_files = all_mol_files
-        self.all_mols = all_mols
-        self.all_num_atoms = all_num_atoms
-        self.max_atom_dif = max_atom_dif
-        self.max_substruct = max_substruct
-        self.max_num_decoys = max_num_decoys
-        self.this_module.get_decoys_init = self
+class Search_decoys_init:
+    this_module = sys.modules[__name__]
+    def __init__(self,db_root,decoy_molfiles,num_decoys,atom_diff,max_substruct):
+        decoy_filepaths = [os.path.join(db_root,decoy_molfile) for decoy_molfile in decoy_molfiles]
+        print decoy_filepaths
+
+
+
+def search_decoys(molfile_path):
+    pass
+
+
+
+# class GetDecoysInit:
+#     this_module = sys.modules[__name__]
+#     def __init__(self, all_pdb_files, all_mol_files, all_mols, all_num_atoms, max_atom_dif, max_substruct, max_num_decoys):
+#         """
+#
+#         :param all_pdb_files:
+#         :param all_mol_files:
+#         :param all_mols:
+#         :param all_num_atoms:
+#         :param max_atom_dif:
+#         :param max_substruct:
+#         :param max_num_decoys:
+#         """
+#         self.all_pdb_files = all_pdb_files
+#         self.all_mol_files = all_mol_files
+#         self.all_mols = all_mols
+#         self.all_num_atoms = all_num_atoms
+#         self.max_atom_dif = max_atom_dif
+#         self.max_substruct = max_substruct
+#         self.max_num_decoys = max_num_decoys
+#         self.this_module.get_decoys_init = self
+
+
+# takes a list of .mol files as a source of decoys
+# takes a list of number of atoms for each of the potantial decoys
+# takes a list of .mol files as a molecules that need decoys
+
+# sorts list by number of atoms
+# for each of the search ligands
+#     retrieve all with the approximate number of atoms
+#     random shuffle
+#     while num_decoys < desired:
+#          mcs substructure search
+
+
+
+
+
 
 
 def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
@@ -51,7 +81,7 @@ def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
     iterator = range(len(init.all_mols))
     random.shuffle(iterator)
     for i in iterator:
-        if (init.all_mol_files[i] == mol_file or abs(init.all_num_atoms[i] - num_atoms) > init.max_atom_dif):
+        if (init.all_mol_files[i] == mol_file or abs(init.all_num_atoms[i] - num_atoms) > init.max_atom_dif):           # FIXME O2 time
             continue                                                                                                    # FIXME
         mcs = MCS.FindMCS([init.all_mols[i], mol],
                           minNumAtoms=init.max_substruct,

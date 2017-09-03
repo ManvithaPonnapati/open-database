@@ -103,60 +103,59 @@ class AffinityDB:
         multiprocessing.Process(target=autocommit,args=(close_event,)).start()
         return self._out_q,close_event
 
-    def run_multithread(self,func,arg_types,arg_lists,out_types,out_names,num_threads=10,commit_sec=1):
-        """ Given set of tasks (any function in python) , breaks the tasks between a given number of processes
-        to execute. Writes inputs into arg_ sqlite table and outputs into _out sqlite table.
-
-        Important:
-        Function should take a single set of arguments IE: find_roots(a_x2,b_x,c)
-        and output 1/many sets of outputs as a nested list: IE: [[-0.5]] for find_root(0,6,3),
-        [[-5][5]] for find_root(25,0,0)
+    def run_multithread(self,func,arg_lists,num_threads=10,commit_sec=1):
+        """ Run any function in lib_multithread in multiple threads.
+        Writes all arguments to arg_xxx_func table, record outputs to out_xxx_table. Record state of the function's
+        initializer to cron table.
 
         If the task is interrupted in the process of execution, it is possible to resume with AffinityDB.continue(*)
 
         :param func: string (a name of the function to execute)
-        :param arg_types: list of [int,float,str] (python argument types)
         :param arg_lists: nested list: ([arg1,arg1,arg1],[arg2,arg2,arg2],[arg3,arg3,arg3]])
-        :param out_types: list of [int,float,str]
-        :param out_names: list of strings (what are the names of the outputs of the function)
-        :param num_threads: integer number (number of independent processes)
+        :param num_threads: integer (number of independent processes)
+        :param commit_sec: integer (time delay in flushing outputs to the arg_ and out_ tables)
         :return: None
         """
         time_stamp = time.strftime("%h_%y_%Y_%M_%S").lower()
 
-        assert type(arg_lists)==list, "list of inputs is expected"
-        assert all([type(arg_list)==list for arg_list in arg_lists]), "list of lists of inputs is expected"
-        assert(set(arg_types).issubset([int,float,str])), "Expected keywords: int,float,str."
-        assert len(arg_types)==len(arg_lists), "Bad number of argument types." + str(len(arg_types))
-        assert len(out_types)==len(out_names), "Bad number of output types."
-        assert all([len(arg_list) == len(arg_lists[0]) for arg_list in arg_lists]), \
-            "List of arguments should be all of the same length."
-        for i in range(len(arg_types)):
-            for arg in arg_lists[i]:
-                assert(type(arg) in [str, unicode] if arg_types[i]==str else isinstance(arg,arg_types[i])),\
-                    "arg set:" + str(i) + "incorrect arg type:" + str(type(arg)) + "expected:" + str(arg_types[i])
+        # Check 1: input types
+        assert type(func)==str, "name of the function should be passed as string"
         assert len(func.split("/")) == 1, "Functions should be defined in database libs and should not need prefix"
         assert (len(func.split("."))) == 1, "Functions should be defined in database libs and should not need prefix"
-        # try importing the function from string into the database module
-        lib_name = func + "_op"
+        assert type(arg_lists)==list, "list of inputs is expected"
+        assert all([type(arg_list)==list for arg_list in arg_lists]), "list of lists of inputs is expected"
 
+        # Check 2: Find function's module in multithread libraries. Find function's initializer and the function itself.
+        lib_name = func + "_op"
         fp, path, descr = imp.find_module(lib_name, [self.multithread_libs_path])
         lib_mod = imp.load_module(lib_name, fp, path, descr)
+        iref = eval("lib_mod." + func.capitalize() + "_init")
         func_ref = eval("lib_mod." + func)
 
-        # check the default arguments requirement for the function is satisfied
+        # Check3: check if the function was initialized
+        func_args = func_ref.__code__.co_varnames[:func_ref.__code__.co_argcount]
+        assert func_args[-1], "init function should have \"init\" as its last argument"
+        init_func = func_ref.__defaults__[-1]
+        assert type(init_func) == str, "init function default should be a string"
+        init_state = str(eval("lib_mod." + init_func).__dict__)
+
+        # Check4: check the default arguments requirement for the function
         if func_ref.__defaults__ is not None:
             req_args = func_ref.__code__.co_argcount - len(func_ref.__defaults__)
         else:
             req_args = func_ref.__code__.co_argcount
-        assert req_args >= len(arg_types), "missing arguments" + str(req_args) + "found:" + str(len(arg_types))
-        # if the function has an initializer, check if it is accessible, and record its state
-        func_args = func_ref.__code__.co_varnames[:func_ref.__code__.co_argcount]
-        init_idx = [i for i in range(len(func_args)) if func_args[i]=="init"][0]
-        assert (init_idx > req_args-1), "init function should have a default argument when declared"
-        init_func = func_ref.__defaults__[init_idx-req_args]
-        assert type(init_func) == str, "init function default should be a string"
-        init_state = str(eval("lib_mod." + init_func).__dict__)
+        assert req_args >= len(iref.arg_types), "missing args" + str(req_args) + "found:" + str(len(iref.arg_types))
+
+        # Check 5: check all lists of arguments for running with multithread
+        assert(set(iref.arg_types).issubset([int,float,str])), "Expected keywords: int,float,str."
+        assert len(iref.arg_types)==len(arg_lists), "Bad number of argument types." + str(len(iref.arg_types))
+        assert len(iref.out_types)==len(iref.out_names), "Bad number of output types."
+        assert all([len(arg_list) == len(arg_lists[0]) for arg_list in arg_lists]), \
+            "arg lists should be all of the same length."
+        for i in range(len(iref.arg_types)):
+            for arg in arg_lists[i]:
+                assert(type(arg) in [str, unicode] if iref.arg_types[i]==str else isinstance(arg,iref.arg_types[i])),\
+                    "arg set:" + str(i) + "incorrect arg type:" + str(type(arg)) + "expected:" + str(iref.arg_types[i])
         logging.info("parameter check for run_multithread function successfully passed")
 
         # write the initial state of the init function to cron
@@ -169,13 +168,13 @@ class AffinityDB:
         # initialize important parameters before running
         arg_table = "arg_" + str(cron_idx).zfill(3) + "_" + func
         out_table = "out_" + str(cron_idx).zfill(3) + "_" + func
-        num_args = len(arg_types)
+        num_args = len(iref.arg_types)
         var_names = list(func_ref.__code__.co_varnames)[:num_args]
-        num_outs = len(out_types)
+        num_outs = len(iref.out_types)
         num_runs = len(arg_lists[0])
 
         # create empty sqlite3 table for commands
-        arg_types = [self.python_to_sql[arg_type] for arg_type in arg_types]
+        arg_types = [self.python_to_sql[arg_type] for arg_type in iref.arg_types]
         sql_cmd = 'create table \"' + arg_table + '\" (run_idx integer not null, '
         sql_cmd += ", ".join([str(var_names[i])+" "+str(arg_types[i]) for i in range(num_args)])
         sql_cmd += ", run_state integer, run_message text, primary key(run_idx));"
@@ -189,9 +188,9 @@ class AffinityDB:
         self.conn.executemany(sql_cmd,arg_sets)
 
         # create empty sqlite3 table for the outputs
-        out_types = [self.python_to_sql[out_type] for out_type in out_types]
+        out_types = [self.python_to_sql[out_type] for out_type in iref.out_types]
         sql_cmd = 'create table \"' + out_table + '\" (out_idx integer not null, run_idx integer not null, '
-        sql_cmd += ", ".join([str(out_names[i])+" "+str(out_types[i]) for i in range(num_outs)])
+        sql_cmd += ", ".join([str(iref.out_names[i])+" "+str(out_types[i]) for i in range(num_outs)])
         sql_cmd += ", primary key(out_idx));"
         self.conn.execute(str(sql_cmd))
         # run a regular continue command with the threads
@@ -202,8 +201,7 @@ class AffinityDB:
         """ Continue the interrupted run_multithread function.
         :param arg_table: string (name of the sqlite table with arguments of the function to run)
         :param num_threads: integer (number of processes)
-        :param commit_freq: integer (write outputs to the database every number of tasks - has a dramatic effect on
-        speed)
+        :param commit_sec: integer (write outputs to the database every number of tasks)
         :return: None
         """
         # get constant hardwired parameters

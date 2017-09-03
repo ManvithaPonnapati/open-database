@@ -5,6 +5,10 @@ import numpy as np
 
 class Split_pdb_init:
     this_module = sys.modules[__name__]
+    arg_types = [str]
+    out_types = [str, str, int, int]
+    out_names = ["lig_file", "bindsite_file", "lig_num_atoms", "bindsite_num_atoms"]
+
     def __init__(self,db_root,split_dir,discard_h = True):
         """
         :param db_root: string (path to the root folder of the database)
@@ -31,8 +35,12 @@ def split_pdb(pdb_file, cuttoff_dist = 8, min_rec_atoms=10,
     :param min_rec_atoms: minimun number of atoms be saved as binding site
     :param min_lig_atoms: minumum number of atoms for ligand to be saved
     :param init: string (init function in this module)
-    :return: nested list of pairs of file names (multiple ligands each paired with selection of the binding site)
+    :return: nested list of pairs of file names of dimensions [num_pairs x [string,string,int,int]] or
+    [num_pairs x [lig_file,bindsite_file,lig_num_atoms,bindsite_num_atoms]]
     """
+
+    #FIXME: there is a bug with selection -- more stuff is selected
+
     init = eval(init)
     pdb_path = os.path.join(init.db_root,pdb_file)
     # parse PDB file
@@ -83,11 +91,11 @@ def split_pdb(pdb_file, cuttoff_dist = 8, min_rec_atoms=10,
         # write the ligand file and the receptor file
         pair_name = '_'.join([pdb_id, str(lig_chain), str(lig_resnum), str(lig_resname)])
         lig_name = pair_name + "_ligand.pdb"
-        rec_name = pair_name + "_receptor.pdb"
+        bindsite_name = pair_name + "_bindsite.pdb"
         os.makedirs(os.path.join(init.db_root, init.split_dir, pair_name))
         lig_outpath = os.path.join(init.split_dir, pair_name, lig_name)
-        rec_outpath = os.path.join(init.split_dir, pair_name, rec_name)
+        bindsite_outpath = os.path.join(init.split_dir, pair_name, bindsite_name)
         pr.writePDB(os.path.join(init.db_root, lig_outpath), lig)
-        pr.writePDB(os.path.join(init.db_root, rec_outpath), binding_site)
-        out_filenames.append([lig_outpath, rec_outpath])
+        pr.writePDB(os.path.join(init.db_root, bindsite_outpath), binding_site)
+        out_filenames.append([lig_outpath, bindsite_outpath, lig.numAtoms(), binding_site.numAtoms()])
     return out_filenames

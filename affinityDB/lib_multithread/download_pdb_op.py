@@ -2,6 +2,10 @@ import os,sys
 
 class Download_pdb_init:
     this_module = sys.modules[__name__]
+    arg_types = [str]
+    out_types = [str]
+    out_names = ["pdb_file"]
+
     def __init__(self,db_root,download_dir):
         """
         :param db_root: string (root folder directory for the files in the database)
@@ -20,12 +24,12 @@ def download_pdb(pdb_id,init="download_pdb_init"):
 
     :param pdb_id: string (4-letter PDB ID IE: 1QGT)
     :param dir_path: string (folder in which to save the pdb file)
-    :return: nested list (of dimensions 1x1xstring where string is the relative path to the output file)
+    :return: nested list (of dimensions 1x[string] where string is the relative path to the output file)
     """
     init = eval(init)
     download_link = 'https://files.rcsb.org/download/{}.pdb'.format(pdb_id)
     download_path = os.path.join(init.db_path,init.download_dir)
     cmd = 'wget --no-check-certificate -P {} {}'.format(download_path, download_link)
     os.system(cmd)
-    output_file = init.download_dir + "/" + download_link.split("/")[-1]
+    output_file = os.path.join(init.download_dir,download_link.split("/")[-1])
     return [[output_file]]

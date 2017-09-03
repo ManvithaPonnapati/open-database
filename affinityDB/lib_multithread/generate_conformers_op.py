@@ -6,6 +6,10 @@ from rdkit.Chem.rdmolfiles import PDBWriter
 
 class Generate_conformers_init:
     this_module = sys.modules[__name__]
+    arg_types = [str]
+    out_types = [str]
+    out_names = ["conformers_file"]
+
     def __init__(self,db_root,conformers_dir,num_conformers,out_H):
         """
 
@@ -32,7 +36,7 @@ def generate_conformers(lig_file,init='generate_conformers_init'):
     Saves multiframe PDB file of the ligand with new coordinates.
     :param lig_file: string (path to the ligand file in the PDB format to read)
     :param init: string (init function)
-    :return: nested list of dimension 1x1xstring. String is the relative path to the output file.
+    :return: nested list of dimension [1x[string]]. String is the relative path to the output file.
     """
     # TODO: test if shape if forgotten (give an option to optimize only?)
     init = eval(init)
