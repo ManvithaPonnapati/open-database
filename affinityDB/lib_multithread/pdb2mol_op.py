@@ -5,9 +5,9 @@ from rdkit.Chem.rdmolfiles import SDWriter
 
 class Pdb2mol_init:
     this_module = sys.modules[__name__]
-    arg_types = [str]
-    out_types = [str]
-    out_names = ["mol_file"]
+    arg_types = [str,str]
+    out_types = [str,str]
+    out_names = ["uid", "mol_file"]
 
     def __init__(self,db_root,molfile_dir):
         """
@@ -23,7 +23,7 @@ class Pdb2mol_init:
         self.molfile_path = molfile_path
         self.this_module.pdb2mol_init = self
 
-def pdb2mol(lig_file, init='pdb2mol_init'):
+def pdb2mol(uid, lig_file, init='pdb2mol_init'):
     """
     Convert .pdb file to .mol file
     :param lig_file: string (relative path to the ligand file)
@@ -31,9 +31,8 @@ def pdb2mol(lig_file, init='pdb2mol_init'):
     :return:
     """
     init = eval(init)
-    lig_name = lig_file.split("/")[-1].split(".")[0] + ".mol"
     mol = Chem.MolFromPDBFile(os.path.join(init.db_root,lig_file))
-    mol_writer = SDWriter(os.path.join(init.molfile_path,lig_name))
+    mol_writer = SDWriter(os.path.join(init.molfile_path,uid + ".mol"))
     mol_writer.write(mol)
     mol_writer.close()
-    return [[os.path.join(init.molfile_dir,lig_name)]]
+    return [[uid,os.path.join(init.molfile_dir,uid + ".mol")]]

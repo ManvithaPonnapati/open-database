@@ -6,9 +6,9 @@ from rdkit.Chem.rdmolfiles import PDBWriter
 
 class Generate_conformers_init:
     this_module = sys.modules[__name__]
-    arg_types = [str]
-    out_types = [str]
-    out_names = ["conformers_file"]
+    arg_types = [str,str]
+    out_types = [str,str]
+    out_names = ["uid","conformers_file"]
 
     def __init__(self,db_root,conformers_dir,num_conformers,out_H):
         """
@@ -29,7 +29,7 @@ class Generate_conformers_init:
         self.this_module.generate_conformers_init = self
 
 
-def generate_conformers(lig_file,init='generate_conformers_init'):
+def generate_conformers(uid,lig_file,init='generate_conformers_init'):
     """
     Forgets the initial coordinates of the molecule. Looses all hydrogens. Adds all hydrogens.
     Generates random conformers. Optimizes conformers with MMFF94 Force Field.
@@ -40,8 +40,7 @@ def generate_conformers(lig_file,init='generate_conformers_init'):
     """
     # TODO: test if shape if forgotten (give an option to optimize only?)
     init = eval(init)
-    lig_name = lig_file.split("/")[-1]
-    conf_outpath = os.path.join(init.conformers_path,lig_name)
+    conf_outpath = os.path.join(init.conformers_path,uid + ".pdb")
     mol = Chem.MolFromPDBFile(lig_file)
     mol = Chem.RemoveHs(mol)
     mol = Chem.AddHs(mol)
@@ -55,4 +54,4 @@ def generate_conformers(lig_file,init='generate_conformers_init'):
             mol = Chem.RemoveHs(mol)
         pdb_writer.write(mol, confId=cid)
     pdb_writer.close()
-    return [[os.path.join(init.conformers_dir,lig_name)]]
+    return [[uid,os.path.join(init.conformers_dir,uid+".pdb")]]

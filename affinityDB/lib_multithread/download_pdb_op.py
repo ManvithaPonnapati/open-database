@@ -3,8 +3,8 @@ import os,sys
 class Download_pdb_init:
     this_module = sys.modules[__name__]
     arg_types = [str]
-    out_types = [str]
-    out_names = ["pdb_file"]
+    out_types = [str,str]
+    out_names = ["uid","pdb_file"]
 
     def __init__(self,db_root,download_dir):
         """
@@ -32,4 +32,4 @@ def download_pdb(pdb_id,init="download_pdb_init"):
     cmd = 'wget --no-check-certificate -P {} {}'.format(download_path, download_link)
     os.system(cmd)
     output_file = os.path.join(init.download_dir,download_link.split("/")[-1])
-    return [[output_file]]
+    return [[pdb_id,output_file]]

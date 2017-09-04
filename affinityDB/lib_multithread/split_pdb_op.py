@@ -5,9 +5,9 @@ import numpy as np
 
 class Split_pdb_init:
     this_module = sys.modules[__name__]
-    arg_types = [str]
-    out_types = [str, str, int, int]
-    out_names = ["lig_file", "bindsite_file", "lig_num_atoms", "bindsite_num_atoms"]
+    arg_types = [str,str]
+    out_types = [str,str, str, int, int]
+    out_names = ["uid", "lig_file", "bindsite_file", "lig_num_atoms", "bindsite_num_atoms"]
 
     def __init__(self,db_root,split_dir, discard_h=True, cutoff_dist=10, min_rec_atoms=10, min_lig_atoms=5):
         """
@@ -27,7 +27,7 @@ class Split_pdb_init:
         self.this_module.split_pdb_init = self
 
 
-def split_pdb(pdb_file, init="split_pdb_init"):
+def split_pdb(uid, pdb_file, init="split_pdb_init"):
     """ Iterates through every ligand molecule in the crystal structure (frequently there are a few). For each ligand
     selects and crops its binding site (any atom of Protein/DNA/Cofactor within the cutoff distance). Saves pairs of
     files: ligand + this ligand's binding site.
@@ -102,7 +102,7 @@ def split_pdb(pdb_file, init="split_pdb_init"):
         binding_site = rec.select(prody_cmd)
 
         # write the ligand file and the receptor file
-        pair_name = '_'.join([pdb_id, str(lig_chain), str(lig_resnum), str(lig_resname)])
+        pair_name = '_'.join([uid, str(lig_chain), str(lig_resnum), str(lig_resname)])
         lig_name = pair_name + "_ligand.pdb"
         bindsite_name = pair_name + "_bindsite.pdb"
         os.makedirs(os.path.join(init.db_root, init.split_dir, pair_name))
@@ -110,5 +110,5 @@ def split_pdb(pdb_file, init="split_pdb_init"):
         bindsite_outpath = os.path.join(init.split_dir, pair_name, bindsite_name)
         pr.writePDB(os.path.join(init.db_root, lig_outpath), lig)
         pr.writePDB(os.path.join(init.db_root, bindsite_outpath), binding_site)
-        out_filenames.append([lig_outpath, bindsite_outpath, lig.numAtoms(), binding_site.numAtoms()])
+        out_filenames.append([pair_name, lig_outpath, bindsite_outpath, lig.numAtoms(), binding_site.numAtoms()])
     return out_filenames

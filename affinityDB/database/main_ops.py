@@ -3,8 +3,8 @@ import multiprocessing
 
 
 class AffinityDB:
-    python_to_sql = {int: 'integer', float: 'float', str: 'string'}
-    sql_to_python = {'integer': int, 'float': float, 'string': str}
+    python_to_sql = {int: 'integer', float: 'float', str: 'text'}
+    sql_to_python = {'integer': int, 'float': float, 'text': str}
     multithread_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/lib_multithread"
 
     def __init__(self,db_root,db_name):
@@ -138,13 +138,13 @@ class AffinityDB:
         func_args = func_ref.__code__.co_varnames[:func_ref.__code__.co_argcount]
         assert func_args[-1] == "init", "init function should have \"init\" as its last argument"
         assert type(func_ref.__defaults__[-1]) == str, "init function default should be a string"
+        assert func_ref.__code__.co_argcount -1 == len(iref.arg_types), "Wrong number of arguments in init function:" \
+              + str(len(iref.arg_types)) + " expected:" + str(func_ref.__code__.co_argcount -1)
 
         # Check3: check if the function was initialized
         init_state = str(eval("lib_mod." + func_ref.__defaults__[-1]).__dict__)
 
         # Check4: check the arguments requirement for the function
-        req_args = func_ref.__code__.co_argcount -1
-        assert req_args >= len(iref.arg_types), "missing args" + str(req_args) + "found:" + str(len(iref.arg_types))
         assert all([type(arg_set) == tuple for arg_set in arg_sets]), "one or more args in arg_sets are not tuples"
         num_args = len(iref.arg_types)
         for arg_set in arg_sets:
@@ -152,7 +152,7 @@ class AffinityDB:
             for i in range(num_args):
                 assert (type(arg_set[i]) in [str, unicode] if iref.arg_types[i] == str
                         else isinstance(arg_set[i], iref.arg_types[i])), \
-                    "argument " + str(i) + "has incorrect type"  + str(type(arg_set[i]))
+                    "argument " + str(i) + " has incorrect type" + str(type(arg_set[i]))
         logging.info("parameter check for run_multithread function successfully passed")
 
         # write the initial state of the init function to cron

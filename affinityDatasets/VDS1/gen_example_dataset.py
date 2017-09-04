@@ -20,31 +20,49 @@ with open("./data/main_pdb_target_list.txt") as f: raw_pdb_list = f.readlines()
 pdb_list = raw_pdb_list[0].split(", ")
 print "number of pdbs to download:", len(pdb_list), "will download only 20"
 
-pdb_id_set = [(pdb_name,) for pdb_name in pdb_list[:20]]
+pdb_id_set = [(unicode(pdb_name),) for pdb_name in pdb_list[:20]]
 
 
 # download 20 pdbs
-Download_pdb_init(db_root=db_root,
-                  download_dir="download_pdbs1")
+Download_pdb_init(db_root=db_root,download_dir="download_pdbs1")
 afdb.run_multithread("download_pdb",arg_sets=pdb_id_set)
 
-
 # # split 20 PDBs
-disk_pdbs = database_master.retrieve("out_000_download_pdb",["pdb_file"],{})
+disk_pdbs = database_master.retrieve("out_000_download_pdb",["uid","pdb_file"],{})
 Split_pdb_init(db_root=db_root, split_dir="split_pdbs1")
 afdb.run_multithread("split_pdb",arg_sets=disk_pdbs)
 
-
 # convert all 20 ligands to mol files
-disk_ligs = database_master.retrieve("out_001_split_pdb",["lig_file"],{})
-Pdb2mol_init(db_root=db_root,molfile_dir="lig_molf")
+disk_ligs = database_master.retrieve("out_001_split_pdb",["uid","lig_file"],{})
+Pdb2mol_init(db_root=db_root, molfile_dir="lig_molf1")
 afdb.run_multithread("pdb2mol", arg_sets=disk_ligs)
 
 # # find decoys
 disk_molfiles = database_master.retrieve("out_002_pdb2mol",["mol_file"],{})
-disk_molfiles = [disk_molfile[0] for disk_molfile in disk_molfiles]
+
+
+
+
+
+
+
+
+
+# print [type(disk_pdb[0]) for disk_pdb in disk_pdbs]
+# #sql_cmd = "select uid ,pdb_file from \"out_000_download_pdb\""
+# sql_cmd = "select CAST(uid as text) from \"out_000_download_pdb\""
+# cursor = database_master.conn.cursor()
+# cursor.execute(sql_cmd)
+# disk_pdbs = cursor.fetchall()
+# print [type(disk_pdb[0]) for disk_pdb in disk_pdbs]
+
 
 #
+#
+#
+# print disk_molfiles
+
+
 # mol_pairs = [molfile.split("/")[-1].split("_ligand.mol")[0] for molfile in disk_molfiles]
 # pdb_pairs = [pdbfile.split("/")[-1].split("_ligand.pdb")[0] for pdbfile in disk_ligs]
 # _,_,order = database_master.list_search(pdb_pairs,mol_pairs)
@@ -62,7 +80,6 @@ disk_molfiles = [disk_molfile[0] for disk_molfile in disk_molfiles]
 #                    num_decoys=10,
 #                    atom_diff=3,
 #                    max_substruct=5)
-
 
 
 # Generate_conformers_init(db_root="/home/maksym/Desktop/vds1",
