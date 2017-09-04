@@ -15,6 +15,7 @@ class Pdb2mol_init:
         :param db_root: string (database root)
         :param molfile_dir: string (relative path where to create the output directory with .mol files)
         """
+        self.db_root = db_root
         self.molfile_dir = molfile_dir
         molfile_path = os.path.join(db_root,molfile_dir)
         if not os.path.exists(molfile_path):
@@ -24,14 +25,14 @@ class Pdb2mol_init:
 
 def pdb2mol(lig_file, init='pdb2mol_init'):
     """
-
-    :param lig_file:
-    :param init:
+    Convert .pdb file to .mol file
+    :param lig_file: string (relative path to the ligand file)
+    :param init: string (init function)
     :return:
     """
     init = eval(init)
     lig_name = lig_file.split("/")[-1].split(".")[0] + ".mol"
-    mol = Chem.MolFromPDBFile(lig_file)
+    mol = Chem.MolFromPDBFile(os.path.join(init.db_root,lig_file))
     mol_writer = SDWriter(os.path.join(init.molfile_path,lig_name))
     mol_writer.write(mol)
     mol_writer.close()

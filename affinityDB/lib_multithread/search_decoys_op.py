@@ -5,6 +5,19 @@ from rdkit.Chem.rdmolfiles import SDMolSupplier
 
 
 
+# takes a list of .mol files as a source of decoys
+# takes a list of number of atoms for each of the potantial decoys
+# takes a list of .mol files as a molecules that need decoys
+
+# sorts list by number of atoms
+# for each of the search ligands
+#     retrieve all with the approximate number of atoms
+#     random shuffle
+#     while num_decoys < desired:
+#          mcs substructure search
+
+
+
 
 class Search_decoys_init:
     this_module = sys.modules[__name__]
@@ -46,16 +59,7 @@ def search_decoys(molfile_path):
 #         self.this_module.get_decoys_init = self
 
 
-# takes a list of .mol files as a source of decoys
-# takes a list of number of atoms for each of the potantial decoys
-# takes a list of .mol files as a molecules that need decoys
 
-# sorts list by number of atoms
-# for each of the search ligands
-#     retrieve all with the approximate number of atoms
-#     random shuffle
-#     while num_decoys < desired:
-#          mcs substructure search
 
 
 
