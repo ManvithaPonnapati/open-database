@@ -8,6 +8,10 @@ from rdkit.Chem.rdmolfiles import SDMolSupplier
 
 class Search_decoys_init:
     this_module = sys.modules[__name__]
+    arg_types = [str]
+    out_types = [str]
+    out_names = ["pdb_file"]
+
     def __init__(self,db_root,decoy_molfiles,num_decoys,atom_diff,max_substruct):
         decoy_filepaths = [os.path.join(db_root,decoy_molfile) for decoy_molfile in decoy_molfiles]
         print decoy_filepaths

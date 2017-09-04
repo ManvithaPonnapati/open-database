@@ -134,16 +134,14 @@ class AffinityDB:
 
         # Check3: check if the function was initialized
         func_args = func_ref.__code__.co_varnames[:func_ref.__code__.co_argcount]
-        assert func_args[-1], "init function should have \"init\" as its last argument"
+        assert func_args[-1]=="init", "init function should have \"init\" as its last argument"
         init_func = func_ref.__defaults__[-1]
         assert type(init_func) == str, "init function default should be a string"
         init_state = str(eval("lib_mod." + init_func).__dict__)
 
-        # Check4: check the default arguments requirement for the function
-        if func_ref.__defaults__ is not None:
-            req_args = func_ref.__code__.co_argcount - len(func_ref.__defaults__)
-        else:
-            req_args = func_ref.__code__.co_argcount
+        # Check4: check the arguments requirement for the function
+        assert len(func_ref.__defaults__)==1,"function should have a single default arg \"init\" "
+        req_args = func_ref.__code__.co_argcount -1
         assert req_args >= len(iref.arg_types), "missing args" + str(req_args) + "found:" + str(len(iref.arg_types))
 
         # Check 5: check all lists of arguments for running with multithread

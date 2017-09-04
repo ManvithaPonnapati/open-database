@@ -9,7 +9,7 @@ class Split_pdb_init:
     out_types = [str, str, int, int]
     out_names = ["lig_file", "bindsite_file", "lig_num_atoms", "bindsite_num_atoms"]
 
-    def __init__(self,db_root,split_dir,discard_h = True):
+    def __init__(self,db_root,split_dir, discard_h=True, cutoff_dist=10, min_rec_atoms=10, min_lig_atoms=5):
         """
         :param db_root: string (path to the root folder of the database)
         :param split_dir: string (where to put split pdbs)
@@ -21,17 +21,19 @@ class Split_pdb_init:
         self.db_root = db_root
         self.split_dir = split_dir
         self.discard_h = discard_h
+        self.cutoff_dist = cutoff_dist
+        self.min_rec_atoms = min_rec_atoms
+        self.min_lig_atoms = min_lig_atoms
         self.this_module.split_pdb_init = self
 
 
-def split_pdb(pdb_file, cuttoff_dist = 8, min_rec_atoms=10,
-              min_lig_atoms = 5, init="split_pdb_init"):
+def split_pdb(pdb_file, init="split_pdb_init"):
     """ Iterates through every ligand molecule in the crystal structure (frequently there are a few). For each ligand
     selects and crops its binding site (any atom of Protein/DNA/Cofactor within the cutoff distance). Saves pairs of
     files: ligand + this ligand's binding site.
 
     :param pdb_file: string (relative path the the file to split)
-    :param cuttoff_dist: float (distance of any atoms in the binding site from any atom of the ligand to be saved)
+    :param cutoff_dist: float (distance of any atoms in the binding site from any atom of the ligand to be saved)
     :param min_rec_atoms: minimun number of atoms be saved as binding site
     :param min_lig_atoms: minumum number of atoms for ligand to be saved
     :param init: string (init function in this module)
@@ -39,13 +41,12 @@ def split_pdb(pdb_file, cuttoff_dist = 8, min_rec_atoms=10,
     [num_pairs x [lig_file,bindsite_file,lig_num_atoms,bindsite_num_atoms]]
     """
 
-    #FIXME: there is a bug with selection -- more stuff is selected
-
     init = eval(init)
     pdb_path = os.path.join(init.db_root,pdb_file)
     # parse PDB file
     pr_pdb = pr.parsePDB(pdb_path)
-    assert pr_pdb.numAtoms() > (min_lig_atoms+min_rec_atoms), "the crystal structure only has"+str(pr_pdb.numAtoms())
+    assert pr_pdb.numAtoms() > (init.min_lig_atoms+init.min_rec_atoms), \
+        "not enough atoms in this pdb" + str(pr_pdb.numAtoms())
 
     # parse header of the PDB file
     pr_header = pr.parsePDBHeader(pdb_path)
@@ -68,24 +69,36 @@ def split_pdb(pdb_file, cuttoff_dist = 8, min_rec_atoms=10,
         lig_atom_num = lig.numAtoms()
 
         # escape the loop without writing anything if the number of ligand atoms is too small
-        if lig_atom_num < min_lig_atoms:
+        if lig_atom_num < init.min_lig_atoms:
             continue
 
         # select residues of the binding site
-        bindsite_resnums = []
+        bindsite_Segindices = []
+        bindsite_Chids = []
+        bindsite_Resnums = []
         for atom_coord in lig_coords:
-            around_atoms = rec.select('same residue as within {} of center'.format(cuttoff_dist), center=atom_coord)
-            around_resnums = list(around_atoms.getResnums())
-            bindsite_resnums = bindsite_resnums + around_resnums
-        bindsite_resnums = np.unique(np.asarray(bindsite_resnums))
+            around_atoms = rec.select('same residue as within {} of center'.format(init.cutoff_dist),center=atom_coord)
+            bindsite_Segindices = bindsite_Segindices + list(around_atoms.getSegindices())
+            bindsite_Chids = bindsite_Chids + list(around_atoms.getChids())
+            bindsite_Resnums = bindsite_Resnums + list(around_atoms.getResnums())
+
+        # select only unique atoms
+        bindsite_names = [str(bindsite_Segindices[i]) + str(bindsite_Chids[i])+str(bindsite_Resnums[i])
+                          for i in range(len(bindsite_Segindices))]
+        bindsite_names,unq_idx = np.unique(np.asarray(bindsite_names),return_index=True)
+        segindices = np.asarray(bindsite_Segindices)[unq_idx]
+        chids = np.asarray(bindsite_Chids)[unq_idx]
+        resnums = np.asarray(bindsite_Resnums)[unq_idx]
 
         # proofcheck that ligand and receptor residues do not overlap
-        lig_resnums = np.unique(np.asarray(lig.getResnums()))
-        assert len(np.intersect1d(lig_resnums, bindsite_resnums)) == 0, \
-            "broken selection: binding site and ligand overlap"
+        lig_names = np.unique(np.asarray([str(lig.getSegindices()[i]) + str(lig.getChids()[i])
+                                          + str(lig.getResnums()[i]) for i in range(lig_atom_num)]))
+        assert len(np.intersect1d(bindsite_names,lig_names)) == 0, "broken selection: binding site and ligand overlap"
 
         # select the receptor atoms to save
-        prody_cmd = "resnum " + " ".join([str(resnum) for resnum in bindsite_resnums])
+        bindsite_resid = len(unq_idx)
+        prody_cmd = " or ".join(["(segindex {} chid {} resnum {})".format(segindices[i],chids[i],resnums[i])
+                                 for i in range(bindsite_resid)])
         binding_site = rec.select(prody_cmd)
 
         # write the ligand file and the receptor file
