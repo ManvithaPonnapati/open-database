@@ -33,7 +33,7 @@ class Binidng_affinity_init:
         }
         self.parse_func = self.parse_bind_func[parse_type]
 
-        self.this_module.biniding_affinity_init = self
+        self.this_module.binding_affinity_init = self
 
 
     def parse_bindingmoad_entry(self, entry):
@@ -190,7 +190,7 @@ class Binidng_affinity_init:
                 comment = 'success'    
 
             except Exception as e:
-                self.num_exceptions += 1
+                self.num_exception += 1
                 self.exceptions.append(e)
 
                 state = 0
