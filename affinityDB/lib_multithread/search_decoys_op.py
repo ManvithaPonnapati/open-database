@@ -23,11 +23,22 @@ class Search_decoys_init:
     this_module = sys.modules[__name__]
     arg_types = [str]
     out_types = [str]
-    out_names = ["pdb_file"]
+    out_names = ["decoy_id"]
 
-    def __init__(self,db_root,decoy_molfiles,num_decoys,atom_diff,max_substruct):
-        decoy_filepaths = [os.path.join(db_root,decoy_molfile) for decoy_molfile in decoy_molfiles]
-        print decoy_filepaths
+    def __init__(self,db_root,decoy_ids,decoy_natoms,decoy_molfiles,max_decoys=10,atom_diff=5,max_substruct=5):
+        """
+
+        :param db_root:
+        :param decoy_ids:
+        :param decoy_natoms:
+        :param decoy_molfiles:
+        :param max_decoys:
+        :param atom_diff:
+        :param max_substruct:
+        """
+
+        print decoy_ids,decoy_natoms,decoy_molfiles
+
 
 
 

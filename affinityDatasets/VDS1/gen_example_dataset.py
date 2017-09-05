@@ -28,22 +28,36 @@ Download_pdb_init(db_root=db_root,download_dir="download_pdbs1")
 afdb.run_multithread("download_pdb",arg_sets=pdb_id_set)
 
 # # split 20 PDBs
-disk_pdbs = database_master.retrieve("out_000_download_pdb",["uid","pdb_file"],{})
+disk_pdbs = database_master.retrieve("out_000_download_pdb",["pdb_id","pdb_file"],{})
 Split_pdb_init(db_root=db_root, split_dir="split_pdbs1")
 afdb.run_multithread("split_pdb",arg_sets=disk_pdbs)
 
 # convert all 20 ligands to mol files
-disk_ligs = database_master.retrieve("out_001_split_pdb",["uid","lig_file"],{})
+disk_ligs = database_master.retrieve("out_001_split_pdb",["pair_id","lig_file"],{})
 Pdb2mol_init(db_root=db_root, molfile_dir="lig_molf1")
 afdb.run_multithread("pdb2mol", arg_sets=disk_ligs)
 
 # # find decoys
-disk_molfiles = database_master.retrieve("out_002_pdb2mol",["mol_file"],{})
+#decoy_tuples = database_master.retrieve("out_002_pdb2mol",["uid","mol_file"],{})
+#Search_decoys_init(db_root=db_root,)
+
+
+pdb2mol_ids = database_master.retrieve("out_002_pdb2mol",["uid"],{})
+split_ids = database_master.retrieve("out_001_split_pdb",["pair_id"],{})
+pdb2mol_ids = [pdb2mol_id[0] for pdb2mol_id in pdb2mol_ids]
+split_ids = [split_id[0] for split_id in split_ids]
+
+_,_,order = database_master.list_search(pdb2mol_ids,split_ids)
+database_master.merge("out_002_pdb2mol","out_001_split_pdb",["lig_file","bindsite_file","lig_num_atoms"],order=order)
+
+#decoy_tuples = database_master.retrieve("out_001_split_pdb",["uid","lig_num_atoms","mol_file"],{})
+#print decoy_tuples
+#decoy_ids,num_atoms,decoy_molfiles = map(list,zip(*decoy_tuples))
 
 
 
-
-
+#print pdb2mol_ids
+#print order
 
 
 

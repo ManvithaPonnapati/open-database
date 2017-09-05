@@ -4,7 +4,7 @@ class Download_pdb_init:
     this_module = sys.modules[__name__]
     arg_types = [str]
     out_types = [str,str]
-    out_names = ["uid","pdb_file"]
+    out_names = ["pdb_id","pdb_file"]
 
     def __init__(self,db_root,download_dir):
         """

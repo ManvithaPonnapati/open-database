@@ -7,7 +7,7 @@ class Split_pdb_init:
     this_module = sys.modules[__name__]
     arg_types = [str,str]
     out_types = [str,str, str, int, int]
-    out_names = ["uid", "lig_file", "bindsite_file", "lig_num_atoms", "bindsite_num_atoms"]
+    out_names = ["pair_id", "lig_file", "bindsite_file", "lig_num_atoms", "bindsite_num_atoms"]
 
     def __init__(self,db_root,split_dir, discard_h=True, cutoff_dist=10, min_rec_atoms=10, min_lig_atoms=5):
         """
