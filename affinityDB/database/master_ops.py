@@ -148,5 +148,4 @@ class DatabaseMaster:
             # apply a boolean mask to take only entries that fit the selection rule
             sel_sets = list(compress(sel_sets, sel_mask))
             sel_vals = [list(x) for x in zip(*sel_sets)]
-        print "returning va;s", sel_vals
         return sel_vals

@@ -1,2 +1,2 @@
 from .main_ops import AffinityDB
-from .retrieve_ops import DatabaseMaster
+from .master_ops import DatabaseMaster
