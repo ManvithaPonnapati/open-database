@@ -1,7 +1,0 @@
-affinityDB
-==========
-
-.. toctree::
-   :maxdepth: 4
-
-   database
