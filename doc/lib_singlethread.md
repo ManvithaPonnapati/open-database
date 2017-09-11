@@ -1,7 +1,7 @@
 [TOC]
 
 # lib_singlethread
-## binding\_affinity\_op
+## Function
 ### binding\_affinity
 ```
 binding_affinity(
