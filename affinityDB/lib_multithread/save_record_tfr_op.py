@@ -5,18 +5,19 @@ import numpy as np
 def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem, 
     binders_coordsets, cryst_label, binders_labels, rec_elem, rec_coord):
     """
-    Params:
-        filename: string (file path to the output file)
-        pos_per_binder:  integer (number of positions per binder)
-        cryst_elem: np.array shape=[n_elem] type=float32 (elements of the ligand)
-        cryst_coord: np.array shape=[n_elem, 3] type=float32 (coordinates of the elements of the ligand)
-        binders_elem: list of np.array of shape=[n_elem] type=float32 (elements of binders)
-        binders_coordsets: list of np.array [pos_per_binder, n_elem, 3 ] (coordinate sets per each of the bidners)
-        cryst_label: float32 (something about the crystal pose, like binding affinity)
-        binders_labels: list of np.array shape=[pos_per_binder] type=float32
-        rec_elem: np.array of shape [n_elem] of float32
-        rec_coord: np.array of shape [n_elem, 3]
-    Returns: None
+    Save input data into Tensorflow Record
+    :param filename: string (file path to the output file)
+    :param pos_per_binder:  integer (number of positions per binder)
+    :param cryst_elem: np.array shape=[n_elem] type=float32 (elements of the ligand)
+    :param cryst_coord: np.array shape=[n_elem, 3] type=float32 (coordinates of the elements of the ligand)
+    :param binders_elem: list of np.array of shape=[n_elem] type=float32 (elements of binders)
+    :param binders_coordsets: list of np.array [pos_per_binder, n_elem, 3 ] (coordinate sets per each of the bidners)
+    :param cryst_label: float32 (something about the crystal pose, like binding affinity)
+    :param binders_labels: list of np.array shape=[pos_per_binder] type=float32
+    :param rec_elem: np.array of shape [n_elem] of float32
+    :param rec_coord: np.array of shape [n_elem, 3]
+    :return: 
+    None
     """
     # filename
     assert type(filename) == str

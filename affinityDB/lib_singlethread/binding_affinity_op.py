@@ -12,9 +12,10 @@ from collections import Counter
 def binding_affinity(index_path, source):
     """
 
-    :param index_path:
-    :param source:
+    :param index_path: path of the input file
+    :param source: type of file ['pdbbind', 'bindingmoad', 'bindingdb']
     :return:
+    parse result [ pdb_names, ligand_names, log_affinities, normalized_affinities, states, comments]
     """
     parser = parse_bind_func[source]
     bind = parser(index_path)
@@ -30,7 +31,7 @@ def binding_affinity(index_path, source):
     return result
 
 
-def read_binding_moad(binding_moad_index):
+def _read_binding_moad(binding_moad_index):
     """
 
     :param binding_moad_index:
@@ -49,7 +50,7 @@ def read_binding_moad(binding_moad_index):
         comments = []
 
 
-    def parse_entry(entry):
+    def _parse_entry(entry):
         """
 
         :param entry:
@@ -128,7 +129,7 @@ def read_binding_moad(binding_moad_index):
                 receptor = row[2]
             else:
                 try:
-                    parse_entry([receptor.upper()] + row[3:9])
+                    _parse_entry([receptor.upper()] + row[3:9])
                 except Exception as e:
                     PDB_moad.num_exception +=1
                     PDB_moad.exceptions.append(e)
@@ -145,7 +146,7 @@ def read_binding_moad(binding_moad_index):
 
     return PDB_moad
 
-def read_PDB_bind(pdb_bind_index):
+def _read_PDB_bind(pdb_bind_index):
     """
 
     :param pdb_bind_index:
@@ -254,7 +255,7 @@ def read_PDB_bind(pdb_bind_index):
     return PDB_bind
 
 
-def read_binding_db(binding_db_index):
+def _read_binding_db(binding_db_index):
     """
 
     :param binding_db_index:
@@ -340,7 +341,7 @@ def read_binding_db(binding_db_index):
             
 
 parse_bind_func = {
-    'pdbbind':read_PDB_bind,
-    'bindingmoad':read_binding_moad,
-    'bindingdb':read_binding_db
+    'pdbbind':_read_PDB_bind,
+    'bindingmoad':_read_binding_moad,
+    'bindingdb':_read_binding_db
 }

@@ -8,6 +8,14 @@ class AffinityDB:
     multithread_libs_path = "/".join(os.path.realpath(__file__).split("/")[:-2]) + "/lib_multithread"
 
     def __init__(self,db_root,db_name):
+        """
+        Initialize database
+
+        :param db_root: root dir for all the data 
+        :param db_name: name of the sqlite db file
+        :return:
+        None
+        """
         db_path = os.path.join(db_root,db_name+".db")
         self.conn = sqlite3.connect(db_path)
 
@@ -22,16 +30,22 @@ class AffinityDB:
         """ Creates an output table, and a queue to feed this table. Creates a background thread to take results
         from the queue and insert into the table.
 
-        :param table_name: string (name of the table prefix out_xxx_ will be appended)
-        :param col_names: list of strings (names of the columns)
-        :param col_types: list of python types (column types)
-        :return: multiprocessing queue, event to close the table and terminate thread.
-
-        Exaple usage:
+        Example:
+        ```python
         out_q,stop_event = afdb.open_table_with_queue(table_name="some_table",col_names=["num"],col_types=[int])
+        
         for i in range(1000):
             out_q.put([i])
         stop_event.set()
+        ```
+
+        :param table_name: string (name of the table prefix out_xxx_ will be appended)
+        :param col_names: list of strings (names of the columns)
+        :param col_types: list of python types (column types)
+        :return:
+        multiprocessing queue: event to close the table and terminate thread.
+
+
         """
         time_stamp = time.strftime("%h_%y_%Y_%M_%S").lower()
         assert type(table_name)==str, "arg table_name should be a string"
@@ -105,16 +119,21 @@ class AffinityDB:
 
     def run_multithread(self,func,arg_sets,num_threads=10,commit_sec=1):
         """ Run any function in lib_multithread in multiple threads.
-        Writes all arguments to arg_xxx_func table, record outputs to out_xxx_table. Record state of the function's
+        Writes all arguments to `arg_xxx_func` table, record outputs to `out_xxx_table`. Record state of the function's
         initializer to cron table.
+        If the task is interrupted in the process of execution, it is possible to resume with `AffinityDB.continue(*)`
 
-        If the task is interrupted in the process of execution, it is possible to resume with AffinityDB.continue(*)
+        Example:
+        ```python
+        run_multithread('download',[['10MD','3EML']])
+        ```
 
         :param func: string (a name of the function to execute)
         :param arg_sets: lits of tuples (every tuple is an argument set for a single run of a function)
         :param num_threads: integer (number of independent processes)
         :param commit_sec: integer (time delay in flushing outputs to the arg_ and out_ tables)
-        :return: None
+        :return: 
+        None
         """
         time_stamp = time.strftime("%h_%y_%Y_%M_%S").lower()
 
@@ -194,10 +213,16 @@ class AffinityDB:
 
     def coninue(self,arg_table,num_threads,commit_sec):
         """ Continue the interrupted run_multithread function.
+
+        Example:
+        ```python
+        continue('arg_000_download_pdb',100,60)
+        ```
         :param arg_table: string (name of the sqlite table with arguments of the function to run)
         :param num_threads: integer (number of processes)
         :param commit_sec: integer (write outputs to the database every number of tasks)
-        :return: None
+        :return: 
+        None
         """
         # get constant hardwired parameters
         func = arg_table[8:] # function name starts after 8th letter
@@ -271,16 +296,16 @@ class AffinityDB:
 
 def _thread_proxie(func_ref,task_q,arg_q,out_q,out_types,thr_i):
     """
-    Runs a function func with the set of arguments arg_set. Checks is the output of the function is a nested list.
-    Checks if every example in the nested list is has type out_types. Sends status updates of tasks to the arg_q,
-    sends output updates of the task to the out_q.
+    Runs a function func with the set of arguments `arg_set`. Checks is the output of the function is a nested list.
+    Checks if every example in the nested list is has type `out_types`. Sends status updates of tasks to the `arg_q`,
+    sends output updates of the task to the `out_q`.
 
     :param func: string (a name of the function to run)
     :param arg_set: list (set of arguments)
     :param arg_q: multiprocessing.Queue() (which to send task status updates to)
     :param out_q: multiprocessing.Queue() (which to send outputs to)
     :param out_types: list of [int,float,string] (expected kinds of outputs from the function)
-    :return:
+    :return: None
     """
     func = func_ref
     while task_q.qsize() > thr_i*2:

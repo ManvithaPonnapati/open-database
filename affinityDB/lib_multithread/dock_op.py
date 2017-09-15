@@ -66,23 +66,23 @@ class Dock_init:
     def __init__(self, data_dir, dock_folder, smina_path, dock_param):
         """
 
-        :param data_dir: str:: dir for the folder to save data
-        :param dock_folder: str:: name of the folder to save reorder output
-        :param smina_path: str:: path for teh executable smina program
-        :param dock_param: dict::   docking parameter {'args':[...], 'kwargs':{...}}
+        :param data_dir: str dir for the folder to save data
+        :param dock_folder: str name of the folder to save reorder output
+        :param smina_path: str path for teh executable smina program
+        :param dock_param: dict docking parameter {'args':[...], 'kwargs':{...}}
         """
         dock_dir = os.path.join(data_dir, dock_folder)
         if not os.path.exists(dock_dir):
             os.makedirs(dock_dir)
 
-        self.param_load(dock_param)
+        self._param_load(dock_param)
         self.data_dir = data_dir
         self.dock_folder = dock_folder
         self.smina_path = smina_path
 
         self.this_module.dock_init = self 
 
-    def param_load(self, param):
+    def _param_load(self, param):
         if type(param).__name__ in ['unicode','str']:
             param = json.loads(param)
 
@@ -90,7 +90,7 @@ class Dock_init:
         self.kwargs = param['kwargs']
 
 
-    def make_command(self, *arg, **kw):
+    def _make_command(self, *arg, **kw):
         cmd = self.smina_path
         for a in self.arg_options:
             if arg and a in arg:
@@ -120,10 +120,21 @@ def dock(rec_outpath, reorder_outpath, init='dock_init'):
     """
     Docking the ligand by smina
 
-    :param rec_outpath: str:: relative path for receptor
-    :param reorder_outpath: str:: relative path for reorder ligand
-    :param init: str:: init func naem
-    :return: nested list:: docking result contains the relative path for receptor, reorder ligand and docked ligand
+    Example:
+    ```python
+    dock('3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb','4_reorder/10MH/10MH_B_407_5CM_ligand.pdb')
+    ```
+
+    Output:
+    ```python
+    [['3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb', '4_reorder/10MH/10MH_B_407_5CM_ligand.pdb', '5_vinardo/10MH/10MH_C_427_5NC_ligand.pdb']]
+    ```
+
+    :param rec_outpath: str relative path for receptor
+    :param reorder_outpath: str relative path for reorder ligand
+    :param init: str init func naem
+    :return: 
+    Nested list [[receptor_path, ligand_path, dock_result_path]]
     """
     init = eval(init)
     receptor = os.path.basename(rec_outpath).split('_')[0]
@@ -146,7 +157,7 @@ def dock(rec_outpath, reorder_outpath, init='dock_init'):
         'out':out_path
     }
 
-    cmd = init.make_command(**kw)
+    cmd = init._make_command(**kw)
     cl = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     cl.wait()
 

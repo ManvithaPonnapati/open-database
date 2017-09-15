@@ -8,8 +8,11 @@ class Download_pdb_init:
 
     def __init__(self,db_root,download_dir):
         """
+        Initialize download func
         :param db_root: string (root folder directory for the files in the database)
         :param download_dir: string (name of the directory where to put downloaded PDBs)
+        :return:
+        None
         """
         download_path = os.path.join(db_root,download_dir)
         if not os.path.exists(download_path):
@@ -21,10 +24,21 @@ class Download_pdb_init:
 
 def download_pdb(pdb_id,init="download_pdb_init"):
     """ Download PDB crystal structure from the Protein Data Bank.
+    
+    Example:
+    ```python
+    download_pdb('104M')
+    ```
+
+    Output:
+    ```python
+    [['104M','download/104M.pdb']]
+    ```
 
     :param pdb_id: string (4-letter PDB ID IE: 1QGT)
     :param dir_path: string (folder in which to save the pdb file)
-    :return: nested list (of dimensions 1x[string] where string is the relative path to the output file)
+    :return: 
+    nested list [[pdb_identifier, download_file_path]]
     """
     init = eval(init)
     download_link = 'https://files.rcsb.org/download/{}.pdb'.format(pdb_id)

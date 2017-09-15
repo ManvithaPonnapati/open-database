@@ -65,12 +65,14 @@ class Reorder_init:
 
     def __init__(self, data_dir, reorder_folder, smina_path,dock_param):
         """
+        Initialize reorder func
 
-
-        :param data_dir: str:: dir for the folder to save data
-        :param reorder_folder: str:: name of the folder to save reorder output
-        :param smina_path: str:: path for teh executable smina program
-        :param dock_param: dict:: docking parameter {'args':[...], 'kwargs':{...}}
+        :param data_dir: str dir for the folder to save data
+        :param reorder_folder: str name of the folder to save reorder output
+        :param smina_path: str path for teh executable smina program
+        :param dock_param: dict docking parameter {'args':[...], 'kwargs':{...}}
+        :return:
+        None
         """
         reorder_dir = os.path.join(data_dir, reorder_folder)
         if not os.path.exists(reorder_dir):
@@ -79,10 +81,10 @@ class Reorder_init:
         self.data_dir = data_dir
         self.reorder_folder = reorder_folder
         self.smina_path = smina_path
-        self.param_load(dock_param)        
+        self._param_load(dock_param)        
         self.this_module.reorder_init = self
 
-    def param_load(self, param):
+    def _param_load(self, param):
         if type(param).__name__ in ['unicode','str']:
             param = json.loads(param)                                                                                   # FIXME: I don't like json here
 
@@ -90,7 +92,7 @@ class Reorder_init:
         self.kwargs = param['kwargs']
 
 
-    def make_command(self, *arg, **kw):
+    def _make_command(self, *arg, **kw):
         cmd = self.smina_path
         for a in self.arg_options:
             if arg and a in arg:
@@ -118,10 +120,21 @@ def reorder(rec_outpath, lig_outpath, init='reorder_init'):
     """
     Parse the ligand by smina, and then output it. So the order of the atom keeps the same as the docking result
 
-    :param rec_outpath: str:: relative path for receptor
-    :param lig_outpath: str:: relative path for ligand
-    :param init: str:: initialize module 
-    :return: nested list:: reorder result contains the relative path for receptor and relative path for reorder ligand
+    Example:
+    ```python
+    reorder('3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb','2_split_ligand/10MH/10MH_B_407_5CM_ligand.pdb')
+    ```
+
+    Output:
+    ```python
+    [['3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb', '4_reorder/10MH/10MH_B_407_5CM_ligand.pdb']]
+    ```
+
+    :param rec_outpath: str relative path for receptor
+    :param lig_outpath: str relative path for ligand
+    :param init: str initialize module 
+    :returns: 
+    nested list: [[receptor_output_path, reorder_ligand_output_path]]
     """
 
     init = eval(init)
@@ -143,7 +156,7 @@ def reorder(rec_outpath, lig_outpath, init='reorder_init'):
         'out':out_path
     }       
 
-    cmd = init.make_command(**kw)
+    cmd = init._make_command(**kw)
     cl = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     cl.wait()
 

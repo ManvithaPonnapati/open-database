@@ -24,13 +24,13 @@ def write_ars2_tfr(rec_file, cryst_lig_file, bind_lig_file, decoy_files, out_tfr
     """For each protein/ligand crystal pair, write one tfrecord with the following:
     > rec_elem, rec_coord, cryst_elem, cryst_coord
     > lig_nelems, lig_elem, lig_nframes, lig_coordsets, lig_labels
-    Params:
-        rec_file: filepath to receptor PDB
-        cryst_lig_file: filepath to crystal ligand PDB
-        bind_lig_file: filepath to conformers of crystal ligand PDB
-        decoy_files: comma separated filepath to decoy ligands PDB
-        out_tfr_file: filepath to write tf record to
-        """
+    
+    :param rec_file: filepath to receptor PDB
+    :param cryst_lig_file: filepath to crystal ligand PDB
+    :param bind_lig_file: filepath to conformers of crystal ligand PDB
+    :param decoy_files: comma separated filepath to decoy ligands PDB
+    :param out_tfr_file: filepath to write tf record to
+    """
 
     init = eval(init)
     rec = parsePDB(rec_file)

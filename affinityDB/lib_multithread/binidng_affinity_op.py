@@ -9,8 +9,11 @@ class Binidng_affinity_init:
     this_module = sys.modules[__name__]
     def __init__(self,db_root, parse_type):
         """
+        Initialize binding affinity parse func
         :param db_root: string (path to the root folder of the database)
         :param parse_type: source of binding affinity record ['pdbbind','bindingmoad','bindingdb']
+        :return:
+        None
         """
 
         self.db_root = db_root
@@ -27,16 +30,16 @@ class Binidng_affinity_init:
         self.comments = []
 
         self.parse_bind_func = {
-            'pdbbind':self.parse_pdbbind,
-            'bindingmoad':self.parse_bindingmoad,
-            'bindingdb':self.parse_bindingdb
+            'pdbbind':self._parse_pdbbind,
+            'bindingmoad':self._parse_bindingmoad,
+            'bindingdb':self._parse_bindingdb
         }
         self.parse_func = self.parse_bind_func[parse_type]
 
         self.this_module.binding_affinity_init = self
 
 
-    def parse_bindingmoad_entry(self, entry):
+    def _parse_bindingmoad_entry(self, entry):
         receptor, res, attr, measure, op, value, unit = entry
         if not attr == 'valid':
             return
@@ -90,7 +93,7 @@ class Binidng_affinity_init:
                 self.num_exception +=1
                 self.exceptions.append(e)
 
-    def parse_bindingmoad(self, binding_moad_index):
+    def _parse_bindingmoad(self, binding_moad_index):
         with open(binding_moad_index) as fin:
             while(not fin.readline() == '"========================="\n'):
                 continue
@@ -110,7 +113,7 @@ class Binidng_affinity_init:
                     receptor = row[2]
                 else:
                     try:
-                        self.parse_bindingmoad_entry([receptor.upper()] + row[3:9])
+                        self._parse_bindingmoad_entry([receptor.upper()] + row[3:9])
                     except Exception as e:
                         self.num_exception +=1
                         self.exceptions.append(e)
@@ -122,7 +125,7 @@ class Binidng_affinity_init:
         self.normalized_affinities = (self.log_affinities - min_log_affinity)\
         /(max_log_affinity - min_log_affinity)   
 
-    def parse_pdbbind(self, pdb_bind_index):
+    def _parse_pdbbind(self, pdb_bind_index):
         with open(pdb_bind_index) as f:
             [f.readline() for _ in range(6)]
             file_text = f.readlines()
@@ -210,7 +213,7 @@ class Binidng_affinity_init:
         min_log_affinity = np.log(10.**-18)
         self.normalized_affinities = (self.log_affinities - min_log_affinity) / (max_log_affinity - min_log_affinity)
 
-    def parse_bindingdb(self, binding_db_index):
+    def _parse_bindingdb(self, binding_db_index):
         with open(binding_db_index) as fin:
             reader = csv.reader(fin, delimiter='\t')
             head = reader.next()
@@ -276,8 +279,21 @@ def binding_affinity(index_path, init='binding_affinity_init'):
     """
     Parse binding affinity record from index_path
 
+    Example:
+    ```python
+    binding_affinity('nr.csv','bindingmoad')
+    ```
+
+    Output:
+    ```
+    [['4CPA','GLY',-19.1138279245,0.538831666908,1,'success'],
+     ['4FAB','FDS',-18.5485141155,0.552471259564,1,'success']]
+    ```
+
     :param index_path: record file 
-    :param init:
+    :param init: str init function name
+    :return:
+    Nested list [ [pdb_name, ligand_names, log_affinities, normalized_affinities, states, comments] ]
     
     """
     init = eval(init)

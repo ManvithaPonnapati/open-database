@@ -32,12 +32,23 @@ def split_pdb(uid, pdb_file, init="split_pdb_init"):
     selects and crops its binding site (any atom of Protein/DNA/Cofactor within the cutoff distance). Saves pairs of
     files: ligand + this ligand's binding site.
 
+    Example:
+    ```python
+    split_pdb('105M','download/105M.pdb')
+    ```
+
+    Output:
+    ```python
+    [['05M_A_155_HEM','split/105M_A_155_HEM/105M_A_155_HEM_receptor.pdb','split/105M_A_155_HEM/105M_A_155_HEM_ligand.pdb',30,100]]
+    ```
+
     :param pdb_file: string (relative path the the file to split)
     :param cutoff_dist: float (distance of any atoms in the binding site from any atom of the ligand to be saved)
     :param min_rec_atoms: minimun number of atoms be saved as binding site
     :param min_lig_atoms: minumum number of atoms for ligand to be saved
     :param init: string (init function in this module)
-    :return: nested list of pairs of file names of dimensions [num_pairs x [string,string,int,int]] or
+    :return: 
+    nested list of pairs of file names of dimensions [num_pairs x [string,string,int,int]] or \
     [num_pairs x [lig_file,bindsite_file,lig_num_atoms,bindsite_num_atoms]]
     """
 

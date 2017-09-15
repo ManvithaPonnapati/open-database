@@ -1,9 +1,7 @@
 [TOC]
-
-# lib_singlethread
-## Function
+# Function
 ### binding\_affinity
-```
+```python
 binding_affinity(
 	index_path,
 	source,
@@ -11,11 +9,12 @@ binding_affinity(
 ```
 
 
-**Args**
+Args:
 - **`index_path`** : path of the input file
 - **`source`** : type of file ['pdbbind', 'bindingmoad', 'bindingdb']
 
-**Returns**
+
+Returns:
 
 parse result [ pdb_names, ligand_names, log_affinities, normalized_affinities, states, comments]
 

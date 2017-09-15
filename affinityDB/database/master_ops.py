@@ -5,22 +5,35 @@ import numpy as np
 class DatabaseMaster:
 
     def __init__(self,db_path):
+        """
+        Initialize database master
+
+        :param db_path: path of the sqlite database file
+        :return:
+        None
+        """
         self.conn = sqlite3.connect(db_path)
 
     def merge(self,into_table,from_table,merge_cols,order):
         """
         Merges any table into the output table
+
+        Example:
+        ```python
+        merge('out_000_dock','arg_000_reorder','reorder_outpath',[[1,4,2,3],[1,2,3,4]])
+        ```
+
+        Suggestion:
+        When providing order, please, use `run_idx` for the argument table, and `out_idx` for the output table.
+        Also, it the `arg_table` it is a good idea to select `run_idx ==1`
+
         :param into_table: string (table to merge into)
         :param from_table: string (table to merge from)
         :param merge_cols: list of strings (names of the columns in merge_from to merge)
-        :param order: Two lists of the same length. into_table_idx <-- from_table_idx
-        First list: idx of the "into_table",  second list: idx of the "from table" to merge.
-
-        Suggestion:
-        When providing order, please, use run_idx for the argument table, and out_idx for the output table.
-        Also, it the arg_table it is a good idea to select run_idx ==1
-
-        :return: None
+        :param order: Two lists of the same length. into_table_idx <-- from_table_idx \
+        First list: idx of the `into_table`,  second list: idx of the `from table` to merge.
+        :return: 
+        None
         """
 
         assert len(order)==2, "order should contain 2 lists [[idx_to_update(into_table)],[idx_of_updates(from_table)]]"
@@ -59,18 +72,32 @@ class DatabaseMaster:
         self.conn.commit()
 
     def list_search(self, search_with, search_in):
-        """ Search with each element of the "search_with" in the list "search_in".
+        """ Search with each element of the `search_with` in the list `search_in`.
+        Then get three lists:
+        - hits_idx:
+        A list of length len(search_with) of lists. Internal list is indexes [j1,j2,j3,j4] such that values \
+        search_with[i] == search_in[j1], search_with[i] == search_in[j2], ...
+        - hits_val:
+        Same as hits_idx but lists with values instead of indexes
+        - pairs_idx:
+        Two lists of the same length. search_with[pairs_idx[0][i]] == search_in[pairs_idx[1][i]]
+
+        Example:
+        ```python
+        list_search(['3AT1','2TPI'],['2TPI','3EML','3AT1','2TPI'])
+        ```
+
+        Output:
+        ```python
+        [[2],[0,3]],
+        [['3AT1'],['2PTI','2PTI']],
+        [[0,2],[1,0],[1,3]]
+        ```
 
         :param search_with: list of [str/float/int]
         :param search_in: list of [str/float/int]
         :return:
-        hits_idx:
-        A list of length len(search_with) of lists. Internal list is indexes [j1,j2,j3,j4] such that values
-        search_with[i] == search_in[j1], search_with[i] == search_in[j2], ...
-        hits_val:
-        Same as hits_idx but lists with values instead of indexes
-        pairs_idx:
-        Two lists of the same length. search_with[pairs_idx[0][i]] == search_in[pairs_idx[1][i]]
+        three lists: hits_idx, hits_val, pairs_idx
         """
         sw = np.asarray(search_with)
         si = np.asarray(search_in)
@@ -106,15 +133,22 @@ class DatabaseMaster:
 
     def retrieve(self, table, cols, col_rules):
         """ Retrieves column values from a single table based on a given filtering rule.
-        example:
+
+        Example:
+        ```python
         my_db.retrieve(some_table_table,["num1","num2"],{"remainder_div_3":"{}==1 or {}==2", "sum":"{}<200"})
+        ```
         will retrieve:
+        ```
         columns called "num1" and "num2" from some table. That have value 1 or 2 in the ramainder_div_3 column. Column
         named "sum" of which would be less than 200. All columns are combined with an "AND" statement.
+        ```
+        
         :param table: string (name of the table to retrieve from)
         :param columns: list of strings (names of the columns to retrieve)
         :param column_rules: dictionary of rules that will be evaluated
-        :return: nested list in which is entry in a list a a column with filtered requested values
+        :return: 
+        Nested list in which is entry in a list a a column with filtered requested values
         """
         # todo: add string comp support
         cursor = self.conn.cursor()

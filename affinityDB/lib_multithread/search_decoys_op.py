@@ -28,13 +28,15 @@ class Search_decoys_init:
     def __init__(self,db_root,decoy_ids,decoy_natoms,decoy_molfiles,max_decoys=10,atom_diff=5,max_substruct=5):
         """
 
-        :param db_root:
+        :param db_root: 
         :param decoy_ids:
         :param decoy_natoms:
         :param decoy_molfiles:
         :param max_decoys:
         :param atom_diff:
         :param max_substruct:
+        :return:
+        None
         """
 
         print decoy_ids,decoy_natoms,decoy_molfiles
@@ -83,11 +85,12 @@ def get_decoys(pdb_file, mol_file, num_atoms, init='get_decoys_init'):
     For each binding ligand, get a list of decoy ligands. We filter by number of atoms and maximum common
     substructure (MCS). Returns filepaths to all binding ligand - decoy pair.
 
-    :param pdb_file:
-    :param mol_file:
-    :param num_atoms:
+    :param pdb_file: pdb format ligand
+    :param mol_file: mol format ligand
+    :param num_atoms: ligand's atom number
     :param init:
     :return:
+    nested list [[pdb_file, decoy_files]]
     """
 
     init = eval(init)

@@ -36,7 +36,9 @@ def generate_conformers(uid,lig_file,init='generate_conformers_init'):
     Saves multiframe PDB file of the ligand with new coordinates.
     :param lig_file: string (path to the ligand file in the PDB format to read)
     :param init: string (init function)
-    :return: nested list of dimension [1x[string]]. String is the relative path to the output file.
+    :return:
+    nested list:
+    of dimension [1x[string]]. String is the relative path to the output file.
     """
     # TODO: test if shape if forgotten (give an option to optimize only?)
     init = eval(init)

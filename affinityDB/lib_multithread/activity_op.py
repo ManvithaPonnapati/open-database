@@ -8,9 +8,11 @@ class Activity_init:
     this_module = sys.modules[__name__]
     def __init__(self, data_dir, db_path):
         """
-
-        :param data_dir: str:: dir for the folder to save data
-        :param db_path: str:: path for the chembl database
+        Initialize activity func
+        :param data_dir: str dir for the folder to save data
+        :param db_path: str path for the chembl database
+        :return:
+        None
         """
 
         self.data_dir = data_dir
@@ -20,14 +22,26 @@ class Activity_init:
 
 def activity(pair_name, target_id, init='activity_init'):
     """
-    Getting bioactivity result from local chembl database
-    query by the target_chembl_id
+    Getting bioactivity result from local chembl database \
+    query by the `target_chembl_id`
+
+    Example:
+    ```python
+    activity('154L_A_188_NAG','CHEMBL2366438')
+    ```
+
+    Output:
+    ```python
+    [['154L_A_188_NAG','CHEMBL3070308','CHEMBL2366438','CHEMBL223593',9,'IC50','=',28.0,'nM','CC(Oc1ccc(Oc2ncc(cc2Cl)C(F)(F)F)cc1)C(=O)O']]
+    ```
 
 
-    :param pair_name: str:: combined receptor id and ligand info {receptor_id}_{chain}_{resnum}_{resname}
-    :param target_id: str:: chembl_target_id
-    :param init: str:: init function name
-    :return: nested list:: [pair_name, aid, tid, mid, confidence_score, type, relation, value, unit, smile]
+    :param pair_name: str combined receptor id and ligand info {receptor_id}_{chain}_{resnum}_{resname}
+    :param target_id: str chembl_target_id
+    :param init: str init function name
+    :return:
+    nested list:
+    [pair_name, aid, tid, mid, confidence_score, type, relation, value, unit, smile]
     """
     init = eval(init)
     conn = sqlite3.connect(init.db_path)

@@ -12,9 +12,11 @@ class Blast_init:
     this_module = sys.modules[__name__]
     def __init__(self, data_dir, blast_db):
         """
-
-        :param data_dir: str:: dir for the data
-        :param blast_db: str:: path of the blast database
+        Initialize blast func
+        :param data_dir: str dir for the data
+        :param blast_db: str path of the blast database
+        :return:
+        None
         """
         self.data_dir = data_dir
         self.blast_db = blast_db
@@ -24,12 +26,21 @@ def blast(rec_outpath, lig_outpath, init = 'blast_init'):
     """
     Applying protein sequence blast on the receptor
 
+    Example:
+    ```python
+    blast('split/10MH_C_427_5NC/10MH_C_427_5NC_receptor.pdb','split/10MH_C_427_5NC/10MH_C_427_5NC_ligand.pdb')
+    ```
+
+    Output:
+    ```python
+    [['10MH_C_427_5NC', 'CHEMBL2242732', 0.44, 'FFAGFPCQFSISGMENVKNFKRERIQTLSAYGKMKFGNSVV']]
+    ```
+
     :param rec_outpath: str:: relative path of receptor
     :param lig_outpath: str:: relative path of ligand
     :param init: str:: init func name
-    :return: nested list:: blast result contain  pair_name with receptor id and ligand name, 
-    chembl_target_id for similar sequence in database,  ideitity number as num_match/align_length and
-    the sequence of selected receptor
+    :return: 
+    nested list: [ [pair_name, chembl_target_id, identity, sequence]]
     """
     
     cdir = os.getcwd()
