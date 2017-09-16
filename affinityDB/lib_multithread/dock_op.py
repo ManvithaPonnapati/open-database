@@ -121,14 +121,14 @@ def dock(rec_outpath, reorder_outpath, init='dock_init'):
     Docking the ligand by smina
 
     Example:
-    ```python
+    <pre lang="python">
     dock('3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb','4_reorder/10MH/10MH_B_407_5CM_ligand.pdb')
-    ```
+    </pre>
 
     Output:
-    ```python
+    <pre lang="python">
     [['3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb', '4_reorder/10MH/10MH_B_407_5CM_ligand.pdb', '5_vinardo/10MH/10MH_C_427_5NC_ligand.pdb']]
-    ```
+    </pre>
 
     :param rec_outpath: str relative path for receptor
     :param reorder_outpath: str relative path for reorder ligand

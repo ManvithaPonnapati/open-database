@@ -26,14 +26,14 @@ def download_pdb(pdb_id,init="download_pdb_init"):
     """ Download PDB crystal structure from the Protein Data Bank.
     
     Example:
-    ```python
+    <pre lang="python">
     download_pdb('104M')
-    ```
+    </pre>
 
     Output:
-    ```python
+    <pre lang="python">
     [['104M','download/104M.pdb']]
-    ```
+    </pre>
 
     :param pdb_id: string (4-letter PDB ID IE: 1QGT)
     :param dir_path: string (folder in which to save the pdb file)

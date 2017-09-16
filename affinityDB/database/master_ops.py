@@ -18,14 +18,14 @@ class DatabaseMaster:
         """
         Merges any table into the output table
 
-        Example:
-        ```python
-        merge('out_000_dock','arg_000_reorder','reorder_outpath',[[1,4,2,3],[1,2,3,4]])
-        ```
-
         Suggestion:
         When providing order, please, use `run_idx` for the argument table, and `out_idx` for the output table.
         Also, it the `arg_table` it is a good idea to select `run_idx ==1`
+
+        Example:
+        <pre lang="python">
+        merge('out_000_dock','arg_000_reorder','reorder_outpath',[[1,4,2,3],[1,2,3,4]])
+        </pre>
 
         :param into_table: string (table to merge into)
         :param from_table: string (table to merge from)
@@ -83,16 +83,16 @@ class DatabaseMaster:
         Two lists of the same length. search_with[pairs_idx[0][i]] == search_in[pairs_idx[1][i]]
 
         Example:
-        ```python
+        <pre lang="python">
         list_search(['3AT1','2TPI'],['2TPI','3EML','3AT1','2TPI'])
-        ```
+        </pre>
 
         Output:
-        ```python
+        <pre lang="python">
         [[2],[0,3]],
         [['3AT1'],['2PTI','2PTI']],
         [[0,2],[1,0],[1,3]]
-        ```
+        </pre>
 
         :param search_with: list of [str/float/int]
         :param search_in: list of [str/float/int]
@@ -135,14 +135,14 @@ class DatabaseMaster:
         """ Retrieves column values from a single table based on a given filtering rule.
 
         Example:
-        ```python
+        <pre lang="python">
         my_db.retrieve(some_table_table,["num1","num2"],{"remainder_div_3":"{}==1 or {}==2", "sum":"{}<200"})
-        ```
+        </pre>
         will retrieve:
-        ```
+        <pre lang="python">
         columns called "num1" and "num2" from some table. That have value 1 or 2 in the ramainder_div_3 column. Column
         named "sum" of which would be less than 200. All columns are combined with an "AND" statement.
-        ```
+        </pre>
         
         :param table: string (name of the table to retrieve from)
         :param columns: list of strings (names of the columns to retrieve)

@@ -31,13 +31,13 @@ class AffinityDB:
         from the queue and insert into the table.
 
         Example:
-        ```python
+        <pre lang="python">
         out_q,stop_event = afdb.open_table_with_queue(table_name="some_table",col_names=["num"],col_types=[int])
-        
+        zsh
         for i in range(1000):
             out_q.put([i])
         stop_event.set()
-        ```
+        </pre>
 
         :param table_name: string (name of the table prefix out_xxx_ will be appended)
         :param col_names: list of strings (names of the columns)
@@ -124,9 +124,9 @@ class AffinityDB:
         If the task is interrupted in the process of execution, it is possible to resume with `AffinityDB.continue(*)`
 
         Example:
-        ```python
+        <pre lang="python">
         run_multithread('download',[['10MD','3EML']])
-        ```
+        </pre>
 
         :param func: string (a name of the function to execute)
         :param arg_sets: lits of tuples (every tuple is an argument set for a single run of a function)
@@ -215,9 +215,10 @@ class AffinityDB:
         """ Continue the interrupted run_multithread function.
 
         Example:
-        ```python
+        <pre lang="python">
         continue('arg_000_download_pdb',100,60)
-        ```
+        </pre>
+
         :param arg_table: string (name of the sqlite table with arguments of the function to run)
         :param num_threads: integer (number of processes)
         :param commit_sec: integer (write outputs to the database every number of tasks)

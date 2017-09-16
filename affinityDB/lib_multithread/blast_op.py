@@ -27,14 +27,14 @@ def blast(rec_outpath, lig_outpath, init = 'blast_init'):
     Applying protein sequence blast on the receptor
 
     Example:
-    ```python
+    <pre lang="python">
     blast('split/10MH_C_427_5NC/10MH_C_427_5NC_receptor.pdb','split/10MH_C_427_5NC/10MH_C_427_5NC_ligand.pdb')
-    ```
+    </pre>
 
     Output:
-    ```python
+    <pre lang="python">
     [['10MH_C_427_5NC', 'CHEMBL2242732', 0.44, 'FFAGFPCQFSISGMENVKNFKRERIQTLSAYGKMKFGNSVV']]
-    ```
+    </pre>
 
     :param rec_outpath: str:: relative path of receptor
     :param lig_outpath: str:: relative path of ligand

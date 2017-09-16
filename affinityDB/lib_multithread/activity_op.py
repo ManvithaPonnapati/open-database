@@ -26,14 +26,14 @@ def activity(pair_name, target_id, init='activity_init'):
     query by the `target_chembl_id`
 
     Example:
-    ```python
+    <pre lang="python">
     activity('154L_A_188_NAG','CHEMBL2366438')
-    ```
+    </pre>
 
     Output:
-    ```python
+    <pre lang="python">
     [['154L_A_188_NAG','CHEMBL3070308','CHEMBL2366438','CHEMBL223593',9,'IC50','=',28.0,'nM','CC(Oc1ccc(Oc2ncc(cc2Cl)C(F)(F)F)cc1)C(=O)O']]
-    ```
+    </pre>
 
 
     :param pair_name: str combined receptor id and ligand info {receptor_id}_{chain}_{resnum}_{resname}

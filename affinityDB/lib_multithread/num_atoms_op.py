@@ -19,14 +19,14 @@ def num_atoms(pdb_file,init="num_atoms_init"):
     Counter the number of atom
 
     Example:
-    ```python
+    <pre lang="python">
     num_atoms('4_reorder/10MH/10MH_B_407_5CM_ligand.pdb')
-    ```
+    </pre>
 
     Output:
-    ```python
+    <pre lang="python">
     [[10]]
-    ```
+    </pre>
 
     :param pdb_file: relative path of the pdb file
     :return:

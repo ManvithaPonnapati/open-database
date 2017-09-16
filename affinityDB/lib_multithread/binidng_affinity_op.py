@@ -280,15 +280,15 @@ def binding_affinity(index_path, init='binding_affinity_init'):
     Parse binding affinity record from index_path
 
     Example:
-    ```python
+    <pre lang="python">
     binding_affinity('nr.csv','bindingmoad')
-    ```
+    </pre>
 
     Output:
-    ```
+    <pre lang="python">
     [['4CPA','GLY',-19.1138279245,0.538831666908,1,'success'],
      ['4FAB','FDS',-18.5485141155,0.552471259564,1,'success']]
-    ```
+    </pre>
 
     :param index_path: record file 
     :param init: str init function name

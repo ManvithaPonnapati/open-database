@@ -121,14 +121,14 @@ def reorder(rec_outpath, lig_outpath, init='reorder_init'):
     Parse the ligand by smina, and then output it. So the order of the atom keeps the same as the docking result
 
     Example:
-    ```python
+    <pre lang="python">
     reorder('3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb','2_split_ligand/10MH/10MH_B_407_5CM_ligand.pdb')
-    ```
+    </pre>
 
     Output:
-    ```python
+    <pre lang="python">
     [['3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb', '4_reorder/10MH/10MH_B_407_5CM_ligand.pdb']]
-    ```
+    </pre>
 
     :param rec_outpath: str relative path for receptor
     :param lig_outpath: str relative path for ligand

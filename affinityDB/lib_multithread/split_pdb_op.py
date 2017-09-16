@@ -33,14 +33,14 @@ def split_pdb(uid, pdb_file, init="split_pdb_init"):
     files: ligand + this ligand's binding site.
 
     Example:
-    ```python
+    <pre lang="python">
     split_pdb('105M','download/105M.pdb')
-    ```
+    </pre>
 
     Output:
-    ```python
+    <pre lang="python">
     [['05M_A_155_HEM','split/105M_A_155_HEM/105M_A_155_HEM_receptor.pdb','split/105M_A_155_HEM/105M_A_155_HEM_ligand.pdb',30,100]]
-    ```
+    </pre>
 
     :param pdb_file: string (relative path the the file to split)
     :param cutoff_dist: float (distance of any atoms in the binding site from any atom of the ligand to be saved)
