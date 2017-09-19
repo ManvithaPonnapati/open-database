@@ -1,6 +1,7 @@
-[TOC]
-# Function
-<table><tr><td><b>binding_affinity</b></td>
+<table>
+
+<tr><td><b>binding_affinity</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -22,6 +23,9 @@ binding_affinity(
 
 <tr><td>Returns</td>
 <td><ul><li>parse result [ pdb_names, ligand_names, log_affinities, normalized_affinities, states, comments]</li></ul></td>
+</tr>
+<tr><td></td>
+<td></td>
 </tr>
 
 

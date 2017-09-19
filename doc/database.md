@@ -1,6 +1,10 @@
-[TOC]
+<table>
 
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>AffinityDB</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -24,10 +28,13 @@ __init__(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## AffinityDB
-<table><tr><td><b>coninue</b></td>
+<tr><td><b>coninue</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -53,9 +60,13 @@ coninue(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>open_table_with_queue</b></td>
+<tr><td><b>open_table_with_queue</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -82,9 +93,13 @@ open_table_with_queue(
 <tr><td>Returns</td>
 <td><ul><li>multiprocessing queue: event to close the table and terminate thread.</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>run_multithread</b></td>
+<tr><td><b>run_multithread</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -112,9 +127,16 @@ run_multithread(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>DatabaseMaster</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -136,10 +158,13 @@ __init__(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## DatabaseMaster
-<table><tr><td><b>list_search</b></td>
+<tr><td><b>list_search</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -163,9 +188,13 @@ list_search(
 <tr><td>Returns</td>
 <td><ul><li>three lists: hits_idx, hits_val, pairs_idx</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>merge</b></td>
+<tr><td><b>merge</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -193,9 +222,13 @@ merge(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>retrieve</b></td>
+<tr><td><b>retrieve</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -220,6 +253,9 @@ retrieve(
 
 <tr><td>Returns</td>
 <td><ul><li>Nested list in which is entry in a list a a column with filtered requested values</li></ul></td>
+</tr>
+<tr><td></td>
+<td></td>
 </tr>
 
 

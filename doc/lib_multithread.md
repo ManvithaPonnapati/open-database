@@ -1,6 +1,7 @@
-[TOC]
-# Function
-<table><tr><td><b>activity</b></td>
+<table>
+
+<tr><td><b>activity</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -26,9 +27,13 @@ activity(
 <td><ul><li>nested list:</li>
 <li>[pair_name, aid, tid, mid, confidence_score, type, relation, value, unit, smile]</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>binding_affinity</b></td>
+<tr><td><b>binding_affinity</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -51,9 +56,13 @@ binding_affinity(
 <tr><td>Returns</td>
 <td><ul><li>Nested list [ [pdb_name, ligand_names, log_affinities, normalized_affinities, states, comments] ]</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>blast</b></td>
+<tr><td><b>blast</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -78,9 +87,13 @@ blast(
 <tr><td>Returns</td>
 <td><ul><li>nested list: [ [pair_name, chembl_target_id, identity, sequence]]</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>dock</b></td>
+<tr><td><b>dock</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -105,9 +118,13 @@ dock(
 <tr><td>Returns</td>
 <td><ul><li>Nested list [[receptor_path, ligand_path, dock_result_path]]</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>download_pdb</b></td>
+<tr><td><b>download_pdb</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -130,9 +147,13 @@ download_pdb(
 <tr><td>Returns</td>
 <td><ul><li>nested list [[pdb_identifier, download_file_path]]</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>generate_conformers</b></td>
+<tr><td><b>generate_conformers</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -157,9 +178,13 @@ generate_conformers(
 <td><ul><li>nested list:</li>
 <li>of dimension [1x[string]]. String is the relative path to the output file.</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>num_atoms</b></td>
+<tr><td><b>num_atoms</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -181,9 +206,13 @@ num_atoms(
 <tr><td>Returns</td>
 <td><ul><li>nested list [[atom_num]]</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>pdb2mol</b></td>
+<tr><td><b>pdb2mol</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -207,9 +236,13 @@ pdb2mol(
 <tr><td>Returns</td>
 <td><ul></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>reorder</b></td>
+<tr><td><b>reorder</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -235,9 +268,13 @@ reorder(
 <td><ul><li>:returns:</li>
 <li>nested list: [[receptor_output_path, reorder_ligand_output_path]]</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>save_record_tfr</b></td>
+<tr><td><b>save_record_tfr</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -275,9 +312,13 @@ save_record_tfr(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>get_decoys</b></td>
+<tr><td><b>get_decoys</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -304,9 +345,13 @@ get_decoys(
 <tr><td>Returns</td>
 <td><ul><li>nested list [[pdb_file, decoy_files]]</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>search_decoys</b></td>
+<tr><td><b>search_decoys</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -318,7 +363,8 @@ search_decoys(
 </tr>
 
 
-<table><tr><td><b>split_pdb</b></td>
+<tr><td><b>split_pdb</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -345,9 +391,13 @@ split_pdb(
 <tr><td>Returns</td>
 <td><ul><li>nested list of pairs of file names of dimensions [num_pairs x [string,string,int,int]] or     [num_pairs x [lig_file,bindsite_file,lig_num_atoms,bindsite_num_atoms]]</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>test_multout</b></td>
+<tr><td><b>test_multout</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -360,7 +410,8 @@ test_multout(
 </tr>
 
 
-<table><tr><td><b>test_sum</b></td>
+<tr><td><b>test_sum</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -374,7 +425,8 @@ test_sum(
 </tr>
 
 
-<table><tr><td><b>save_record_tfr</b></td>
+<tr><td><b>save_record_tfr</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -412,9 +464,13 @@ save_record_tfr(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-<table><tr><td><b>write_ars2_tfr</b></td>
+<tr><td><b>write_ars2_tfr</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -444,10 +500,17 @@ write_ars2_tfr(
 <tr><td>Returns</td>
 <td><ul></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
 
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Activity_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -471,10 +534,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Activity_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Binidng_affinity_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -498,10 +567,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Binidng_affinity_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Blast_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -525,10 +600,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Blast_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Dock_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -556,10 +637,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Dock_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Download_pdb_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -583,10 +670,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Download_pdb_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Generate_conformers_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -614,10 +707,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Generate_conformers_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Num_atoms_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -639,10 +738,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Num_atoms_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Pdb2mol_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -666,10 +771,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Pdb2mol_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Reorder_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -697,10 +808,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Reorder_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Search_decoys_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -734,10 +851,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul><li>None</li></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Search_decoys_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Split_pdb_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -766,10 +889,16 @@ __init__(
 <tr><td>Returns</td>
 <td><ul></ul></td>
 </tr>
+<tr><td></td>
+<td></td>
+</tr>
 
 
-## Split_pdb_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Test_multout_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -781,8 +910,11 @@ __init__(
 </tr>
 
 
-## Test_multout_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>Test_sum_init</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -794,8 +926,11 @@ __init__(
 </tr>
 
 
-## Test_sum_init
-<table><tr><td><b>__init__</b></td>
+<tr><td><h2>WriteARS2TFRInit</h2></td>
+<td></td>
+</tr>
+<tr><td><b>__init__</b></td>
+<td></td>
 </tr>
 <tr><td>Function</td>
 <td><pre lang="python">
@@ -810,4 +945,3 @@ __init__(
 </tr>
 
 
-## WriteARS2TFRInit
