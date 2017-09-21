@@ -1,8 +1,19 @@
+
+- [AffinityDB](#affinitydb)
+  * [__init__](#__init__)
+  * [coninue](#coninue)
+  * [open_table_with_queue](#open_table_with_queue)
+  * [run_multithread](#run_multithread)
+- [DatabaseMaster](#databasemaster)
+  * [__init__](#__init__)
+  * [list_search](#list_search)
+  * [merge](#merge)
+  * [retrieve](#retrieve)
 <table>
 
-<tr><td><h3>AffinityDB</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>AffinityDB</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><pre lang="python">
 __init__(
 	self,
 	db_root,
@@ -23,7 +34,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>coninue</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>coninue</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><pre lang="python">
 coninue(
 	self,
 	arg_table,
@@ -51,7 +62,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>open_table_with_queue</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>open_table_with_queue</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><pre lang="python">
 open_table_with_queue(
 	self,
 	table_name,
@@ -85,7 +96,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>run_multithread</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>run_multithread</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><pre lang="python">
 run_multithread(
 	self,
 	func,
@@ -118,9 +129,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>DatabaseMaster</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>DatabaseMaster</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><pre lang="python">
 __init__(
 	self,
 	db_path,
@@ -139,7 +150,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>list_search</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>list_search</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><pre lang="python">
 list_search(
 	self,
 	search_with,
@@ -179,7 +190,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>merge</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>merge</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><pre lang="python">
 merge(
 	self,
 	into_table,
@@ -213,7 +224,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>retrieve</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>retrieve</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><pre lang="python">
 retrieve(
 	self,
 	table,

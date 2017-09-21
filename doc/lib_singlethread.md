@@ -1,6 +1,9 @@
+
+-[Functions](#functions)
+  * [binding_affinity](#binding_affinity)
 <table>
 
-<tr><td><h4><b>binding_affinity</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_singlethread/binding_affinity_op.py">lib_singlethread/binding_affinity_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>binding_affinity</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_singlethread/binding_affinity_op.py">lib_singlethread/binding_affinity_op.py</a><br><pre lang="python">
 binding_affinity(
 	index_path,
 	source,

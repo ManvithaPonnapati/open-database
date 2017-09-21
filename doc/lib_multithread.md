@@ -1,6 +1,67 @@
+
+-[Functions](#functions)
+  * [activity](#activity)
+-[Functions](#functions)
+  * [binding_affinity](#binding_affinity)
+-[Functions](#functions)
+  * [blast](#blast)
+-[Functions](#functions)
+  * [dock](#dock)
+-[Functions](#functions)
+  * [download_pdb](#download_pdb)
+-[Functions](#functions)
+  * [generate_conformers](#generate_conformers)
+-[Functions](#functions)
+  * [num_atoms](#num_atoms)
+-[Functions](#functions)
+  * [pdb2mol](#pdb2mol)
+-[Functions](#functions)
+  * [reorder](#reorder)
+-[Functions](#functions)
+  * [save_record_tfr](#save_record_tfr)
+-[Functions](#functions)
+  * [get_decoys](#get_decoys)
+  * [search_decoys](#search_decoys)
+-[Functions](#functions)
+  * [split_pdb](#split_pdb)
+-[Functions](#functions)
+  * [test_multout](#test_multout)
+-[Functions](#functions)
+  * [test_sum](#test_sum)
+-[Functions](#functions)
+  * [save_record_tfr](#save_record_tfr)
+  * [write_ars2_tfr](#write_ars2_tfr)
+- [Activity_init](#activity_init)
+  * [__init__](#__init__)
+- [Binidng_affinity_init](#binidng_affinity_init)
+  * [__init__](#__init__)
+- [Blast_init](#blast_init)
+  * [__init__](#__init__)
+- [Dock_init](#dock_init)
+  * [__init__](#__init__)
+- [Download_pdb_init](#download_pdb_init)
+  * [__init__](#__init__)
+- [Generate_conformers_init](#generate_conformers_init)
+  * [__init__](#__init__)
+- [Num_atoms_init](#num_atoms_init)
+  * [__init__](#__init__)
+- [Pdb2mol_init](#pdb2mol_init)
+  * [__init__](#__init__)
+- [Reorder_init](#reorder_init)
+  * [__init__](#__init__)
+- [Search_decoys_init](#search_decoys_init)
+  * [__init__](#__init__)
+- [Split_pdb_init](#split_pdb_init)
+  * [__init__](#__init__)
+- [Test_multout_init](#test_multout_init)
+  * [__init__](#__init__)
+- [Test_sum_init](#test_sum_init)
+  * [__init__](#__init__)
+- [WriteARS2TFRInit](#writears2tfrinit)
+  * [__init__](#__init__)
 <table>
 
-<tr><td><h4><b>activity</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/activity_op.py">lib_multithread/activity_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>activity</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/activity_op.py">lib_multithread/activity_op.py</a><br><pre lang="python">
 activity(
 	pair_name,
 	target_id,
@@ -34,7 +95,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>binding_affinity</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/binidng_affinity_op.py">lib_multithread/binidng_affinity_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>binding_affinity</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/binidng_affinity_op.py">lib_multithread/binidng_affinity_op.py</a><br><pre lang="python">
 binding_affinity(
 	index_path,
 	init=binding_affinity_init,
@@ -65,7 +126,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>blast</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/blast_op.py">lib_multithread/blast_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>blast</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/blast_op.py">lib_multithread/blast_op.py</a><br><pre lang="python">
 blast(
 	rec_outpath,
 	lig_outpath,
@@ -97,7 +158,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>dock</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/dock_op.py">lib_multithread/dock_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>dock</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/dock_op.py">lib_multithread/dock_op.py</a><br><pre lang="python">
 dock(
 	rec_outpath,
 	reorder_outpath,
@@ -129,7 +190,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>download_pdb</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/download_pdb_op.py">lib_multithread/download_pdb_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>download_pdb</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/download_pdb_op.py">lib_multithread/download_pdb_op.py</a><br><pre lang="python">
 download_pdb(
 	pdb_id,
 	init=download_pdb_init,
@@ -159,7 +220,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>generate_conformers</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/generate_conformers_op.py">lib_multithread/generate_conformers_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>generate_conformers</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/generate_conformers_op.py">lib_multithread/generate_conformers_op.py</a><br><pre lang="python">
 generate_conformers(
 	uid,
 	lig_file,
@@ -182,7 +243,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>num_atoms</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/num_atoms_op.py">lib_multithread/num_atoms_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>num_atoms</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/num_atoms_op.py">lib_multithread/num_atoms_op.py</a><br><pre lang="python">
 num_atoms(
 	pdb_file,
 	init=num_atoms_init,
@@ -211,7 +272,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>pdb2mol</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/pdb2mol_op.py">lib_multithread/pdb2mol_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>pdb2mol</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/pdb2mol_op.py">lib_multithread/pdb2mol_op.py</a><br><pre lang="python">
 pdb2mol(
 	uid,
 	lig_file,
@@ -231,7 +292,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>reorder</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/reorder_op.py">lib_multithread/reorder_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>reorder</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/reorder_op.py">lib_multithread/reorder_op.py</a><br><pre lang="python">
 reorder(
 	rec_outpath,
 	lig_outpath,
@@ -264,7 +325,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>save_record_tfr</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/save_record_tfr_op.py">lib_multithread/save_record_tfr_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>save_record_tfr</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/save_record_tfr_op.py">lib_multithread/save_record_tfr_op.py</a><br><pre lang="python">
 save_record_tfr(
 	filename,
 	cryst_elem,
@@ -298,7 +359,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>get_decoys</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/search_decoys_op.py">lib_multithread/search_decoys_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>get_decoys</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/search_decoys_op.py">lib_multithread/search_decoys_op.py</a><br><pre lang="python">
 get_decoys(
 	pdb_file,
 	mol_file,
@@ -323,7 +384,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>search_decoys</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/search_decoys_op.py">lib_multithread/search_decoys_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>search_decoys</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/search_decoys_op.py">lib_multithread/search_decoys_op.py</a><br><pre lang="python">
 search_decoys(
 	molfile_path,
 )
@@ -332,7 +393,7 @@ search_decoys(
 </tr>
 
 
-<tr><td><h4><b>split_pdb</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/split_pdb_op.py">lib_multithread/split_pdb_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>split_pdb</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/split_pdb_op.py">lib_multithread/split_pdb_op.py</a><br><pre lang="python">
 split_pdb(
 	uid,
 	pdb_file,
@@ -368,7 +429,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>test_multout</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_multout_op.py">lib_multithread/test_multout_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>test_multout</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_multout_op.py">lib_multithread/test_multout_op.py</a><br><pre lang="python">
 test_multout(
 	num,
 	init=test_multout_init,
@@ -378,7 +439,7 @@ test_multout(
 </tr>
 
 
-<tr><td><h4><b>test_sum</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_sum_op.py">lib_multithread/test_sum_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>test_sum</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_sum_op.py">lib_multithread/test_sum_op.py</a><br><pre lang="python">
 test_sum(
 	num1,
 	num2,
@@ -389,7 +450,7 @@ test_sum(
 </tr>
 
 
-<tr><td><h4><b>save_record_tfr</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/save_record_tfr_op.py">lib_multithread/save_record_tfr_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>save_record_tfr</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/save_record_tfr_op.py">lib_multithread/save_record_tfr_op.py</a><br><pre lang="python">
 save_record_tfr(
 	filename,
 	cryst_elem,
@@ -423,7 +484,7 @@ Returns:
 </tr>
 
 
-<tr><td><h4><b>write_ars2_tfr</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/write_ars2_tfr_op.py">lib_multithread/write_ars2_tfr_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>write_ars2_tfr</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/write_ars2_tfr_op.py">lib_multithread/write_ars2_tfr_op.py</a><br><pre lang="python">
 write_ars2_tfr(
 	rec_file,
 	cryst_lig_file,
@@ -453,9 +514,9 @@ Returns:
 
 
 
-<tr><td><h3>Activity_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Activity_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/activity_op.py">lib_multithread/activity_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/activity_op.py">lib_multithread/activity_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	data_dir,
@@ -475,9 +536,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Binidng_affinity_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Binidng_affinity_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/binidng_affinity_op.py">lib_multithread/binidng_affinity_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/binidng_affinity_op.py">lib_multithread/binidng_affinity_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	db_root,
@@ -497,9 +558,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Blast_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Blast_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/blast_op.py">lib_multithread/blast_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/blast_op.py">lib_multithread/blast_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	data_dir,
@@ -519,9 +580,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Dock_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Dock_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/dock_op.py">lib_multithread/dock_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/dock_op.py">lib_multithread/dock_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	data_dir,
@@ -545,9 +606,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Download_pdb_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Download_pdb_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/download_pdb_op.py">lib_multithread/download_pdb_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/download_pdb_op.py">lib_multithread/download_pdb_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	db_root,
@@ -567,9 +628,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Generate_conformers_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Generate_conformers_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/generate_conformers_op.py">lib_multithread/generate_conformers_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/generate_conformers_op.py">lib_multithread/generate_conformers_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	db_root,
@@ -593,9 +654,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Num_atoms_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Num_atoms_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/num_atoms_op.py">lib_multithread/num_atoms_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/num_atoms_op.py">lib_multithread/num_atoms_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	db_root,
@@ -613,9 +674,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Pdb2mol_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Pdb2mol_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/pdb2mol_op.py">lib_multithread/pdb2mol_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/pdb2mol_op.py">lib_multithread/pdb2mol_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	db_root,
@@ -635,9 +696,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Reorder_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Reorder_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/reorder_op.py">lib_multithread/reorder_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/reorder_op.py">lib_multithread/reorder_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	data_dir,
@@ -662,9 +723,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Search_decoys_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Search_decoys_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/search_decoys_op.py">lib_multithread/search_decoys_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/search_decoys_op.py">lib_multithread/search_decoys_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	db_root,
@@ -694,9 +755,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Split_pdb_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Split_pdb_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/split_pdb_op.py">lib_multithread/split_pdb_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/split_pdb_op.py">lib_multithread/split_pdb_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	db_root,
@@ -721,9 +782,9 @@ Returns:
 </tr>
 
 
-<tr><td><h3>Test_multout_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Test_multout_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_multout_op.py">lib_multithread/test_multout_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_multout_op.py">lib_multithread/test_multout_op.py</a><br><pre lang="python">
 __init__(
 	self,
 )
@@ -732,9 +793,9 @@ __init__(
 </tr>
 
 
-<tr><td><h3>Test_sum_init</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>Test_sum_init</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_sum_op.py">lib_multithread/test_sum_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_sum_op.py">lib_multithread/test_sum_op.py</a><br><pre lang="python">
 __init__(
 	self,
 )
@@ -743,9 +804,9 @@ __init__(
 </tr>
 
 
-<tr><td><h3>WriteARS2TFRInit</h3><i>Class</i></td>
+<tr bgcolor="#F6F8FA"><td><h3>WriteARS2TFRInit</h3><i>Class</i></td>
 </tr>
-<tr><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/write_ars2_tfr_op.py">lib_multithread/write_ars2_tfr_op.py</a><br><pre lang="python">
+<tr bgcolor="#FFFFFF"><td><h4><b>__init__</b></h4><br><br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/write_ars2_tfr_op.py">lib_multithread/write_ars2_tfr_op.py</a><br><pre lang="python">
 __init__(
 	self,
 	num_bind_confs,
