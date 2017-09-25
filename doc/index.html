@@ -1,0 +1,1893 @@
+
+        <!DOCTYPE html>
+<html>
+
+<head>
+  <!--Import Google Icon Font-->
+  <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!--Import materialize.css-->
+  <link type="text/css" rel="stylesheet" href="stylesheets/materialize.min.css" media="screen,projection" />
+    
+    
+  <link type="text/css" rel="stylesheet" href="stylesheets/style.css">
+  <link type="text/css" rel="stylesheet" href="stylesheets/default.css">
+  <script type="text/javascript" src="js/highlight.pack.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<script>hljs.initHighlightingOnLoad();</script>
+    
+  <!--Let browser know website is optimized for mobile-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- UDF CSS -->
+  <link rel="stylesheet" href="stylesheets/plot.css" type="text/css">
+</head>
+
+        <body>
+        <div class="nav-cont">
+          <ul id="slide-out" class="side-nav fixed">
+            <li><a class="waves-effect" href="#!">Affinity Api Doc</a></li>
+              <li class="no-padding">
+              
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">database</a>
+            <div class="collapsible-body">
+              
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">AffinityDB</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#database.AffinityDB.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+
+<li><a href="#database.AffinityDB.coninue"><i class="material-icons" ></i>coninue</a>
+</li>
+
+<li><a href="#database.AffinityDB.open_table_with_queue"><i class="material-icons" ></i>open_table_with_queue</a>
+</li>
+
+<li><a href="#database.AffinityDB.run_multithread"><i class="material-icons" ></i>run_multithread</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">DatabaseMaster</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#database.DatabaseMaster.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+
+<li><a href="#database.DatabaseMaster.list_search"><i class="material-icons" ></i>list_search</a>
+</li>
+
+<li><a href="#database.DatabaseMaster.merge"><i class="material-icons" ></i>merge</a>
+</li>
+
+<li><a href="#database.DatabaseMaster.retrieve"><i class="material-icons" ></i>retrieve</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">lib_multithread</a>
+            <div class="collapsible-body">
+              
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">functions</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.activity_op.activity"><i class="material-icons" ></i>activity</a>
+</li>
+
+<li><a href="#lib_multithread.binidng_affinity_op.binding_affinity"><i class="material-icons" ></i>binding_affinity</a>
+</li>
+
+<li><a href="#lib_multithread.blast_op.blast"><i class="material-icons" ></i>blast</a>
+</li>
+
+<li><a href="#lib_multithread.dock_op.dock"><i class="material-icons" ></i>dock</a>
+</li>
+
+<li><a href="#lib_multithread.download_pdb_op.download_pdb"><i class="material-icons" ></i>download_pdb</a>
+</li>
+
+<li><a href="#lib_multithread.generate_conformers_op.generate_conformers"><i class="material-icons" ></i>generate_conformers</a>
+</li>
+
+<li><a href="#lib_multithread.num_atoms_op.num_atoms"><i class="material-icons" ></i>num_atoms</a>
+</li>
+
+<li><a href="#lib_multithread.pdb2mol_op.pdb2mol"><i class="material-icons" ></i>pdb2mol</a>
+</li>
+
+<li><a href="#lib_multithread.reorder_op.reorder"><i class="material-icons" ></i>reorder</a>
+</li>
+
+<li><a href="#lib_multithread.save_record_tfr_op.save_record_tfr"><i class="material-icons" ></i>save_record_tfr</a>
+</li>
+
+<li><a href="#lib_multithread.search_decoys_op.get_decoys"><i class="material-icons" ></i>get_decoys</a>
+</li>
+
+<li><a href="#lib_multithread.search_decoys_op.search_decoys"><i class="material-icons" ></i>search_decoys</a>
+</li>
+
+<li><a href="#lib_multithread.split_pdb_op.split_pdb"><i class="material-icons" ></i>split_pdb</a>
+</li>
+
+<li><a href="#lib_multithread.test_img_op.test_img"><i class="material-icons" ></i>test_img</a>
+</li>
+
+<li><a href="#lib_multithread.test_multout_op.test_multout"><i class="material-icons" ></i>test_multout</a>
+</li>
+
+<li><a href="#lib_multithread.test_sum_op.test_sum"><i class="material-icons" ></i>test_sum</a>
+</li>
+
+<li><a href="#lib_multithread.write_ars2_tfr_op.save_record_tfr"><i class="material-icons" ></i>save_record_tfr</a>
+</li>
+
+<li><a href="#lib_multithread.write_ars2_tfr_op.write_ars2_tfr"><i class="material-icons" ></i>write_ars2_tfr</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Activity_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.activity_op.Activity_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Binidng_affinity_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.binidng_affinity_op.Binidng_affinity_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Blast_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.blast_op.Blast_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Dock_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.dock_op.Dock_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Download_pdb_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.download_pdb_op.Download_pdb_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Generate_conformers_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.generate_conformers_op.Generate_conformers_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Num_atoms_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.num_atoms_op.Num_atoms_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Pdb2mol_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.pdb2mol_op.Pdb2mol_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Reorder_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.reorder_op.Reorder_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Search_decoys_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.search_decoys_op.Search_decoys_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Split_pdb_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.split_pdb_op.Split_pdb_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Test_img_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.test_img_op.Test_img_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Test_multout_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.test_multout_op.Test_multout_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">Test_sum_init</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.test_sum_op.Test_sum_init.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">WriteARS2TFRInit</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_multithread.write_ars2_tfr_op.WriteARS2TFRInit.__init__"><i class="material-icons" ></i>__init__</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+            </div>
+          </li>
+        </ul>
+
+        
+
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">lib_singlethread</a>
+            <div class="collapsible-body">
+              
+        <ul class="collapsible collapsible-accordion">
+          <li class="bold">
+            <a class="collapsible-header waves-effect waves-teal">functions</a>
+            <div class="collapsible-body">
+              <ul class="section table-of-contents" ><li><a href="#lib_singlethread.binding_affinity_op.binding_affinity"><i class="material-icons" ></i>binding_affinity</a>
+</li>
+</ul>
+
+            </div>
+          </li>
+        </ul>
+
+        
+            </div>
+          </li>
+        </ul>
+
+        
+              </li>
+          </ul>
+        </div>
+        
+        <div class="main-cont" ><div class="container" >
+</div>
+<div class="container" >
+<h2 class="header" >AffinityDB</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="database.AffinityDB.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	db_root,
+	db_name,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><div class="section" >Initialize database<br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>db_root</code></b>:root dir for all the data</li>
+<li><b><code>db_name</code></b>:name of the sqlite db file</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="database.AffinityDB.coninue">
+              <div class="card-content">
+                <span class="card-title">coninue</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+coninue(
+	self,
+	arg_table,
+	num_threads,
+	commit_sec,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><div class="section" >Continue the interrupted run_multithread function.<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>continue('arg_000_download_pdb',100,60)<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>arg_table</code></b>:string (name of the sqlite table with arguments of the function to run)</li>
+<li><b><code>num_threads</code></b>:integer (number of processes)</li>
+<li><b><code>commit_sec</code></b>:integer (write outputs to the database every number of tasks)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="database.AffinityDB.open_table_with_queue">
+              <div class="card-content">
+                <span class="card-title">open_table_with_queue</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+open_table_with_queue(
+	self,
+	table_name,
+	col_names,
+	col_types,
+	commit_sec=1,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><div class="section" >Creates an output table, and a queue to feed this table. Creates a background thread to take results<br>from the queue and insert into the table.<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>out_q,stop_event = afdb.open_table_with_queue(table_name="some_table",col_names=["num"],col_types=[int])<br>zsh<br>for i in range(1000):<br>    out_q.put([i])<br>stop_event.set()<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>table_name</code></b>:string (name of the table prefix out_xxx_ will be appended)</li>
+<li><b><code>col_names</code></b>:list of strings (names of the columns)</li>
+<li><b><code>col_types</code></b>:list of python types (column types)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>multiprocessing queue: event to close the table and terminate thread.</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="database.AffinityDB.run_multithread">
+              <div class="card-content">
+                <span class="card-title">run_multithread</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+run_multithread(
+	self,
+	func,
+	arg_sets,
+	num_threads=10,
+	commit_sec=1,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/main_ops.py">database/main_ops.py</a><br><div class="section" >Run any function in lib_multithread in multiple threads.<br>Writes all arguments to `arg_xxx_func` table, record outputs to `out_xxx_table`. Record state of the function's<br>initializer to cron table.<br>If the task is interrupted in the process of execution, it is possible to resume with `AffinityDB.continue(*)`<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>run_multithread('download',[['10MD','3EML']])<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>func</code></b>:string (a name of the function to execute)</li>
+<li><b><code>arg_sets</code></b>:lits of tuples (every tuple is an argument set for a single run of a function)</li>
+<li><b><code>num_threads</code></b>:integer (number of independent processes)</li>
+<li><b><code>commit_sec</code></b>:integer (time delay in flushing outputs to the arg_ and out_ tables)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >DatabaseMaster</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="database.DatabaseMaster.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	db_path,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><div class="section" >Initialize database master<br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>db_path</code></b>:path of the sqlite database file</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="database.DatabaseMaster.list_search">
+              <div class="card-content">
+                <span class="card-title">list_search</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+list_search(
+	self,
+	search_with,
+	search_in,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><div class="section" >Search with each element of the `search_with` in the list `search_in`.<br>Then get three lists:<br>- hits_idx:<br>A list of length len(search_with) of lists. Internal list is indexes [j1,j2,j3,j4] such that values         search_with[i] == search_in[j1], search_with[i] == search_in[j2], ...<br>- hits_val:<br>Same as hits_idx but lists with values instead of indexes<br>- pairs_idx:<br>Two lists of the same length. search_with[pairs_idx[0][i]] == search_in[pairs_idx[1][i]]<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>list_search(['3AT1','2TPI'],['2TPI','3EML','3AT1','2TPI'])<br></code>
+</pre><br><br><b>Output:</b><br><pre lang="python">
+<code class="python">
+<br>[[2],[0,3]],<br>[['3AT1'],['2PTI','2PTI']],<br>[[0,2],[1,0],[1,3]]<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>search_with</code></b>:list of [str/float/int]</li>
+<li><b><code>search_in</code></b>:list of [str/float/int]</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>three lists: hits_idx, hits_val, pairs_idx</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="database.DatabaseMaster.merge">
+              <div class="card-content">
+                <span class="card-title">merge</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+merge(
+	self,
+	into_table,
+	from_table,
+	merge_cols,
+	order,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><div class="section" >Merges any table into the output table<br><br>Suggestion:<br>When providing order, please, use `run_idx` for the argument table, and `out_idx` for the output table.<br>Also, it the `arg_table` it is a good idea to select `run_idx ==1`<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>merge('out_000_dock','arg_000_reorder','reorder_outpath',[[1,4,2,3],[1,2,3,4]])<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>into_table</code></b>:string (table to merge into)</li>
+<li><b><code>from_table</code></b>:string (table to merge from)</li>
+<li><b><code>merge_cols</code></b>:list of strings (names of the columns in merge_from to merge)</li>
+<li><b><code>order</code></b>:Two lists of the same length. into_table_idx <-- from_table_idx         First list: idx of the `into_table`,  second list: idx of the `from table` to merge.</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="database.DatabaseMaster.retrieve">
+              <div class="card-content">
+                <span class="card-title">retrieve</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+retrieve(
+	self,
+	table,
+	cols,
+	col_rules,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/database/master_ops.py">database/master_ops.py</a><br><div class="section" >Retrieves column values from a single table based on a given filtering rule.<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>my_db.retrieve(some_table_table,["num1","num2"],{"remainder_div_3":"{}==1 or {}==2", "sum":"{}<200"})<br></code>
+</pre><br>will retrieve:<br><pre lang="python">
+<code class="python">
+<br>columns called "num1" and "num2" from some table. That have value 1 or 2 in the ramainder_div_3 column. Column<br>named "sum" of which would be less than 200. All columns are combined with an "AND" statement.<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>table</code></b>:string (name of the table to retrieve from)</li>
+<li><b><code>columns</code></b>:list of strings (names of the columns to retrieve)</li>
+<li><b><code>column_rules</code></b>:dictionary of rules that will be evaluated</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>Nested list in which is entry in a list a a column with filtered requested values</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+</div>
+<div class="container" >
+<h2 class="header" >Functions</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.activity_op.activity">
+              <div class="card-content">
+                <span class="card-title">activity</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+activity(
+	pair_name,
+	target_id,
+	init=activity_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/activity_op.py">lib_multithread/activity_op.py</a><br><div class="section" >Getting bioactivity result from local chembl database     query by the `target_chembl_id`<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>activity('154L_A_188_NAG','CHEMBL2366438')<br></code>
+</pre><br><br><b>Output:</b><br><pre lang="python">
+<code class="python">
+<br>[['154L_A_188_NAG','CHEMBL3070308','CHEMBL2366438','CHEMBL223593',9,'IC50','=',28.0,'nM','CC(Oc1ccc(Oc2ncc(cc2Cl)C(F)(F)F)cc1)C(=O)O']]<br></code>
+</pre><br><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>pair_name</code></b>:str combined receptor id and ligand info {receptor_id}_{chain}_{resnum}_{resname}</li>
+<li><b><code>target_id</code></b>:str chembl_target_id</li>
+<li><b><code>init</code></b>:str init function name</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>nested list:</li>
+<li>[pair_name, aid, tid, mid, confidence_score, type, relation, value, unit, smile]</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.binidng_affinity_op.binding_affinity">
+              <div class="card-content">
+                <span class="card-title">binding_affinity</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+binding_affinity(
+	index_path,
+	init=binding_affinity_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/binidng_affinity_op.py">lib_multithread/binidng_affinity_op.py</a><br><div class="section" >Parse binding affinity record from index_path<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>binding_affinity('nr.csv','bindingmoad')<br></code>
+</pre><br><br><b>Output:</b><br><pre lang="python">
+<code class="python">
+<br>[['4CPA','GLY',-19.1138279245,0.538831666908,1,'success'],<br> ['4FAB','FDS',-18.5485141155,0.552471259564,1,'success']]<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>index_path</code></b>:record file</li>
+<li><b><code>init</code></b>:str init function name</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>Nested list [ [pdb_name, ligand_names, log_affinities, normalized_affinities, states, comments] ]</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.blast_op.blast">
+              <div class="card-content">
+                <span class="card-title">blast</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+blast(
+	rec_outpath,
+	lig_outpath,
+	init=blast_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/blast_op.py">lib_multithread/blast_op.py</a><br><div class="section" >Applying protein sequence blast on the receptor<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>blast('split/10MH_C_427_5NC/10MH_C_427_5NC_receptor.pdb','split/10MH_C_427_5NC/10MH_C_427_5NC_ligand.pdb')<br></code>
+</pre><br><br><b>Output:</b><br><pre lang="python">
+<code class="python">
+<br>[['10MH_C_427_5NC', 'CHEMBL2242732', 0.44, 'FFAGFPCQFSISGMENVKNFKRERIQTLSAYGKMKFGNSVV']]<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>rec_outpath</code></b>:str:: relative path of receptor</li>
+<li><b><code>lig_outpath</code></b>:str:: relative path of ligand</li>
+<li><b><code>init</code></b>:str:: init func name</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>nested list: [ [pair_name, chembl_target_id, identity, sequence]]</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.dock_op.dock">
+              <div class="card-content">
+                <span class="card-title">dock</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+dock(
+	rec_outpath,
+	reorder_outpath,
+	init=dock_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/dock_op.py">lib_multithread/dock_op.py</a><br><div class="section" >Docking the ligand by smina<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>dock('3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb','4_reorder/10MH/10MH_B_407_5CM_ligand.pdb')<br></code>
+</pre><br><br><b>Output:</b><br><pre lang="python">
+<code class="python">
+<br>[['3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb', '4_reorder/10MH/10MH_B_407_5CM_ligand.pdb', '5_vinardo/10MH/10MH_C_427_5NC_ligand.pdb']]<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>rec_outpath</code></b>:str relative path for receptor</li>
+<li><b><code>reorder_outpath</code></b>:str relative path for reorder ligand</li>
+<li><b><code>init</code></b>:str init func naem</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>Nested list [[receptor_path, ligand_path, dock_result_path]]</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.download_pdb_op.download_pdb">
+              <div class="card-content">
+                <span class="card-title">download_pdb</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+download_pdb(
+	pdb_id,
+	init=download_pdb_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/download_pdb_op.py">lib_multithread/download_pdb_op.py</a><br><div class="section" >Download PDB crystal structure from the Protein Data Bank.<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>download_pdb('104M')<br></code>
+</pre><br><br><b>Output:</b><br><pre lang="python">
+<code class="python">
+<br>[['104M','download/104M.pdb']]<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>pdb_id</code></b>:string (4-letter PDB ID IE: 1QGT)</li>
+<li><b><code>dir_path</code></b>:string (folder in which to save the pdb file)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>nested list [[pdb_identifier, download_file_path]]</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.generate_conformers_op.generate_conformers">
+              <div class="card-content">
+                <span class="card-title">generate_conformers</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+generate_conformers(
+	uid,
+	lig_file,
+	init=generate_conformers_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/generate_conformers_op.py">lib_multithread/generate_conformers_op.py</a><br><div class="section" >Forgets the initial coordinates of the molecule. Looses all hydrogens. Adds all hydrogens.<br>Generates random conformers. Optimizes conformers with MMFF94 Force Field.<br>Saves multiframe PDB file of the ligand with new coordinates.</div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>lig_file</code></b>:string (path to the ligand file in the PDB format to read)</li>
+<li><b><code>init</code></b>:string (init function)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>nested list:</li>
+<li>of dimension [1x[string]]. String is the relative path to the output file.</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.num_atoms_op.num_atoms">
+              <div class="card-content">
+                <span class="card-title">num_atoms</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+num_atoms(
+	pdb_file,
+	init=num_atoms_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/num_atoms_op.py">lib_multithread/num_atoms_op.py</a><br><div class="section" >Counter the number of atom<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>num_atoms('4_reorder/10MH/10MH_B_407_5CM_ligand.pdb')<br></code>
+</pre><br><br><b>Output:</b><br><pre lang="python">
+<code class="python">
+<br>[[10]]<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>pdb_file</code></b>:relative path of the pdb file</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>nested list [[atom_num]]</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.pdb2mol_op.pdb2mol">
+              <div class="card-content">
+                <span class="card-title">pdb2mol</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+pdb2mol(
+	uid,
+	lig_file,
+	init=pdb2mol_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/pdb2mol_op.py">lib_multithread/pdb2mol_op.py</a><br><div class="section" >Convert .pdb file to .mol file</div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>lig_file</code></b>:string (relative path to the ligand file)</li>
+<li><b><code>init</code></b>:string (init function)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.reorder_op.reorder">
+              <div class="card-content">
+                <span class="card-title">reorder</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+reorder(
+	rec_outpath,
+	lig_outpath,
+	init=reorder_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/reorder_op.py">lib_multithread/reorder_op.py</a><br><div class="section" >Parse the ligand by smina, and then output it. So the order of the atom keeps the same as the docking result<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>reorder('3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb','2_split_ligand/10MH/10MH_B_407_5CM_ligand.pdb')<br></code>
+</pre><br><br><b>Output:</b><br><pre lang="python">
+<code class="python">
+<br>[['3_split_receptor/10MH/10MH_B_407_5CM_receptor.pdb', '4_reorder/10MH/10MH_B_407_5CM_ligand.pdb']]<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>rec_outpath</code></b>:str relative path for receptor</li>
+<li><b><code>lig_outpath</code></b>:str relative path for ligand</li>
+<li><b><code>init</code></b>:str initialize module</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>:returns:</li>
+<li>nested list: [[receptor_output_path, reorder_ligand_output_path]]</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.save_record_tfr_op.save_record_tfr">
+              <div class="card-content">
+                <span class="card-title">save_record_tfr</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+save_record_tfr(
+	filename,
+	cryst_elem,
+	cryst_coord,
+	binders_elem,
+	binders_coordsets,
+	cryst_label,
+	binders_labels,
+	rec_elem,
+	rec_coord,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/save_record_tfr_op.py">lib_multithread/save_record_tfr_op.py</a><br><div class="section" >Save input data into Tensorflow Record</div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>filename</code></b>:string (file path to the output file)</li>
+<li><b><code>pos_per_binder</code></b>:integer (number of positions per binder)</li>
+<li><b><code>cryst_elem</code></b>:np.array shape=[n_elem] type=float32 (elements of the ligand)</li>
+<li><b><code>cryst_coord</code></b>:np.array shape=[n_elem, 3] type=float32 (coordinates of the elements of the ligand)</li>
+<li><b><code>binders_elem</code></b>:list of np.array of shape=[n_elem] type=float32 (elements of binders)</li>
+<li><b><code>binders_coordsets</code></b>:list of np.array [pos_per_binder, n_elem, 3 ] (coordinate sets per each of the bidners)</li>
+<li><b><code>cryst_label</code></b>:float32 (something about the crystal pose, like binding affinity)</li>
+<li><b><code>binders_labels</code></b>:list of np.array shape=[pos_per_binder] type=float32</li>
+<li><b><code>rec_elem</code></b>:np.array of shape [n_elem] of float32</li>
+<li><b><code>rec_coord</code></b>:np.array of shape [n_elem, 3]</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.search_decoys_op.get_decoys">
+              <div class="card-content">
+                <span class="card-title">get_decoys</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+get_decoys(
+	pdb_file,
+	mol_file,
+	num_atoms,
+	init=get_decoys_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/search_decoys_op.py">lib_multithread/search_decoys_op.py</a><br><div class="section" >For each binding ligand, get a list of decoy ligands. We filter by number of atoms and maximum common<br>substructure (MCS). Returns filepaths to all binding ligand - decoy pair.<br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>pdb_file</code></b>:pdb format ligand</li>
+<li><b><code>mol_file</code></b>:mol format ligand</li>
+<li><b><code>num_atoms</code></b>:ligand's atom number</li>
+<li><b><code>init</code></b>:</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>nested list [[pdb_file, decoy_files]]</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.search_decoys_op.search_decoys">
+              <div class="card-content">
+                <span class="card-title">search_decoys</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+search_decoys(
+	molfile_path,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/search_decoys_op.py">lib_multithread/search_decoys_op.py</a><br>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.split_pdb_op.split_pdb">
+              <div class="card-content">
+                <span class="card-title">split_pdb</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+split_pdb(
+	uid,
+	pdb_file,
+	init=split_pdb_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/split_pdb_op.py">lib_multithread/split_pdb_op.py</a><br><div class="section" >Iterates through every ligand molecule in the crystal structure (frequently there are a few). For each ligand<br>selects and crops its binding site (any atom of Protein/DNA/Cofactor within the cutoff distance). Saves pairs of<br>files: ligand + this ligand's binding site.<br><br><b>Example:</b><br><pre lang="python">
+<code class="python">
+<br>split_pdb('105M','download/105M.pdb')<br></code>
+</pre><br><br><b>Output:</b><br><pre lang="python">
+<code class="python">
+<br>[['05M_A_155_HEM','split/105M_A_155_HEM/105M_A_155_HEM_receptor.pdb','split/105M_A_155_HEM/105M_A_155_HEM_ligand.pdb',30,100]]<br></code>
+</pre><br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>pdb_file</code></b>:string (relative path the the file to split)</li>
+<li><b><code>cutoff_dist</code></b>:float (distance of any atoms in the binding site from any atom of the ligand to be saved)</li>
+<li><b><code>min_rec_atoms</code></b>:minimun number of atoms be saved as binding site</li>
+<li><b><code>min_lig_atoms</code></b>:minumum number of atoms for ligand to be saved</li>
+<li><b><code>init</code></b>:string (init function in this module)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>nested list of pairs of file names of dimensions [num_pairs x [string,string,int,int]] or     [num_pairs x [lig_file,bindsite_file,lig_num_atoms,bindsite_num_atoms]]</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.test_img_op.test_img">
+              <div class="card-content">
+                <span class="card-title">test_img</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+test_img(
+	init=test_img_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_img_op.py">lib_multithread/test_img_op.py</a><br><div class="section" >Example to add image into api doc<br><br><blockquote><br><pre><br><!-- Add image at doc/images --><br><!-- add image link in doc string --><br><img src="images/image_name.png"><br></code>
+</pre><br></blockquote><br><b>Rmsd Distribution for Vinardo Docking result</b><br><img src="images/vinardo_rmsd.png"></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.test_multout_op.test_multout">
+              <div class="card-content">
+                <span class="card-title">test_multout</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+test_multout(
+	num,
+	init=test_multout_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_multout_op.py">lib_multithread/test_multout_op.py</a><br>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.test_sum_op.test_sum">
+              <div class="card-content">
+                <span class="card-title">test_sum</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+test_sum(
+	num1,
+	num2,
+	init=test_sum_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_sum_op.py">lib_multithread/test_sum_op.py</a><br>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.write_ars2_tfr_op.save_record_tfr">
+              <div class="card-content">
+                <span class="card-title">save_record_tfr</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+save_record_tfr(
+	filename,
+	cryst_elem,
+	cryst_coord,
+	binders_elem,
+	binders_coordsets,
+	cryst_label,
+	binders_labels,
+	rec_elem,
+	rec_coord,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/save_record_tfr_op.py">lib_multithread/save_record_tfr_op.py</a><br><div class="section" >Save input data into Tensorflow Record</div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>filename</code></b>:string (file path to the output file)</li>
+<li><b><code>pos_per_binder</code></b>:integer (number of positions per binder)</li>
+<li><b><code>cryst_elem</code></b>:np.array shape=[n_elem] type=float32 (elements of the ligand)</li>
+<li><b><code>cryst_coord</code></b>:np.array shape=[n_elem, 3] type=float32 (coordinates of the elements of the ligand)</li>
+<li><b><code>binders_elem</code></b>:list of np.array of shape=[n_elem] type=float32 (elements of binders)</li>
+<li><b><code>binders_coordsets</code></b>:list of np.array [pos_per_binder, n_elem, 3 ] (coordinate sets per each of the bidners)</li>
+<li><b><code>cryst_label</code></b>:float32 (something about the crystal pose, like binding affinity)</li>
+<li><b><code>binders_labels</code></b>:list of np.array shape=[pos_per_binder] type=float32</li>
+<li><b><code>rec_elem</code></b>:np.array of shape [n_elem] of float32</li>
+<li><b><code>rec_coord</code></b>:np.array of shape [n_elem, 3]</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.write_ars2_tfr_op.write_ars2_tfr">
+              <div class="card-content">
+                <span class="card-title">write_ars2_tfr</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+write_ars2_tfr(
+	rec_file,
+	cryst_lig_file,
+	bind_lig_file,
+	decoy_files,
+	out_tfr_file,
+	init=write_ars2_tfr_init,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/write_ars2_tfr_op.py">lib_multithread/write_ars2_tfr_op.py</a><br><div class="section" >For each protein/ligand crystal pair, write one tfrecord with the following:<br>> rec_elem, rec_coord, cryst_elem, cryst_coord<br>> lig_nelems, lig_elem, lig_nframes, lig_coordsets, lig_labels<br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>rec_file</code></b>:filepath to receptor PDB</li>
+<li><b><code>cryst_lig_file</code></b>:filepath to crystal ligand PDB</li>
+<li><b><code>bind_lig_file</code></b>:filepath to conformers of crystal ligand PDB</li>
+<li><b><code>decoy_files</code></b>:comma separated filepath to decoy ligands PDB</li>
+<li><b><code>out_tfr_file</code></b>:filepath to write tf record to</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+</div>
+<div class="container" >
+<h2 class="header" >Activity_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.activity_op.Activity_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	data_dir,
+	db_path,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/activity_op.py">lib_multithread/activity_op.py</a><br><div class="section" >Initialize activity func</div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>data_dir</code></b>:str dir for the folder to save data</li>
+<li><b><code>db_path</code></b>:str path for the chembl database</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Binidng_affinity_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.binidng_affinity_op.Binidng_affinity_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	db_root,
+	parse_type,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/binidng_affinity_op.py">lib_multithread/binidng_affinity_op.py</a><br><div class="section" >Initialize binding affinity parse func</div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>db_root</code></b>:string (path to the root folder of the database)</li>
+<li><b><code>parse_type</code></b>:source of binding affinity record ['pdbbind','bindingmoad','bindingdb']</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Blast_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.blast_op.Blast_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	data_dir,
+	blast_db,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/blast_op.py">lib_multithread/blast_op.py</a><br><div class="section" >Initialize blast func</div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>data_dir</code></b>:str dir for the data</li>
+<li><b><code>blast_db</code></b>:str path of the blast database</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Dock_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.dock_op.Dock_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	data_dir,
+	dock_folder,
+	smina_path,
+	dock_param,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/dock_op.py">lib_multithread/dock_op.py</a><br><div class="section" ></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>data_dir</code></b>:str dir for the folder to save data</li>
+<li><b><code>dock_folder</code></b>:str name of the folder to save reorder output</li>
+<li><b><code>smina_path</code></b>:str path for teh executable smina program</li>
+<li><b><code>dock_param</code></b>:dict docking parameter {'args':[...], 'kwargs':{...}}</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Download_pdb_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.download_pdb_op.Download_pdb_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	db_root,
+	download_dir,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/download_pdb_op.py">lib_multithread/download_pdb_op.py</a><br><div class="section" >Initialize download func</div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>db_root</code></b>:string (root folder directory for the files in the database)</li>
+<li><b><code>download_dir</code></b>:string (name of the directory where to put downloaded PDBs)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Generate_conformers_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.generate_conformers_op.Generate_conformers_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	db_root,
+	conformers_dir,
+	num_conformers,
+	out_H,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/generate_conformers_op.py">lib_multithread/generate_conformers_op.py</a><br><div class="section" ></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>db_root</code></b>:string (database root)</li>
+<li><b><code>conformers_dir</code></b>:string (name of the directory where to put generated conformers)</li>
+<li><b><code>num_conformers</code></b>:int (number of the conformers to output)</li>
+<li><b><code>out_H</code></b>:bool T/F (Add hydrogen atoms to the output. All input hydorogen atoms are always lost.)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Num_atoms_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.num_atoms_op.Num_atoms_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	db_root,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/num_atoms_op.py">lib_multithread/num_atoms_op.py</a><br><div class="section" >Initialize num_atoms func</div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>db_root</code></b>:string (path to the root of the database)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Pdb2mol_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.pdb2mol_op.Pdb2mol_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	db_root,
+	molfile_dir,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/pdb2mol_op.py">lib_multithread/pdb2mol_op.py</a><br><div class="section" ></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>db_root</code></b>:string (database root)</li>
+<li><b><code>molfile_dir</code></b>:string (relative path where to create the output directory with .mol files)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Reorder_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.reorder_op.Reorder_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	data_dir,
+	reorder_folder,
+	smina_path,
+	dock_param,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/reorder_op.py">lib_multithread/reorder_op.py</a><br><div class="section" >Initialize reorder func<br></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>data_dir</code></b>:str dir for the folder to save data</li>
+<li><b><code>reorder_folder</code></b>:str name of the folder to save reorder output</li>
+<li><b><code>smina_path</code></b>:str path for teh executable smina program</li>
+<li><b><code>dock_param</code></b>:dict docking parameter {'args':[...], 'kwargs':{...}}</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Search_decoys_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.search_decoys_op.Search_decoys_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	db_root,
+	decoy_ids,
+	decoy_natoms,
+	decoy_molfiles,
+	max_decoys=10,
+	atom_diff=5,
+	max_substruct=5,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/search_decoys_op.py">lib_multithread/search_decoys_op.py</a><br><div class="section" ></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>db_root</code></b>:</li>
+<li><b><code>decoy_ids</code></b>:</li>
+<li><b><code>decoy_natoms</code></b>:</li>
+<li><b><code>decoy_molfiles</code></b>:</li>
+<li><b><code>max_decoys</code></b>:</li>
+<li><b><code>atom_diff</code></b>:</li>
+<li><b><code>max_substruct</code></b>:</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>None</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Split_pdb_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.split_pdb_op.Split_pdb_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	db_root,
+	split_dir,
+	discard_h=True,
+	cutoff_dist=10,
+	min_rec_atoms=10,
+	min_lig_atoms=5,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/split_pdb_op.py">lib_multithread/split_pdb_op.py</a><br><div class="section" ></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>db_root</code></b>:string (path to the root folder of the database)</li>
+<li><b><code>split_dir</code></b>:string (where to put split pdbs)</li>
+<li><b><code>discard_h</code></b>:Bool T/F (discard all hydrogens for both ligand and receptor defaults to True)</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Test_img_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.test_img_op.Test_img_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_img_op.py">lib_multithread/test_img_op.py</a><br>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Test_multout_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.test_multout_op.Test_multout_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_multout_op.py">lib_multithread/test_multout_op.py</a><br>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >Test_sum_init</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.test_sum_op.Test_sum_init.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/test_sum_op.py">lib_multithread/test_sum_op.py</a><br>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+<h2 class="header" >WriteARS2TFRInit</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_multithread.write_ars2_tfr_op.WriteARS2TFRInit.__init__">
+              <div class="card-content">
+                <span class="card-title">__init__</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+__init__(
+	self,
+	num_bind_confs,
+	num_decoy_confs,
+	num_decoys,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_multithread/write_ars2_tfr_op.py">lib_multithread/write_ars2_tfr_op.py</a><br>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+</div>
+<div class="container" >
+<h2 class="header" >Functions</h2>
+
+        <div class="row" >
+          <div class="col s12 m12">
+            <div class="card scrollspy" id="lib_singlethread.binding_affinity_op.binding_affinity">
+              <div class="card-content">
+                <span class="card-title">binding_affinity</span>
+                  
+<div class="divider"></div>
+<pre lang="python">
+<code class="python">
+binding_affinity(
+	index_path,
+	source,
+)</code>
+</pre>
+<br>Defined in <a href="https://github.com/mitaffinity/open-database/tree/master/affinityDB/lib_singlethread/binding_affinity_op.py">lib_singlethread/binding_affinity_op.py</a><br><div class="section" ></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Args</b>
+<br><ul><li><b><code>index_path</code></b>:path of the input file</li>
+<li><b><code>source</code></b>:type of file ['pdbbind', 'bindingmoad', 'bindingdb']</li></ul></div>
+
+<div class="divider"></div>
+<div class="section" ><b>Returns</b>
+<br><ul><li>parse result [ pdb_names, ligand_names, log_affinities, normalized_affinities, states, comments]</li></ul></div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        
+</div>
+<div class="container" >
+</div>
+</div>
+</body>
+
+        
+<!--Import jQuery before materialize.js-->
+<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="js/materialize.min.js"></script>
+
+<!-- Init JS component for materialize     -->
+    <script>hljs.initHighlightingOnLoad();</script>
+<script>
+    $(document).ready(function () {
+        $('ul.tabs').tabs();
+    });
+    
+    
+  // Initialize collapse button
+  $(".button-collapse").sideNav();
+  // Initialize collapsible (uncomment the line below if you use the dropdown variation)
+  //$('.collapsible').collapsible();
+    
+      $(document).ready(function(){
+    $('.collapsible').collapsible();
+  });
+       $(document).ready(function(){
+    $('.scrollspy').scrollSpy();
+  });
+</script>
+<!-- D3 Js -->
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<!-- User defined Js function -->
+<script src="js/plot.js"></script>
+<!-- Getting data and plot curve  -->
+<script>
+    var xData = [0.2, 0.3, 0.5, 0.6, 0.7, 0.8];
+    var yData = [0.4, 0.6, 0.7, 0.5, 0.9, 0.2];
+    var data = zip_data(xData, yData);
+
+    d3.csv('data/data.csv',function(data){
+        plot_roc(data)
+
+    })
+    //        plot_roc(data);
+</script>
+</body>
+
+</html>
+        

@@ -1,0 +1,15 @@
+.main-cont {
+    padding-left: 300px;
+}
+
+.table-of-contents a.active{
+    font-weight: 500;
+    color:#ee6e73;
+    border-left: 0;
+    border-right: 5px solid #ee6e73;
+    
+}
+
+h2.header{
+    color:#ee6e73;
+}
