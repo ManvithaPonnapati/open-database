@@ -2,8 +2,8 @@ import time
 import tensorflow as tf
 import numpy as np
 
-def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem, 
-    binders_coordsets, cryst_label, binders_labels, rec_elem, rec_coord):
+def save_record_tfr(filename, cryst_elem, cryst_atom_type,cryst_coord, binders_elem, binders_atom_type, 
+    binders_coordsets, cryst_label, binders_labels, rec_elem, rec_atom_type,rec_coord):
     """
     Save input data into Tensorflow Record
     :param filename: string (file path to the output file)
@@ -25,6 +25,10 @@ def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem,
     assert type(cryst_elem) == np.ndarray
     assert cryst_elem.dtype == np.float32
     assert len(cryst_elem.shape)==1
+
+    assert type(cryst_atom_type) == list
+    assert len(cryst_atom_type) == cryst_elem.shape[0]
+
     # crystal ligand coordinates
     assert type(cryst_coord) == np.ndarray
     assert cryst_coord.dtype == np.float32
@@ -38,6 +42,8 @@ def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem,
         assert type(binders_elem[i]) == np.ndarray
         assert str(binders_elem[i].dtype) in {"float32", "np.float32"}
         assert len(binders_elem[i].shape) == 1
+
+
     # binders coordsets
     assert type(binders_coordsets) == list
     assert len(binders_coordsets) == num_binders
@@ -61,6 +67,9 @@ def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem,
     assert type(rec_elem) == np.ndarray
     assert rec_elem.dtype == np.float32
     assert len(rec_elem.shape) == 1
+
+    assert type(rec_atom_type) == list
+    assert len(rec_atom_type) == rec_elem.shape[0]
     # rec coord
     assert type(rec_coord) == np.ndarray
     assert rec_coord.dtype == np.float32
@@ -70,14 +79,17 @@ def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem,
 
     # reshape all of the coordinates into 1d
     _cryst_elem = cryst_elem
+    _cryst_atom_type = np.asarray(cryst_atom_type,dtype=np.int32)
     _cryst_coord = cryst_coord.reshape([-1])
     _binders_nelem = [binders_elem[i].shape[0] for i in range(num_binders)]
     _binders_elem = np.concatenate([binders_elem[i] for i in range(num_binders)],axis=0)
+    _binders_atom_type = np.concatenate([binders_atom_type[i] for i in range(num_binders)], axis=0).astype(np.int32)
     _binders_nframes = [binders_coordsets[i].shape[0] for i in range(num_binders)]
     _binders_coordsets = np.concatenate([binders_coordsets[i].reshape([-1]) for i in range(num_binders)])
     _cryst_label = np.asarray([cryst_label],dtype=np.float32)
     _binders_labels = np.concatenate([binders_labels[i].reshape([-1]) for i in range(num_binders)],axis=0)
     _rec_elem = rec_elem
+    _rec_atom_type = np.asarray(rec_atom_type, dtype=np.int32)
     _rec_coord = rec_coord.reshape([-1])
 
     print _binders_nelem
@@ -88,14 +100,17 @@ def save_record_tfr(filename, cryst_elem, cryst_coord, binders_elem,
         features=tf.train.Features(
         feature={
             '_cryst_elem': tf.train.Feature(float_list=tf.train.FloatList(value=_cryst_elem)),
+            '_cryst_atom_type': tf.train.Feature(int64_list=tf.train.Int64List(value=_cryst_atom_type)),
             '_cryst_coord': tf.train.Feature(float_list=tf.train.FloatList(value=_cryst_coord)),
             '_binders_nelem':tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_nelem)),
             '_binders_elem': tf.train.Feature(float_list=tf.train.FloatList(value=_binders_elem)),
+            '_binders_atom_type': tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_atom_type)),
             '_binders_nframes': tf.train.Feature(int64_list=tf.train.Int64List(value=_binders_nframes)),
             '_binders_coordsets': tf.train.Feature(float_list=tf.train.FloatList(value=_binders_coordsets)),
             '_cryst_label': tf.train.Feature(float_list=tf.train.FloatList(value=_cryst_label)),
             '_binders_labels': tf.train.Feature(float_list=tf.train.FloatList(value=_binders_labels)),
             '_rec_elem': tf.train.Feature(float_list=tf.train.FloatList(value=_rec_elem)),
+            '_rec_atom_type': tf.train.Feature(int64_list=tf.train.Int64List(value=_rec_atom_type)),
             '_rec_coord': tf.train.Feature(float_list=tf.train.FloatList(value=_rec_coord)),
              }
         )

@@ -1,0 +1,18 @@
+# compile tensorflow op
+
+```bash
+TF_INC=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
+
+g++ -std=c++11 -shared inter_mol_energy.cc -o inter_mol_energy.so -fPIC -I $TF_INC
+```
+
+# usage
+
+```python
+
+# load op
+op = tf.load_op_library('./inter_mol_energy.so')
+
+energy = op.inter_mol_energy(ligand_coords, ligand_atom_type, receptor_coords, receptor_atom_type)
+
+```
