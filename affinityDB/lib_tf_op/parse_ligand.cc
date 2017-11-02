@@ -13,7 +13,8 @@ REGISTER_OP("ParseLigand")
     .Output("coords: float32")
     .Output("energy: float32")
     .Output("atom_mask: int32")
-    .Output("branch_rot_bonds: int32");
+    .Output("branch_rot_bonds: int32")
+    .Output("movable_mat: int32");
 
 class ParseLigandOp : public OpKernel {
  public:
@@ -26,6 +27,8 @@ class ParseLigandOp : public OpKernel {
   vector< int > branch;
   vector< vector<int> > branch_mask;
   vector< vector<int> > atom_mask;
+  vector< vector<int> > movable_mat;
+  vector< vector<int> > bonded;
 
   bool find_bond(vector<int> bond, vector< vector<int> > bond_set){
       for (auto bond_in_set:bond_set){
@@ -34,6 +37,40 @@ class ParseLigandOp : public OpKernel {
           }
       }
       return false;
+  }
+
+  vector<int> adj_atom(int root_idx){
+    vector<int> adj;
+    for (auto bond:all_bonds){
+        if ( bond[0] == root_idx ){
+            adj.push_back(bond[1]);
+        }else if( bond[1] == root_idx){
+            adj.push_back(bond[0]);
+        }
+    }
+    return adj;
+  }
+
+  bool find(vector<int> list, int value){
+    for (int val:list){
+        if (val == value){
+            return true; 
+        }
+    }
+    return false;
+  }
+
+  void bond_by_degree(int root_idx,int atom_idx,int degree){
+    std::cout<<"bond by degree "<<degree<<std::endl;
+    if(degree > 0){
+        vector<int> adj = adj_atom(atom_idx);
+        for (int idx:adj){
+            if (!find(bonded[root_idx], idx)){
+                bonded[root_idx].push_back(idx);
+                bond_by_degree(root_idx, idx, degree-1);
+            }
+        }
+    }
   }
 
   void split_branch(int atom_idx, int bond_idx){
@@ -229,7 +266,49 @@ class ParseLigandOp : public OpKernel {
         }
     }
 
+    // get movable bond
+    for(int i=0;i<mol.NumAtoms();i++){
+        vector<int> tmp;
+        for(int j=0;j<mol.NumAtoms();j++){
+            tmp.push_back(1);
+        }
+        movable_mat.push_back(tmp);
+    }
 
+    for(int i = 0;i<mol.NumAtoms();i++){
+        vector<int> tmp;
+        tmp.push_back(i);
+        bonded.push_back(tmp);
+        bond_by_degree(i,i,3);
+    }
+
+    for(int i=0;i<bonded.size();i++){
+        for(int bonded_atom:bonded[i]){
+            movable_mat[i][bonded_atom] = 0;
+            movable_mat[bonded_atom][i] = 0;
+        }
+    }
+
+    for(auto bond: rot_bonds){
+        for(int i=0;i<branch.size();i++){
+            if (branch[i] == branch[bond[1]]){
+                movable_mat[i][bond[0]] = 0;
+                movable_mat[bond[0]][i] = 0;
+            } else if(branch[i] == branch[bond[0]]){
+                movable_mat[i][bond[1]] = 0;
+                movable_mat[bond[1]][i] = 0;
+            }
+        }
+    }
+
+    for(int i=0;i<mol.NumAtoms();i++){
+        for(int j=0;j<mol.NumAtoms();j++){
+            if (branch[i] == branch[j]){
+                movable_mat[i][j] = 0;
+                movable_mat[j][i] = 0;
+            }
+        }
+    }
     //==============//
 
     float value = 0;
@@ -325,6 +404,21 @@ class ParseLigandOp : public OpKernel {
     for (int i=0;i<branch_rot_bonds.size();i++){
         branch_rot_bonds_flat(i*2+0) = branch_rot_bonds[i][0];
         branch_rot_bonds_flat(i*2+1) = branch_rot_bonds[i][1];
+    }
+
+    //Movable bond
+    Tensor* movable_mat_tensor;
+    TensorShape movable_mat_shape;
+    movable_mat_shape.AddDim(mol.NumAtoms());
+    movable_mat_shape.AddDim(mol.NumAtoms());
+    OP_REQUIRES_OK(context, context->allocate_output(4, movable_mat_shape,
+        &movable_mat_tensor));
+    
+    auto movable_mat_flat = movable_mat_tensor->flat<int>();
+    for (int i=0;i<mol.NumAtoms();i++){
+        for (int j=0;j<mol.NumAtoms();j++){
+            movable_mat_flat(i* mol.NumAtoms() + j) = movable_mat[i][j];
+        }
     }
 
   }
