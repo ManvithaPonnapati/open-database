@@ -9,16 +9,16 @@
 
 using namespace tensorflow;
 
-REGISTER_OP("InterMolEnergy")
+REGISTER_OP("Score")
     .Input("lignad: float32")
     .Input("lig_elem: int32")
     .Input("receptor: float32")
     .Input("rec_elem: int32")
     .Output("energy: float32");
 
-class InterMolEnergyOp : public OpKernel {
+class ScoreOp : public OpKernel {
  public:
-  explicit InterMolEnergyOp(OpKernelConstruction* context) : OpKernel(context) {}
+  explicit ScoreOp(OpKernelConstruction* context) : OpKernel(context) {}
   // Define const value 
   const float const_v = 10000;
   const float const_cap = 100;
@@ -29,8 +29,8 @@ class InterMolEnergyOp : public OpKernel {
   float vdw(float dist, float opt_dist, float m, float n){
 
       float vds_dist = dist;
-      float c_i = std::pow(n, opt_dist) * m * 1.0 / ( n - m );
-      float c_j = std::pow(m, opt_dist) * n * 1.0 / ( m - n );
+      float c_i = std::pow(opt_dist, n) * m * 1.0 / ( n - m );
+      float c_j = std::pow(opt_dist, m) * n * 1.0 / ( m - n );
 
       if ( vds_dist > ( opt_dist + const_smooth ) ){
             vds_dist -= const_smooth;
@@ -40,8 +40,8 @@ class InterMolEnergyOp : public OpKernel {
             vds_dist = opt_dist;
       }
 
-      float r_i = std::pow(n, vds_dist);
-      float r_j = std::pow(m, vds_dist);
+      float r_i = std::pow(vds_dist, n);
+      float r_j = std::pow(vds_dist, m);
       float e = 0;
       if ( r_i > const_epsilon or r_j > const_epsilon){
             e = std::min(const_cap, c_i/ r_i + c_j/ r_j); 
@@ -52,15 +52,15 @@ class InterMolEnergyOp : public OpKernel {
   }
 
   float guass(float dist, float opt_dist, float o, float w){
-      float e = std::exp(- std::pow(2, ( dist - opt_dist - o) / w));
+      float e = std::exp(- std::pow(( dist - opt_dist - o) / w, 2));
       return e;
   }
 
   float replusion(float dist, float opt_dist, float offset){
-    float rep_dif = opt_dist - offset;
+    float rep_dif = dist - opt_dist - offset;
     float e = 0;
     if ( rep_dif < 0 ) {
-          e = std::pow(2, rep_dif);
+          e = std::pow(rep_dif, 2);
     } else {
           e = 0;
     }
@@ -144,32 +144,37 @@ class InterMolEnergyOp : public OpKernel {
 
     // calculate inter molecular energy
     float energy = 0;
+    float energy_0, energy_1, energy_2, energy_3, energy_4 =0;
     auto a = ligand.shape().dim_size(0);
     for (int i = 0; i< ligand.shape().dim_size(0); i++){
       for (int j = 0; j< receptor.shape().dim_size(0);j++){
-            std::cout<< lig_coords(i,0) << '\t' << lig_coords(i,1) << '\t' << lig_coords(i,2) << '\t'<<std::endl;
-            float dist = std::sqrt(std::pow(2, lig_coords(i,0)-rec_coords(j,0))+
-                                   std::pow(2, lig_coords(i,1)-rec_coords(j,0))+
-                                   std::pow(2, lig_coords(i,2)-rec_coords(j,2)));
+            
+            float dist = std::sqrt(std::pow(lig_coords(i,0)-rec_coords(j,0),2)+
+                                   std::pow(lig_coords(i,1)-rec_coords(j,1),2)+
+                                   std::pow(lig_coords(i,2)-rec_coords(j,2),2));
 
             if (dist <= const_cutoff){
-                float opt_dist = smina_atom_type::data[lig_elem(i)].ad_radius + smina_atom_type::data[rec_elem(j)].ad_radius;
+
+                float opt_dist = smina_atom_type::data[lig_elem(i)].xs_radius + smina_atom_type::data[rec_elem(j)].xs_radius;
                 
                 float sur_dist = dist - opt_dist;
                 
                 float this_energy = 0;
                 float weight_energy = 0;
                 float curl_energy = 0;
+                
                 // guass
                 this_energy = guass(dist, opt_dist, 0., 0.5);
                 weight_energy = this_energy * -0.035579;
                 curl_energy = curl(weight_energy);
                 energy += curl_energy;
+                
 
                 // guass 
                 this_energy = guass(dist, opt_dist, 3., 2.);
                 weight_energy = this_energy * -0.005156;
                 curl_energy = curl(weight_energy);
+                energy_1 += this_energy;
                 energy += curl_energy;
 
                 //rep
@@ -201,4 +206,4 @@ class InterMolEnergyOp : public OpKernel {
 
 };
 
-REGISTER_KERNEL_BUILDER(Name("InterMolEnergy").Device(DEVICE_CPU), InterMolEnergy);
+REGISTER_KERNEL_BUILDER(Name("Score").Device(DEVICE_CPU), ScoreOp);
