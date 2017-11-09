@@ -6,9 +6,6 @@ import csv
 from collections import Counter
 
 
-# FIXME: add parameter explanations
-# FIXME: add inline explanations
-
 def binding_affinity(index_path, source):
     """
 
@@ -29,6 +26,30 @@ def binding_affinity(index_path, source):
                     for i in range(len(bind.pdb_names))]
 
     return result
+
+def merge_binding_affinity(bindingmoad_source, pdbbind_source, bindingdb_source, method='max'):
+    """
+    
+    merge binding affinity information from different database
+    """
+	bindingmoad = binding_affinity_op.binding_affinity('./every.csv','bindingmoad')
+	pdbbind = binding_affinity_op.binding_affinity('./INDEX_general_PL.2016','pdbbind')
+	bindingdb = binding_affinity_op.binding_affinity('./BindingDB_All.tsv','bindingdb')
+
+	df = pd.DataFrame(a+b+c,columns=['pdb_names','ligand_names','log_affinities','normalized_affnities','states','comments'])
+
+	result = []
+	for name,group in df.groupby(['pdb_names','ligand_names']):
+	    if len(group) >1:
+	    	if method=='max':
+	        	loc = np.where(group['normalized_affnities'] == np.max(group['normalized_affnities']))[0][0]
+	        elif method=='min':
+	        	loc = np.where(group['normalized_affnities'] == np.min(group['normalized_affnities']))[0][0]
+	        idx = group.index[loc]
+	        result.append(list(group.loc[idx].values))
+	        
+	return result
+
 
 
 def _read_binding_moad(binding_moad_index):
@@ -135,8 +156,8 @@ def _read_binding_moad(binding_moad_index):
                     PDB_moad.exceptions.append(e)
                 PDB_moad.num_records +=1
 
-#    max_log_affinity = np.log(10.**0)
-#    min_log_affinity = np.log(10.**-18)
+    max_log_affinity = np.log(10.**0)
+    min_log_affinity = np.log(10.**-18)
 
     PDB_moad.normalized_affinities = (PDB_moad.log_affinities - min_log_affinity)\
     /(max_log_affinity - min_log_affinity)
