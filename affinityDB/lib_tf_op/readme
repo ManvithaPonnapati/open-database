@@ -1,9 +1,5 @@
-1. install necessary lib
-    1. openbabel
-    2. boost
-
-2. compile tensorflow op
+compile tensorflow op
 ```bash
 TF_INC=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
-g++ -std=c++11 -shared parse.cc -o parse.so -fPIC -I $TF_INC  -lopenbabel -lboost_system -O2
+g++ -std=c++11 -shared parse.cc -o parse.so -fPIC -I $TF_INC  -O2
 ```

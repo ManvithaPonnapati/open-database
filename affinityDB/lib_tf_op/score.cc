@@ -1,11 +1,7 @@
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/shape_inference.h"
-#include <openbabel/babelconfig.h>
-#include <openbabel/mol.h>
-#include <openbabel/parsmart.h>
-#include <openbabel/obconversion.h>
-#include "atom_constant.h"
+#include "include/atom_constant.h"
 
 using namespace tensorflow;
 
@@ -87,7 +83,7 @@ class ScoreOp : public OpKernel {
   }
 
   float hydrophobic(float dist, float opt_dist, int atom_a, int atom_b, float good, float bad){
-      if (smina_atom_type::data[atom_a].xs_hydrophobe and smina_atom_type::data[atom_b].xs_hydrophobe){
+      if (atom_data[atom_a].xs_hydrophobe and atom_data[atom_b].xs_hydrophobe){
             float sur_dist = dist - opt_dist;
             float sloped = slope_step(sur_dist,good, bad );
             return sloped;
@@ -97,7 +93,7 @@ class ScoreOp : public OpKernel {
   }
 
   float non_dir_h_bond(float dist, float opt_dist, int atom_a, int atom_b, float good, float bad){
-        if( xs_h_bond_possible(smina_atom_type::data[atom_a].sm,smina_atom_type::data[atom_b].sm)){
+        if( xs_h_bond_possible(atom_a,atom_b)){
               float sur_dist = dist - opt_dist;
               float sloped = slope_step(sur_dist, good, bad);
               return sloped;
@@ -154,8 +150,7 @@ class ScoreOp : public OpKernel {
                                    std::pow(lig_coords(i,2)-rec_coords(j,2),2));
 
             if (dist <= const_cutoff){
-
-                float opt_dist = smina_atom_type::data[lig_elem(i)].xs_radius + smina_atom_type::data[rec_elem(j)].xs_radius;
+                float opt_dist = atom_data[lig_elem(i)].xs_radius + atom_data[rec_elem(j)].xs_radius;
                 
                 float sur_dist = dist - opt_dist;
                 
@@ -167,6 +162,7 @@ class ScoreOp : public OpKernel {
                 this_energy = guass(dist, opt_dist, 0., 0.5);
                 weight_energy = this_energy * -0.035579;
                 curl_energy = curl(weight_energy);
+                energy_0 += this_energy;
                 energy += curl_energy;
                 
 
@@ -181,23 +177,27 @@ class ScoreOp : public OpKernel {
                 this_energy = replusion(dist, opt_dist, 0.);
                 weight_energy = this_energy * 0.840245;
                 curl_energy = curl(weight_energy);
+                energy_2 += this_energy;
                 energy += curl_energy;
 
                 //hydrophobic
                 this_energy = hydrophobic(dist, opt_dist, lig_elem(i), rec_elem(j),0.5, 1.5);
                 weight_energy = this_energy * -0.035069;
                 curl_energy = curl(weight_energy);
+                energy_3 += this_energy;
                 energy += curl_energy;
 
                 this_energy = non_dir_h_bond(dist, opt_dist, lig_elem(i), rec_elem(j),-0.7, 0);
                 weight_energy = this_energy * -0.587439;
                 curl_energy = curl(weight_energy);
+                energy_4 += this_energy;
                 energy += curl_energy;
 
             }
            
       }
     }
+
 
     // Set the output value 
     auto output_flat = output_tensor->flat<float>();
