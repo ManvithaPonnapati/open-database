@@ -1,16 +1,19 @@
 pdb file parse and energy estimate 
 
 ## compile tensorflow op
-``` bash
+```
 cd ../../affinityDB/lib_tf_op/
-TF_INC=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
 
-g++ -std=c++11 -shared parsePdb.cc -o parsePdb.so -fPIC -I $TF_INC  -O2
+export TF_INC=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
 
-g++ -std=c++11 -shared score.cc -o score.so -fPIC -I $TF_INC  -O2
+g++ -std=c++11 -shared parsePdb.cc -o parsePdb.so -fPIC -I $TF_INC  -O2 -D_GLIBCXX_USE_CXX11_ABI=0
+
+g++ -std=c++11 -shared score.cc -o score.so -fPIC -I $TF_INC  -O2 -D_GLIBCXX_USE_CXX11_ABI=0
+
 ```
 
-## usage
+After this step , if everything went well you will see two files parsePdb.so and score.so inside affinityDB/lib_tf_op/parsePdb.so
+## usage - Find the working example : inside affinityDatasets/TF/example.py
 
 ### load op in tensorflow
 ```python
