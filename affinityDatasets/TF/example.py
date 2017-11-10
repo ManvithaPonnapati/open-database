@@ -1,8 +1,8 @@
 import tensorflow as tf 
 import numpy as np 
 from glob import glob
-parse_pdb = tf.load_op_library("parsePdb.so").parse_pdb
-score = tf.load_op_library("score.so").score
+parse_pdb = tf.load_op_library("../../affinityDB/lib_tf_op/parsePdb.so").parse_pdb
+score = tf.load_op_library("../../affinityDB/lib_tf_op/score.so").score
 
 def read_tfr(fname_queue, decode_dict):
     """

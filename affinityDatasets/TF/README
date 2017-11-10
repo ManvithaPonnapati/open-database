@@ -1,0 +1,57 @@
+pdb file parse and energy estimate 
+
+## compile tensorflow op
+``` bash
+cd ../../affinityDB/lib_tf_op/
+TF_INC=$(python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
+
+g++ -std=c++11 -shared parsePdb.cc -o parsePdb.so -fPIC -I $TF_INC  -O2
+
+g++ -std=c++11 -shared score.cc -o score.so -fPIC -I $TF_INC  -O2
+```
+
+## usage
+
+### load op in tensorflow
+```python
+parse_pdb = tf.load_op_library("../../affinityDB/lib_tf_op/parsePdb.so").parse_pdb
+score = tf.load_op_library("../../affinityDB/lib_tf_op/score.so").score
+```
+
+### convert pdb into tfr
+```python
+
+sess = tf.Session()
+# create queue for pdb files
+fname_queue = make_queue('data','*.pdb')
+# parse pdb, use dict to specify the content to parse
+data = parsePDB(fname_queue,{"coords":[], "atom_type":[],"atom_elem":[], "bonds":[]})
+
+coord = tf.train.Coordinator()
+threads = tf.train.start_queue_runners(sess=sess, coord=coord)
+
+d = sess.run(data)
+# output tfr at the same directory
+ofile = d['filename'].replace('.pdb','.tfr')
+# write the parsed content 
+writeTFR(d, ofile)
+```
+
+### scoring
+```python
+sess = tf.Session()
+# create queue for tfr files
+fname_queue = make_queue('data','*.tfr')
+
+# parse two structure
+data = parsePDB(fname_queue,{"coords":[], "atom_type":[]})
+data2 = parsePDB(fname_queue,{"coords":[], "atom_type":[]})
+
+# scoring the intermolecular energy for two molecule
+energy = score(data['coords'], data['atom_type'], data2['coords'], data2['atom_type'])
+
+coord = tf.train.Coordinator()
+threadds = tf.train.start_queue_runners(sess=sess, coord=coord)
+
+e = sess.run(energy)
+```
